@@ -25,6 +25,7 @@ spring-backend/jdks/
 # ----------------------------------------
 # 💻 IDE 관련 (IntelliJ / Eclipse / VSCode 등)
 # ----------------------------------------
+.idea
 *.iws
 *.ipr
 *.swp
@@ -110,14 +111,16 @@ replay_pid*
 # ----------------------------------------
 # 🧪 IntelliJ Plugin / Gradle 플러그인 관련 캐시
 # ----------------------------------------
-#.idea/**/workspace.xml
-#.idea/**/tasks.xml
-#.idea/**/usage.statistics.xml
-#.idea/**/dictionaries
-#.idea/**/shelf
-#.idea/**/sonarlint/
-#.idea/**/aws.xml
-#.idea/**/gradle.xml
-#.idea/**/libraries
-#.idea/**/httpRequests
-#.idea/httpRequests
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/sonarlint/
+.idea/**/aws.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+.idea/**/httpRequests
+.idea/httpRequests
+.idea/vcs.xml
+.idea/.gitignore
