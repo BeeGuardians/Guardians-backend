@@ -83,3 +83,20 @@ exploit/
 
 # CTF 툴용 캐시
 pwntools-cache/
+
+# Gradle 캐시 및 NetBeans trust 캐시
+.gradle/
+**/.gradle/
+**/.gradle/**
+
+# NetBeans 관련 캐시 무시
+nb-cache/
+**/nb-cache/
+**/trust/
+**/trust/**
+
+# 특정 경로 무시
+guardians/.gradle/
+guardians/.gradle/nb-cache/
+guardians/.gradle/nb-cache/trust/
+guardians/.gradle/nb-cache/trust/*
