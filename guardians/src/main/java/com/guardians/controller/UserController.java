@@ -20,6 +20,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<ResWrapper<?>> createUser(@RequestBody @Valid ReqCreateUserDto requestDto) {
         ResCreateUserDto createdUser = userService.createUser(requestDto);
+        System.out.println("zzz");
         return ResponseEntity.ok(ResWrapper.resSuccess(createdUser));
     }
 }
