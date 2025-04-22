@@ -1,5 +1,6 @@
 package com.guardians.dto.user.req;
 
+import com.guardians.domain.user.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -23,10 +24,8 @@ public class ReqCreateUserDto {
     @Size(min = 6)
     private String password;
 
-    @Builder
-    public ReqCreateUserDto(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
+    public User toEntity() {
+        return User.create(username, email, password); // create 메서드에서 해싱 처리할 수 있음
     }
+
 }
