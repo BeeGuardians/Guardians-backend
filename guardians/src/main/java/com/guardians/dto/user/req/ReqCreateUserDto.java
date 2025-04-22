@@ -24,8 +24,5 @@ public class ReqCreateUserDto {
     @Size(min = 6)
     private String password;
 
-    public User toEntity() {
-        return User.create(username, email, password); // create 메서드에서 해싱 처리할 수 있음
-    }
 
 }

@@ -10,4 +10,5 @@ import lombok.*;
 public class SuccessResult {
     private int status;
     private Object data;
+    private String message;
 }

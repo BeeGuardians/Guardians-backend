@@ -11,10 +11,11 @@ import lombok.*;
 public class ResWrapper<T> {
     private T result;
 
-    public static ResWrapper<SuccessResult> resSuccess(Object o) {
+    public static ResWrapper<SuccessResult> resSuccess(String message, Object o) {
         return ResWrapper.<SuccessResult>builder()
                 .result(SuccessResult.builder()
                         .status(200)
+                        .message(message)
                         .data(o)
                         .build())
                 .build();
