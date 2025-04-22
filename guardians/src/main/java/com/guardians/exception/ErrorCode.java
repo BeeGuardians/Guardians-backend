@@ -8,6 +8,14 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    // 유저 로그인 관련
+    USER_NOT_FOUND(1001, "해당 유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    INVALID_PASSWORD(1002, "비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
+
+    // 회원 가입 관련
+    DUPLICATE_EMAIL(1101, "이미 사용 중인 이메일입니다.", HttpStatus.BAD_REQUEST),
+    DUPLICATE_USERNAME(1102, "이미 사용 중인 아이디입니다.", HttpStatus.BAD_REQUEST),
+
     // 기타
     NOT_VALID_ARGUMENT(9001, "입력 값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST)
     ;
