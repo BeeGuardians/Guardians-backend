@@ -2,8 +2,11 @@ package com.guardians.dto.user.res;
 
 import com.guardians.domain.user.User;
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -19,12 +22,20 @@ public class ResCreateUserDto {
     @Schema(description = "사용자 이메일", example = "user@example.com")
     private String email;
 
+    @Schema(description = "사용자 권한", example = "USER")
+    private String role;
+
+    @Schema(description = "계정 생성일", example = "20250423233239")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyyMMddHHmmss")
+    private LocalDateTime createdAt;
+
     public static ResCreateUserDto fromEntity(User user) {
         return ResCreateUserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
                 .build();
     }
 }
-

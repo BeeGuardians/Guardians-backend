@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,5 +28,16 @@ public class ReqCreateUserDto {
     @NotBlank
     @Size(min = 6)
     private String password;
-}
 
+    @Builder
+    public ReqCreateUserDto(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
+
+    // Service에서 바로 entity 생성 가능
+    public User toEntity(String encodedPassword) {
+        return User.create(username, email, encodedPassword, "USER");
+    }
+}
