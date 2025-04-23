@@ -6,14 +6,13 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ResCreateUserDto {
-
+public class ResLoginDto {
     private Long id;
     private String username;
     private String email;
 
-    public static ResCreateUserDto fromEntity(User user) {
-        return ResCreateUserDto.builder()
+    public static ResLoginDto fromEntity(User user) {
+        return ResLoginDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
