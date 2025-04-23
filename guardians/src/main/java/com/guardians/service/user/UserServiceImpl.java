@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Service
 @Slf4j
@@ -23,7 +22,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // createUser 중복 검사 로직
+    // 중복 검사
     private void validateDuplicate(ReqCreateUserDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
@@ -37,28 +36,29 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public ResCreateUserDto createUser(ReqCreateUserDto dto) {
-        // 중복 검사 호출
         validateDuplicate(dto);
 
         String encodedPw = passwordEncoder.encode(dto.getPassword());
-        User user = User.create(dto.getUsername(), dto.getEmail(), encodedPw);
-        User saved = userRepository.save(user);
 
+        User user = User.create(dto.getUsername(), dto.getEmail(), encodedPw, "USER");
+
+        User saved = userRepository.save(user);
         return ResCreateUserDto.fromEntity(saved);
     }
 
-
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public ResLoginDto login(ReqLoginDto dto) {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 해싱된 비밀번호와 비교
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
+        user.updateLastLoginAt();
+
         return ResLoginDto.fromEntity(user);
     }
+
 }

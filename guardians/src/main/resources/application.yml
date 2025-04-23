@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: guardians
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ctfdb
+    username: ctf
+    password: ctf
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    open-in-view: false
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Seoul
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  session:
+    store-type: redis
+    timeout: 1800s
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
