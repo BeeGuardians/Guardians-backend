@@ -1,6 +1,7 @@
 package com.guardians.dto.common;
 
 import com.guardians.exception.CustomException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 @Getter
@@ -8,7 +9,10 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "API 응답 래퍼")
 public class ResWrapper<T> {
+
+    @Schema(description = "결과 데이터 (성공 또는 실패 응답)", implementation = SuccessResult.class)
     private T result;
 
     public static ResWrapper<SuccessResult> resSuccess(String message, Object o) {
