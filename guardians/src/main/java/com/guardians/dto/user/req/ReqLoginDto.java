@@ -14,7 +14,7 @@ public class ReqLoginDto {
     @Email
     private String email;
 
-    @Schema(description = "비밀번호", example = "secureP@ss1!")
+    @Schema(description = "비밀번호", example = "secureP@ss1")
     @NotBlank
     private String password;
 }
