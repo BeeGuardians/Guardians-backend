@@ -1,4 +1,4 @@
-package com.guardians.domain.board.entitiy;
+package com.guardians.domain.board.entity;
 
 import com.guardians.domain.user.entity.User;
 import jakarta.persistence.*;
