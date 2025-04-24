@@ -5,12 +5,14 @@ import com.guardians.dto.user.req.ReqCreateUserDto;
 import com.guardians.dto.user.req.ReqLoginDto;
 import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
+import com.guardians.service.user.EmailVerificationService;
 import com.guardians.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final EmailVerificationService emailVerificationService;
 
     // 회원가입
     @Operation(summary = "회원가입", description = "유저 정보를 받아 회원가입 처리")
@@ -28,6 +32,25 @@ public class UserController {
     public ResponseEntity<ResWrapper<?>> createUser(@RequestBody @Valid ReqCreateUserDto requestDto) {
         ResCreateUserDto createdUser = userService.createUser(requestDto);
         return ResponseEntity.ok(ResWrapper.resSuccess("회원가입 성공",createdUser));
+    }
+
+    // 이메일 인증 코드 전송
+    @Operation(summary = "이메일 인증코드 전송", description = "입력한 이메일로 인증코드 발송")
+    @GetMapping("/send-code")
+    public ResponseEntity<ResWrapper<?>> sendCode(@RequestParam String email) {
+        emailVerificationService.sendVerificationCode(email);
+        return ResponseEntity.ok(ResWrapper.resSuccess("인증 코드 전송 완료", null));
+    }
+
+    // 이메일 인증 코드 확인
+    @Operation(summary = "이메일 인증코드 검증", description = "입력한 코드가 유효한지 확인")
+    @PostMapping("/verify-code")
+    public ResponseEntity<ResWrapper<?>> verifyCode(
+            @RequestParam String email,
+            @RequestParam String code
+    ) {
+        boolean isValid = emailVerificationService.verifyCode(email, code);
+        return ResponseEntity.ok(ResWrapper.resSuccess("인증 결과", isValid));
     }
 
     // 로그인
