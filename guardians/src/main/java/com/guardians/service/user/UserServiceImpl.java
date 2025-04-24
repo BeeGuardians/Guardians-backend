@@ -1,7 +1,7 @@
 package com.guardians.service.user;
 
-import com.guardians.domain.user.User;
-import com.guardians.domain.user.UserRepository;
+import com.guardians.domain.user.entity.User;
+import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.dto.user.req.ReqCreateUserDto;
 import com.guardians.dto.user.req.ReqLoginDto;
 import com.guardians.dto.user.res.ResCreateUserDto;
