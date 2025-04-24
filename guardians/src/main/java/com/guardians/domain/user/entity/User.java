@@ -1,4 +1,4 @@
-package com.guardians.domain.user;
+package com.guardians.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
