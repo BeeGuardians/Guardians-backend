@@ -1,6 +1,6 @@
 package com.guardians.domain.board.repository;
 
-import com.guardians.domain.board.entitiy.Comment;
+import com.guardians.domain.board.entity.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
