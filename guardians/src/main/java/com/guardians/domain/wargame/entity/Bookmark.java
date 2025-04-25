@@ -1,4 +1,4 @@
-package com.guardians.domain.challenge.entity;
+package com.guardians.domain.wargame.entity;
 
 import com.guardians.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -23,8 +23,8 @@ public class Bookmark {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "challenge_id")
-    private Challenge challenge;
+    @JoinColumn(name = "wargame_id")
+    private Wargame wargame;
 
     private LocalDateTime createdAt;
 }
