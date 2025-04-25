@@ -1,9 +1,11 @@
 package com.guardians.controller;
 
 import com.guardians.dto.board.req.ReqCreateBoardDto;
+import com.guardians.dto.board.req.ReqUpdateBoardDto;
 import com.guardians.dto.board.res.ResBoardDetailDto;
 import com.guardians.dto.board.res.ResBoardListDto;
 import com.guardians.dto.board.res.ResCreateBoardDto;
+import com.guardians.dto.board.res.ResUpdateBoardDto;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.service.board.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,4 +53,36 @@ public class BoardController {
         ResBoardDetailDto result = boardService.getBoardDetail(boardId);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 상세 조회 성공", result));
     }
+    // 게시글 수정
+    @Operation(summary = "게시글 수정", description = "게시글 작성자만 게시글을 수정할 수 있습니다.")
+    @PatchMapping("/{boardId}")
+    public ResponseEntity<ResWrapper<?>> updateBoard(
+            HttpSession session,
+            @PathVariable Long boardId,
+            @RequestBody @Valid ReqUpdateBoardDto dto
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+
+        ResUpdateBoardDto result = boardService.updateBoard(userId, boardId, dto);
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("게시글 수정 완료", result));
+    }
+
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<ResWrapper<?>> deleteBoard(
+            HttpSession session,
+            @PathVariable Long boardId
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+
+        boardService.deleteBoard(userId, boardId);
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("게시글 삭제 완료", null));
+    }
+
+
+
+
+
+
 }

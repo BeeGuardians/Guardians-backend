@@ -1,9 +1,11 @@
 package com.guardians.service.board;
 
 import com.guardians.dto.board.req.ReqCreateBoardDto;
+import com.guardians.dto.board.req.ReqUpdateBoardDto;
 import com.guardians.dto.board.res.ResBoardDetailDto;
 import com.guardians.dto.board.res.ResBoardListDto;
 import com.guardians.dto.board.res.ResCreateBoardDto;
+import com.guardians.dto.board.res.ResUpdateBoardDto;
 
 import java.util.List;
 
@@ -13,4 +15,12 @@ public interface BoardService {
     List<ResBoardListDto> getBoardList();
 
     ResBoardDetailDto getBoardDetail(Long boardId);
+
+    //게시글 수정
+    ResUpdateBoardDto updateBoard(Long userId, Long boardId, ReqUpdateBoardDto dto);
+
+    //게시글 삭제
+    void deleteBoard(Long userId, Long boardId);
+
+
 }
