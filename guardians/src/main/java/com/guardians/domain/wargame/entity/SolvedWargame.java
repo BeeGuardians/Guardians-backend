@@ -1,4 +1,4 @@
-package com.guardians.domain.challenge.entity;
+package com.guardians.domain.wargame.entity;
 
 import com.guardians.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -7,14 +7,14 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "solved_challenges")
+@Table(name = "solved_wargames")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@IdClass(SolvedChallengeId.class)
-public class SolvedChallenge {
+@IdClass(SolvedWargameId.class)
+public class SolvedWargame {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
@@ -23,8 +23,8 @@ public class SolvedChallenge {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "challenge_id")
-    private Challenge challenge;
+    @JoinColumn(name = "wargame_id")
+    private Wargame wargame;
 
     @Column(name = "solved_at")
     private LocalDateTime solvedAt;
