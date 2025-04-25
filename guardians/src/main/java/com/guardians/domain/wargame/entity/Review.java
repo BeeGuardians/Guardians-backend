@@ -1,4 +1,4 @@
-package com.guardians.domain.board.entity;
+package com.guardians.domain.wargame.entity;
 
 import com.guardians.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -7,13 +7,13 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "boards")
+@Table(name = "reviews")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Board {
+public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,22 +24,18 @@ public class Board {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
-    private String title;
+    // 관련 챌린지
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "challenge_id", nullable = false)
+    private Wargame wargame;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @Column(name = "board_type", nullable = false)
-    private String boardType; // FREE, INQUIRY, STUDY (하드코딩 값)
-
-    @Column(name = "view_count")
-    private int viewCount = 0;
-
-    @Column(name = "like_count")
+    @Column(name = "like_count", nullable = false)
     private int likeCount = 0;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)

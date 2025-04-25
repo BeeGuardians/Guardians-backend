@@ -1,4 +1,4 @@
-package com.guardians.domain.challenge.entity;
+package com.guardians.domain.wargame.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
