@@ -3,16 +3,16 @@ package com.guardians.controller;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.user.req.ReqCreateUserDto;
 import com.guardians.dto.user.req.ReqLoginDto;
+import com.guardians.dto.user.req.ReqUpdateUserDto;
 import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
-import com.guardians.service.user.EmailVerificationService;
+import com.guardians.service.auth.EmailVerificationService;
 import com.guardians.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final RedisTemplate<String, String> redisTemplate;
     private final EmailVerificationService emailVerificationService;
 
     // 회원가입
@@ -75,4 +74,19 @@ public class UserController {
         session.invalidate();
         return ResponseEntity.ok(ResWrapper.resSuccess("로그아웃 완료", null));
     }
+
+    // UserController.java
+    @PatchMapping("/{userId}/update")
+    public ResponseEntity<ResWrapper<?>> updateUserInfo(
+            @PathVariable Long userId,
+            @RequestBody @Valid ReqUpdateUserDto updateDto,
+            HttpSession session
+    ) {
+        Long sessionUserId = (Long) session.getAttribute("userId");
+
+        ResLoginDto updatedUser = userService.updateUserInfo(sessionUserId, userId, updateDto);
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("회원 정보 수정 완료", updatedUser));
+    }
+
 }

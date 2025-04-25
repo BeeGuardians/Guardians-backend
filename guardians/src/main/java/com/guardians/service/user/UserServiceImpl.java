@@ -4,6 +4,7 @@ import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.dto.user.req.ReqCreateUserDto;
 import com.guardians.dto.user.req.ReqLoginDto;
+import com.guardians.dto.user.req.ReqUpdateUserDto;
 import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
@@ -57,6 +58,21 @@ public class UserServiceImpl implements UserService {
         }
 
         user.updateLastLoginAt();
+
+        return ResLoginDto.fromEntity(user);
+    }
+
+    @Transactional
+    @Override
+    public ResLoginDto updateUserInfo(Long sessionUserId, Long targetUserId, ReqUpdateUserDto dto) {
+        if (!sessionUserId.equals(targetUserId)) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED); // ← 권한 없음 에러 따로 만들자
+        }
+
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        user.updateUsername(dto.getUsername());
 
         return ResLoginDto.fromEntity(user);
     }

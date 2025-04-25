@@ -55,4 +55,9 @@ public class User {
     public void updateLastLoginAt() {
         this.lastLoginAt = LocalDateTime.now();
     }
+
+    public void updateUsername(String username) {
+        this.username = username;
+    }
+
 }
