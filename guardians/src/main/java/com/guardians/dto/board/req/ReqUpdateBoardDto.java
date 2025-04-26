@@ -1,5 +1,6 @@
 package com.guardians.dto.board.req;
 
+import com.guardians.domain.board.entity.BoardType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,4 +9,6 @@ import lombok.Setter;
 public class ReqUpdateBoardDto {
     private String title;
     private String content;
+    private BoardType boardType;
+
 }

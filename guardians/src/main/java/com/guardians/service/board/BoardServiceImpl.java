@@ -34,6 +34,7 @@ public class BoardServiceImpl implements BoardService {
         Board board = Board.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
+                .boardType(dto.getBoardType())
                 .user(user)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -94,16 +95,17 @@ public class BoardServiceImpl implements BoardService {
         // 필드 수정
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
+        board.setBoardType(dto.getBoardType());
         board.setUpdatedAt(LocalDateTime.now());
 
         Board updatedBoard = boardRepository.save(board);
 
         return ResUpdateBoardDto.builder()
-                .boardId(updatedBoard.getId())
-                .title(updatedBoard.getTitle())
-                .content(updatedBoard.getContent())
-                .username(updatedBoard.getUser().getUsername())
-                .updatedAt(updatedBoard.getUpdatedAt())
+                .boardId(board.getId())
+                .title(board.getTitle())
+                .content(board.getContent())
+                .username(board.getUser().getUsername())
+                .updatedAt(board.getUpdatedAt())
                 .build();
     }
 

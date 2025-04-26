@@ -67,7 +67,7 @@ public class BoardController {
 
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 수정 완료", result));
     }
-
+    //게시글 삭제
     @DeleteMapping("/{boardId}")
     public ResponseEntity<ResWrapper<?>> deleteBoard(
             HttpSession session,
