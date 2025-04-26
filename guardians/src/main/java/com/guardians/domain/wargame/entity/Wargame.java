@@ -1,17 +1,17 @@
-package com.guardians.domain.challenge.entity;
+package com.guardians.domain.wargame.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "challenges")
+@Table(name = "wargames")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Challenge {
+public class Wargame {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +25,9 @@ public class Challenge {
     private String level; // ex: EASY, MEDIUM, HARD
 
     private int score;
+
+    @Column(name = "like_count", nullable = false)
+    private int likeCount = 0;
 
     @Column(name = "file_url")
     private String fileUrl;

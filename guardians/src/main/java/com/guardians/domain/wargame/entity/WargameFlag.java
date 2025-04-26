@@ -1,25 +1,25 @@
-package com.guardians.domain.challenge.entity;
+package com.guardians.domain.wargame.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "challenge_flags")
+@Table(name = "wargame_flags")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChallengeFlag {
+public class WargameFlag {
 
     @Id
-    @Column(name = "challenge_id")
-    private Long challengeId;
+    @Column(name = "wargame_id")
+    private Long wargameId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
-    @JoinColumn(name = "challenge_id")
-    private Challenge challenge;
+    @JoinColumn(name = "wargame_id")
+    private Wargame wargame;
 
     @Column(name = "flag", nullable = false)
     private String flag;
