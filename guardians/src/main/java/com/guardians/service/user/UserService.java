@@ -1,5 +1,6 @@
 package com.guardians.service.user;
 
+import com.guardians.dto.user.req.ReqChangePasswordDto;
 import com.guardians.dto.user.req.ReqCreateUserDto;
 import com.guardians.dto.user.req.ReqLoginDto;
 import com.guardians.dto.user.req.ReqUpdateUserDto;
@@ -11,5 +12,6 @@ public interface UserService {
     ResCreateUserDto createUser(ReqCreateUserDto dto);
     ResLoginDto login(ReqLoginDto dto);
     ResLoginDto updateUserInfo(Long sessionUserId, Long targetUserId, ReqUpdateUserDto dto);
+    void changePassword(Long sessionUserId, Long targetUserId, ReqChangePasswordDto dto);
 
 }

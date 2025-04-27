@@ -1,6 +1,7 @@
 package com.guardians.controller;
 
 import com.guardians.dto.common.ResWrapper;
+import com.guardians.dto.user.req.ReqChangePasswordDto;
 import com.guardians.dto.user.req.ReqCreateUserDto;
 import com.guardians.dto.user.req.ReqLoginDto;
 import com.guardians.dto.user.req.ReqUpdateUserDto;
@@ -53,6 +54,17 @@ public class UserController {
     }
 
     // 로그인 여부 확인
+    @Operation(summary = "로그인 여부 확인", description = "현재 세션에 유저 정보가 존재하는지 확인합니다.")
+    @GetMapping("/check")
+    public ResponseEntity<ResWrapper<?>> checkLogin(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId != null) {
+            return ResponseEntity.ok(ResWrapper.resSuccess("로그인 되어 있음", true));
+        } else {
+            return ResponseEntity.ok(ResWrapper.resSuccess("로그인 되어있지 않음", false));
+        }
+    }
 
     // 로그인
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인")
@@ -94,6 +106,18 @@ public class UserController {
     // 프로필 사진 업로드
 
     // 비밀번호 변경
+    @PatchMapping("/{userId}/reset-password")
+    public ResponseEntity<ResWrapper<?>> changePassword(
+            @PathVariable Long userId,
+            @RequestBody @Valid ReqChangePasswordDto dto,
+            HttpSession session
+    ) {
+        Long sessionUserId = (Long) session.getAttribute("userId");
+
+        userService.changePassword(sessionUserId, userId, dto);
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 변경 완료", null));
+    }
 
     // 비밀번호 찾기
 

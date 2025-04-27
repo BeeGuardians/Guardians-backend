@@ -2,6 +2,7 @@ package com.guardians.service.user;
 
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
+import com.guardians.dto.user.req.ReqChangePasswordDto;
 import com.guardians.dto.user.req.ReqCreateUserDto;
 import com.guardians.dto.user.req.ReqLoginDto;
 import com.guardians.dto.user.req.ReqUpdateUserDto;
@@ -75,6 +76,24 @@ public class UserServiceImpl implements UserService {
         user.updateUsername(dto.getUsername());
 
         return ResLoginDto.fromEntity(user);
+    }
+
+    @Transactional
+    @Override
+    public void changePassword(Long sessionUserId, Long targetUserId, ReqChangePasswordDto dto) {
+        if (!sessionUserId.equals(targetUserId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        User user = userRepository.findById(sessionUserId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        String encodedNewPassword = passwordEncoder.encode(dto.getNewPassword());
+        user.updatePassword(encodedNewPassword);
     }
 
 }

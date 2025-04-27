@@ -63,9 +63,11 @@ public class User {
         this.profileImageUrl = profileImageUrl;
     }
 
-
     public void updateUsername(String username) {
         this.username = username;
+    }
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
     }
 
 }
