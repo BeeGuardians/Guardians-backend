@@ -7,6 +7,8 @@ import com.guardians.dto.user.req.ReqLoginDto;
 import com.guardians.dto.user.req.ReqUpdateUserDto;
 import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
+import com.guardians.exception.CustomException;
+import com.guardians.exception.ErrorCode;
 import com.guardians.service.auth.EmailVerificationService;
 import com.guardians.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -119,8 +121,47 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 변경 완료", null));
     }
 
-    // 비밀번호 찾기
+    // 비밀번호 찾기 - 이메일 인증 코드 전송
+    @Operation(summary = "비밀번호 찾기 - 이메일 인증 코드 전송", description = "비밀번호 재설정을 위한 이메일 인증 코드 발송")
+    @GetMapping("/{userId}/reset-password/send-code")
+    public ResponseEntity<ResWrapper<?>> sendResetPasswordCode(
+            @PathVariable Long userId
+    ) {
+        userService.sendResetPasswordCode(userId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 재설정 코드 발송 완료", null));
+    }
+
+
+    // 비밀번호 찾기 - 이메일 검증 / 재설정
+    @Operation(summary = "비밀번호 찾기 - 비밀번호 재설정", description = "인증 코드 검증 후 새로운 비밀번호 설정")
+    @PostMapping("/{userId}/reset-password/verify-code")
+    public ResponseEntity<ResWrapper<?>> verifyResetPassword(
+            @PathVariable Long userId,
+            @RequestParam String code,
+            @RequestParam String newPassword
+    ) {
+        userService.verifyResetPassword(userId, code, newPassword);
+        return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 재설정 완료", null));
+    }
 
     // 회원 탈퇴
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 처리")
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<ResWrapper<?>> deleteUser(
+            @PathVariable Long userId,
+            HttpSession session
+    ) {
+        Long sessionUserId = (Long) session.getAttribute("userId");
+
+        if (sessionUserId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS); // 세션 없음
+        }
+
+        userService.deleteUser(sessionUserId, userId);
+        session.invalidate(); // 탈퇴했으면 세션도 깨줘야지
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("회원 탈퇴 완료", null));
+    }
+
 
 }

@@ -10,6 +10,8 @@ import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
+import com.guardians.service.auth.EmailVerificationService;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
     // 중복 검사
     private void validateDuplicate(ReqCreateUserDto dto) {
@@ -95,5 +98,42 @@ public class UserServiceImpl implements UserService {
         String encodedNewPassword = passwordEncoder.encode(dto.getNewPassword());
         user.updatePassword(encodedNewPassword);
     }
+
+    @Transactional
+    @Override
+    public void sendResetPasswordCode(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        emailVerificationService.sendVerificationCode(user.getEmail());
+    }
+
+    @Transactional
+    @Override
+    public void verifyResetPassword(Long userId, String code, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        boolean verified = emailVerificationService.verifyCode(user.getEmail(), code);
+        if (!verified) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        user.updatePassword(passwordEncoder.encode(newPassword));
+    }
+
+    @Transactional
+    @Override
+    public void deleteUser(Long sessionUserId, Long targetUserId) {
+        if (sessionUserId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS); // 세션 없음
+        }
+
+        if (!sessionUserId.equals(targetUserId)) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED); // 본인만 탈퇴 가능
+        }
+
+        userRepository.deleteById(targetUserId);
+    }
+
 
 }
