@@ -14,6 +14,7 @@ import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -121,5 +122,30 @@ public class BoardServiceImpl implements BoardService {
 
         boardRepository.delete(board);
     }
+
+
+    @Override
+    public void likeBoard(Long boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+
+        board.setLikeCount(board.getLikeCount() + 1);
+        boardRepository.save(board);
+    }
+
+    @Override
+    @Transactional
+    public void unlikeBoard(Long boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+
+        if (board.getLikeCount() > 0) {
+            board.setLikeCount(board.getLikeCount() - 1);
+        }
+
+        boardRepository.save(board);
+    }
+
+
 
 }

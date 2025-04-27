@@ -80,6 +80,22 @@ public class BoardController {
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 삭제 완료", null));
     }
 
+    //게시글 좋아요
+    @Operation(summary = "게시글 좋아요", description = "게시글에 좋아요를 추가합니다.")
+    @PostMapping("/{boardId}/like")
+    public ResponseEntity<ResWrapper<?>> likeBoard(@PathVariable Long boardId) {
+        boardService.likeBoard(boardId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("게시글 좋아요 성공", null));
+    }
+
+    @Operation(summary = "게시글 좋아요 취소", description = "게시글 좋아요를 취소합니다.")
+    @PatchMapping("/{boardId}/unlike")
+    public ResponseEntity<ResWrapper<?>> unlikeBoard(@PathVariable Long boardId) {
+        boardService.unlikeBoard(boardId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("좋아요 취소 완료", null));
+    }
+
+
 
 
 

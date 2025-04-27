@@ -22,5 +22,11 @@ public interface BoardService {
     //게시글 삭제
     void deleteBoard(Long userId, Long boardId);
 
+    //게시글 좋아요
+    void likeBoard(Long boardId);
+
+    //게시글 좋아요 취소
+    void unlikeBoard(Long boardId);
+
 
 }
