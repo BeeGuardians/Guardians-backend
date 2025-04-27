@@ -39,6 +39,19 @@ spring:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
+cloud:
+  aws:
+    s3:
+      bucket: guardians-bucket-name # 버킷이름
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
