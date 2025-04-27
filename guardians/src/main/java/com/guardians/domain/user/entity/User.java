@@ -27,6 +27,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
     @Column(nullable = false)
     private String password;
 
@@ -55,6 +58,11 @@ public class User {
     public void updateLastLoginAt() {
         this.lastLoginAt = LocalDateTime.now();
     }
+
+    public void updateProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
 
     public void updateUsername(String username) {
         this.username = username;

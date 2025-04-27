@@ -52,6 +52,8 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("인증 결과", isValid));
     }
 
+    // 로그인 여부 확인
+
     // 로그인
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인")
     @PostMapping("/login")
@@ -75,7 +77,7 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("로그아웃 완료", null));
     }
 
-    // UserController.java
+    // 유저정보 - 닉네임 수정
     @PatchMapping("/{userId}/update")
     public ResponseEntity<ResWrapper<?>> updateUserInfo(
             @PathVariable Long userId,
@@ -88,5 +90,13 @@ public class UserController {
 
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 정보 수정 완료", updatedUser));
     }
+
+    // 프로필 사진 업로드
+
+    // 비밀번호 변경
+
+    // 비밀번호 찾기
+
+    // 회원 탈퇴
 
 }
