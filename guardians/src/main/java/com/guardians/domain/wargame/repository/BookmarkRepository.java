@@ -10,6 +10,8 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, BookmarkId> 
 
     List<Bookmark> findByUser_Id(Long userId);
 
+    List<Bookmark> findAllByUserId(Long userId); // 추가
+
     boolean existsByUser_IdAndWargame_Id(Long userId, Long wargameId);
 
     void deleteByUser_IdAndWargame_Id(Long userId, Long wargameId);
