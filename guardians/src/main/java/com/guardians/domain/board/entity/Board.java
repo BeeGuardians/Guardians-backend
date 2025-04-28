@@ -30,8 +30,10 @@ public class Board {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "board_type", nullable = false)
-    private String boardType; // FREE, INQUIRY, STUDY (하드코딩 값)
+    private BoardType boardType; // FREE, INQUIRY, STUDY (하드코딩 값)
 
     @Column(name = "view_count")
     private int viewCount = 0;

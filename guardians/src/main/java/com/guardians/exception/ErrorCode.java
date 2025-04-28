@@ -20,8 +20,10 @@ public enum ErrorCode {
 
     // 게시판 관련 (1200~)
     BOARD_NOT_FOUND(1201, "해당 게시글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED(1301, "해당 작업을 수행할 권한이 없습니다.", HttpStatus.UNAUTHORIZED),
 
     // 기타 (9000~)
+
     NOT_VALID_ARGUMENT(9001, "입력 값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST)
     ;
 
