@@ -87,7 +87,7 @@ public class BoardController {
         boardService.likeBoard(boardId);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 좋아요 성공", null));
     }
-
+    //게시글 좋아요 취소
     @Operation(summary = "게시글 좋아요 취소", description = "게시글 좋아요를 취소합니다.")
     @PatchMapping("/{boardId}/unlike")
     public ResponseEntity<ResWrapper<?>> unlikeBoard(@PathVariable Long boardId) {
