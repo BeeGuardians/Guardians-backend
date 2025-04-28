@@ -6,8 +6,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ReqCreateBoardDto {
+public class ReqUpdateBoardDto {
     private String title;
     private String content;
     private BoardType boardType;
+
 }
