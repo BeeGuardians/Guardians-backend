@@ -28,5 +28,7 @@ public interface BoardService {
     //게시글 좋아요 취소
     void unlikeBoard(Long boardId);
 
+    //댓글 기능
+
 
 }
