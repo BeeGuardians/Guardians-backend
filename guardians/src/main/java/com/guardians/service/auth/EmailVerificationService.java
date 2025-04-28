@@ -1,4 +1,4 @@
-package com.guardians.service.user;
+package com.guardians.service.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
