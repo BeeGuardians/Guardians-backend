@@ -1,10 +1,10 @@
 package com.guardians.service.mypage;
 
 import com.guardians.domain.board.repository.BoardRepository;
-import com.guardians.domain.wargame.repository.ReviewRepository;
 import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.domain.user.repository.UserStatsRepository;
 import com.guardians.domain.wargame.repository.BookmarkRepository;
+import com.guardians.domain.wargame.repository.ReviewRepository;
 import com.guardians.domain.wargame.repository.SolvedWargameRepository;
 import com.guardians.dto.mypage.res.*;
 import com.guardians.exception.CustomException;

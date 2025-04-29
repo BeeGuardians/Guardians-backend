@@ -11,12 +11,11 @@ import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
 import com.guardians.service.auth.EmailVerificationService;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 @Slf4j
