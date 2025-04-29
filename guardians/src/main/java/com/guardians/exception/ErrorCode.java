@@ -20,14 +20,18 @@ public enum ErrorCode {
 
     // 게시판 관련 (1200~)
     BOARD_NOT_FOUND(1201, "해당 게시글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    QUESTION_NOT_FOUND(1202, "해당 질문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    ANSWER_NOT_FOUND(1203, "해당 답변을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED(1301, "해당 작업을 수행할 권한이 없습니다.", HttpStatus.UNAUTHORIZED),
 
-    //댓글
-    COMMENT_NOT_FOUND(2401, "댓글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    // Wargame 관련 (1400~)
+    WARGAME_NOT_FOUND(1401, "해당 워게임을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
     // 기타 (9000~)
 
     NOT_VALID_ARGUMENT(9001, "입력 값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST)
     ;
+
 
     private final int code;
     private final String message;
