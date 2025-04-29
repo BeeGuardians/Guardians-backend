@@ -1,7 +1,7 @@
 package com.guardians.dto.user.res;
 
-import com.guardians.domain.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.guardians.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
