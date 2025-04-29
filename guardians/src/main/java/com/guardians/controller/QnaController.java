@@ -1,4 +1,127 @@
 package com.guardians.controller;
 
+import com.guardians.dto.common.ResWrapper;
+import com.guardians.dto.question.req.ReqCreateQuestionDto;
+import com.guardians.dto.question.req.ReqUpdateQuestionDto;
+
+import com.guardians.dto.question.res.ResCreateQuestionDto;
+import com.guardians.dto.question.res.ResUpdateQuestionDto;
+import com.guardians.dto.question.res.ResQuestionDetailDto;
+import com.guardians.dto.question.res.ResQuestionListDto;
+
+import com.guardians.dto.answer.req.ReqCreateAnswerDto;
+import com.guardians.dto.answer.req.ReqUpdateAnswerDto;
+
+import com.guardians.dto.answer.res.ResCreateAnswerDto;
+import com.guardians.dto.answer.res.ResUpdateAnswerDto;
+import com.guardians.dto.answer.res.ResAnswerDetailDto;
+import com.guardians.dto.answer.res.ResAnswerListDto;
+
+import com.guardians.service.question.QuestionService;
+import com.guardians.service.answer.AnswerService;
+
+import com.guardians.domain.wargame.entity.Wargame;
+import com.guardians.domain.wargame.repository.WargameRepository;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/qna")
+@RequiredArgsConstructor
 public class QnaController {
+
+    private final QuestionService questionService;
+    private final AnswerService answerService;
+    private final WargameRepository wargameRepository;
+
+    // 질문 작성
+    @PostMapping("/questions")
+    public ResponseEntity<ResWrapper<?>> createQuestion(
+            @RequestParam Long userId,
+            @RequestBody ReqCreateQuestionDto dto) {
+        questionService.createQuestion(userId, dto);
+        return ResponseEntity.ok(ResWrapper.resSuccess("질문 등록 완료", null));
+    }
+
+    // 질문 전체 조회
+    @GetMapping("/questions")
+    public ResponseEntity<ResWrapper<?>> getQuestionList() {
+        List<ResQuestionListDto> response = questionService.getQuestionList();
+        return ResponseEntity.ok(ResWrapper.resSuccess("질문 목록 조회 성공", response));
+    }
+
+    // 질문 단건 상세 조회
+    @GetMapping("/questions/{questionId}")
+    public ResponseEntity<ResWrapper<?>> getQuestionDetail(@PathVariable Long questionId) {
+        ResQuestionDetailDto response = questionService.getQuestionDetail(questionId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("질문 상세 조회 성공", response));
+    }
+
+    // 질문 수정
+    @PatchMapping("/questions/{questionId}")
+    public ResponseEntity<ResWrapper<?>> updateQuestion(
+            @RequestParam Long userId,
+            @PathVariable Long questionId,
+            @RequestBody ReqUpdateQuestionDto dto) {
+        questionService.updateQuestion(userId, questionId, dto);
+        return ResponseEntity.ok(ResWrapper.resSuccess("질문 수정 완료", null));
+    }
+
+    // 질문 삭제
+    @DeleteMapping("/questions/{questionId}")
+    public ResponseEntity<ResWrapper<?>> deleteQuestion(
+            @RequestParam Long userId,
+            @PathVariable Long questionId) {
+        questionService.deleteQuestion(userId, questionId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("질문 삭제 완료", null));
+    }
+
+    // 답변 작성
+    @PostMapping("/answers")
+    public ResponseEntity<ResWrapper<?>> createAnswer(
+            @RequestParam Long userId,
+            @RequestBody ReqCreateAnswerDto dto) {
+        answerService.createAnswer(userId, dto);
+        return ResponseEntity.ok(ResWrapper.resSuccess("답변 등록 완료", null));
+    }
+
+    // 답변 목록 조회 (특정 질문 기준)
+    @GetMapping("/answers/{questionId}")
+    public ResponseEntity<ResWrapper<?>> getAnswerListByQuestion(@PathVariable Long questionId) {
+        List<ResAnswerListDto> response = answerService.getAnswerListByQuestion(questionId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("답변 목록 조회 성공", response));
+    }
+
+    // 답변 수정
+    @PatchMapping("/answers/{answerId}")
+    public ResponseEntity<ResWrapper<?>> updateAnswer(
+            @RequestParam Long userId,
+            @PathVariable Long answerId,
+            @RequestBody ReqUpdateAnswerDto dto) {
+        answerService.updateAnswer(userId, answerId, dto);
+        return ResponseEntity.ok(ResWrapper.resSuccess("답변 수정 완료", null));
+    }
+
+    // 답변 삭제
+    @DeleteMapping("/answers/{answerId}")
+    public ResponseEntity<ResWrapper<?>> deleteAnswer(
+            @RequestParam Long userId,
+            @PathVariable Long answerId) {
+        answerService.deleteAnswer(userId, answerId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("답변 삭제 완료", null));
+    }
+
+    // 워게임 목록 조회
+    @GetMapping("/wargames")
+    public ResponseEntity<ResWrapper<?>> getWargameTitles() {
+        List<String> titles = wargameRepository.findAll().stream()
+                .map(Wargame::getTitle)
+                .toList();
+        return ResponseEntity.ok(ResWrapper.resSuccess("워게임 목록 조회 성공", titles));
+    }
 }
+
