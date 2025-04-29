@@ -23,7 +23,7 @@ public enum ErrorCode {
     QUESTION_NOT_FOUND(1202, "해당 질문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     ANSWER_NOT_FOUND(1203, "해당 답변을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED(1301, "해당 작업을 수행할 권한이 없습니다.", HttpStatus.UNAUTHORIZED),
-
+    COMMENT_NOT_FOUND(1302, "해당 답변을 찾을 없습니다.", HttpStatus.NOT_FOUND),
     // Wargame 관련 (1400~)
     WARGAME_NOT_FOUND(1401, "해당 워게임을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
