@@ -13,9 +13,13 @@ import com.guardians.service.auth.EmailVerificationService;
 import com.guardians.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -83,13 +87,23 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("로그인 성공", loginUser));
     }
 
-    // 로그아웃
-    @Operation(summary = "로그아웃", description = "세션을 만료시켜 로그아웃")
+    @Operation(summary = "로그아웃", description = "세션을 만료시키고 JSESSIONID 쿠키를 제거합니다.")
     @PostMapping("/logout")
-    public ResponseEntity<ResWrapper<?>> logout(HttpSession session) {
-        session.invalidate();
-        return ResponseEntity.ok(ResWrapper.resSuccess("로그아웃 완료", null));
+    public ResponseEntity<ResWrapper<?>> logout(HttpServletRequest request, HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        Cookie cookie = new Cookie("JSESSIONID", null);
+        cookie.setMaxAge(0);        // 만료
+        cookie.setPath("/");        // 경로 맞춰야 삭제됨
+        cookie.setHttpOnly(true);   // 클라이언트 JS 접근 방지 (선택)
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("로그아웃 완료 (세션 + 쿠키 삭제)", null));
     }
+
 
     // 유저정보 - 닉네임 수정
     @PatchMapping("/{userId}/update")
@@ -163,5 +177,19 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 탈퇴 완료", null));
     }
 
+    // UserId 반환
+    @GetMapping("/me")
+    public ResponseEntity<ResWrapper<?>> getCurrentUser(HttpSession session) {
+        try {
+            Long userId = (Long) session.getAttribute("userId");
+            if (userId == null) {
+                throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+            }
+            ResLoginDto user = userService.getUserInfo(userId);
+            return ResponseEntity.ok(ResWrapper.resSuccess("유저 정보", user));
+        } catch (Exception e) {
+            return ResponseEntity.ok(ResWrapper.resException(e)); // 여기서 null 넘기면 위처럼 터짐
+        }
+    }
 
 }

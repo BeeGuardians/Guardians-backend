@@ -16,4 +16,5 @@ public interface UserService {
     void verifyResetPassword(Long userId, String code, String newPassword);
     void deleteUser(Long sessionUserId, Long targetUserId);
 
+    ResLoginDto getUserInfo(Long userId);
 }
