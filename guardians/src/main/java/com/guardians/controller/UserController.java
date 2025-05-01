@@ -62,14 +62,10 @@ public class UserController {
     // 로그인 여부 확인
     @Operation(summary = "로그인 여부 확인", description = "현재 세션에 유저 정보가 존재하는지 확인합니다.")
     @GetMapping("/check")
-    public ResponseEntity<ResWrapper<?>> checkLogin(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-
-        if (userId != null) {
-            return ResponseEntity.ok(ResWrapper.resSuccess("로그인 되어 있음", true));
-        } else {
-            return ResponseEntity.ok(ResWrapper.resSuccess("로그인 되어있지 않음", false));
-        }
+    public ResponseEntity<?> checkLogin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false); // 🔥 세션 강제 생성 방지
+        boolean isLoggedIn = (session != null && session.getAttribute("userId") != null);
+        return ResponseEntity.ok(ResWrapper.resSuccess("로그인 여부 확인", isLoggedIn));
     }
 
     // 로그인
@@ -91,9 +87,10 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<ResWrapper<?>> logout(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
+        System.out.println("🔥 invalidate 전 세션 ID: " + session.getId());
+
+        session.invalidate();
+        System.out.println("🔥 invalidate 후 세션 ID: " + session.getId());
 
         Cookie cookie = new Cookie("JSESSIONID", null);
         cookie.setMaxAge(0);        // 만료
