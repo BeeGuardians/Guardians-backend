@@ -12,6 +12,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (POST 요청 허용)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/**").permitAll() // 회원가입은 인증 없이 접근 허용

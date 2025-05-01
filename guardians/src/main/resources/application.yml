@@ -25,12 +25,15 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD}
-
+  #      password: ${REDIS_PASSWORD}
 
   session:
     store-type: redis
     timeout: 1800s
+    cookie:
+      name : SESSION
+      same-site: none  # ✅ SameSite=None
+      secure: false     # ✅ http 전용 쿠키 https 일때는 true
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
@@ -44,7 +47,7 @@ spring:
 cloud:
   aws:
     s3:
-      bucket: guardians-bucket-name # 버킷이름
+      bucket: guardians-bucket-name
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
@@ -52,7 +55,6 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
-
 
 springdoc:
   swagger-ui:

@@ -134,5 +134,17 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(targetUserId);
     }
 
+    @Override
+    public ResLoginDto getUserInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        return ResLoginDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .build();
+    }
+
 
 }
