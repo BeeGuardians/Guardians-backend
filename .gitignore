@@ -1,1 +1,135 @@
+# ----------------------------------------
+# 🌱 Java / Spring Boot 관련
+# ----------------------------------------
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.iml
+*.ser
+*.lock
+
+/target/
+/build/
+.gradle/
+**/.gradle/**
+
+# Spring Native 관련
+spring-backend/wrapper/
+spring-backend/daemon/
+spring-backend/native/
+spring-backend/caches/
+spring-backend/jdks/
+
+# ----------------------------------------
+# 💻 IDE 관련 (IntelliJ / Eclipse / VSCode 등)
+# ----------------------------------------
+.idea
+*.iws
+*.ipr
+*.swp
+*.swo
+.vscode/
+*.log
 .DS_Store
+Thumbs.db
+$RECYCLE.BIN/
+*.lnk
+.history/
+nb-cache/
+**/nb-cache/
+**/trust/
+**/trust/**
+
+# ----------------------------------------
+# 🔐 보안 관련
+# ----------------------------------------
+.env
+*.env
+.env.*
+*.key
+*.pem
+*.crt
+secrets/
+private/
+config/*.yml
+
+# ----------------------------------------
+# 📦 Node.js (있는 경우)
+# ----------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ----------------------------------------
+# 🐳 Docker 관련
+# ----------------------------------------
+docker-compose.override.yml
+.docker/
+**/Dockerfile.*
+
+# ----------------------------------------
+# 🛠️ 테스트 / 리포트
+# ----------------------------------------
+coverage/
+test-output/
+*.lcov
+
+# ----------------------------------------
+# 🏴‍☠️ CTF 특이사항 (flag, 풀이 등)
+# ----------------------------------------
+flags/
+flag.txt
+*.flag
+*.zip
+*.7z
+*.pcap
+*.bin
+reverse/
+dump/
+*.dump
+*.hex
+exploit/
+pwntools-cache/
+
+# ----------------------------------------
+# 🗃️ 기타 무조건 무시 파일
+# ----------------------------------------
+*.sqlite3
+*.db
+*.pid
+*.bak
+*.old
+*.tmp
+*.out
+hs_err_pid*
+replay_pid*
+/Rebuild
+/querydsl/
+/build/
+.DS_Store
+# ----------------------------------------
+# 🧪 IntelliJ Plugin / Gradle 플러그인 관련 캐시
+# ----------------------------------------
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/sonarlint/
+.idea/**/aws.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+.idea/**/httpRequests
+.idea/httpRequests
+.idea/vcs.xml
+.idea/.gitignore
+.idea/workspace.xml
+guardians/build/tmp/jar/MANIFEST.MF
+guardians/build/tmp/compileJava/compileTransaction/stash-dir/UserServiceImpl.class.uniqueId0
+guardians/build/tmp/bootJar/MANIFEST.MF
+guardians/build/resources/main/application.yml
+guardians/build/resolvedMainClassName
+guardians/build/reports/problems/problems-report.html
