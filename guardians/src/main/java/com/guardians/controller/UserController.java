@@ -87,10 +87,8 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<ResWrapper<?>> logout(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(false);
-        System.out.println("🔥 invalidate 전 세션 ID: " + session.getId());
 
         session.invalidate();
-        System.out.println("🔥 invalidate 후 세션 ID: " + session.getId());
 
         Cookie cookie = new Cookie("JSESSIONID", null);
         cookie.setMaxAge(0);        // 만료
@@ -154,6 +152,15 @@ public class UserController {
         userService.verifyResetPassword(userId, code, newPassword);
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 재설정 완료", null));
     }
+
+    // 비밀번호 찾기 - 유저ID 가져오기
+    @Operation(summary = "이메일로 유저 ID 조회", description = "입력된 이메일로 등록된 유저 ID를 반환")
+    @GetMapping("/find-id")
+    public ResponseEntity<ResWrapper<?>> findUserIdByEmail(@RequestParam String email) {
+        Long userId = userService.findUserIdByEmail(email);
+        return ResponseEntity.ok(ResWrapper.resSuccess("유저 ID 반환", userId));
+    }
+
 
     // 회원 탈퇴
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 처리")
