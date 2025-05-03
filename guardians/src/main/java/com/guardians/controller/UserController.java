@@ -192,7 +192,7 @@ public class UserController {
             ResLoginDto user = userService.getUserInfo(userId);
             return ResponseEntity.ok(ResWrapper.resSuccess("유저 정보", user));
         } catch (Exception e) {
-            return ResponseEntity.ok(ResWrapper.resException(e)); // 여기서 null 넘기면 위처럼 터짐
+            return ResponseEntity.ok(ResWrapper.resException(e));
         }
     }
 
