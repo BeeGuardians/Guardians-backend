@@ -20,8 +20,7 @@ public class SolvedWargameId implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SolvedWargameId)) return false;
-        SolvedWargameId that = (SolvedWargameId) o;
+        if (!(o instanceof SolvedWargameId that)) return false;
         return Objects.equals(user, that.user) &&
                 Objects.equals(wargame, that.wargame);
     }

@@ -6,21 +6,16 @@ import com.guardians.domain.board.repository.AnswerRepository;
 import com.guardians.domain.board.repository.QuestionRepository;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
-
 import com.guardians.dto.answer.req.ReqCreateAnswerDto;
 import com.guardians.dto.answer.req.ReqUpdateAnswerDto;
-
-import com.guardians.dto.answer.res.ResCreateAnswerDto;
-import com.guardians.dto.answer.res.ResUpdateAnswerDto;
 import com.guardians.dto.answer.res.ResAnswerDetailDto;
 import com.guardians.dto.answer.res.ResAnswerListDto;
-
+import com.guardians.dto.answer.res.ResCreateAnswerDto;
+import com.guardians.dto.answer.res.ResUpdateAnswerDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
-
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

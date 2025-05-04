@@ -12,10 +12,10 @@ public interface UserService {
     ResLoginDto login(ReqLoginDto dto);
     ResLoginDto updateUserInfo(Long sessionUserId, Long targetUserId, ReqUpdateUserDto dto);
     void changePassword(Long sessionUserId, Long targetUserId, ReqChangePasswordDto dto);
-    void sendResetPasswordCode(Long userId);
     void verifyResetPassword(Long userId, String code, String newPassword);
     void deleteUser(Long sessionUserId, Long targetUserId);
     Long findUserIdByEmail(String email);
     String getEmailByUserId(Long userId);
     ResLoginDto getUserInfo(Long userId);
+    boolean isEmailExists(String email); // 🔥 이메일 중복 확인 메서드
 }
