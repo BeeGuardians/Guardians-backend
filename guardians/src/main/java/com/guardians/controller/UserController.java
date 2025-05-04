@@ -43,10 +43,11 @@ public class UserController {
     // 이메일 인증 코드 전송
     @Operation(summary = "이메일 인증코드 전송", description = "입력한 이메일로 인증코드 발송")
     @GetMapping("/send-code")
-    public ResponseEntity<ResWrapper<?>> sendCode(@RequestParam String email) {
-        emailVerificationService.sendVerificationCode(email);
-        return ResponseEntity.ok(ResWrapper.resSuccess("인증 코드 전송 완료", null));
+    public ResponseEntity<ResWrapper<?>> sendSignupCode(@RequestParam String email) {
+        emailVerificationService.sendVerificationCode(email, "mail/signup-verification.html");
+        return ResponseEntity.ok(ResWrapper.resSuccess("회원가입 인증 메일 전송 완료", null));
     }
+
 
     // 이메일 인증 코드 확인
     @Operation(summary = "이메일 인증코드 검증", description = "입력한 코드가 유효한지 확인")
@@ -133,10 +134,9 @@ public class UserController {
     // 비밀번호 찾기 - 이메일 인증 코드 전송
     @Operation(summary = "비밀번호 찾기 - 이메일 인증 코드 전송", description = "비밀번호 재설정을 위한 이메일 인증 코드 발송")
     @GetMapping("/{userId}/reset-password/send-code")
-    public ResponseEntity<ResWrapper<?>> sendResetPasswordCode(
-            @PathVariable Long userId
-    ) {
-        userService.sendResetPasswordCode(userId);
+    public ResponseEntity<ResWrapper<?>> sendResetPasswordCode(@PathVariable Long userId) {
+        String email = userService.getEmailByUserId(userId);
+        emailVerificationService.sendVerificationCode(email, "mail/password-reset.html");
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 재설정 코드 발송 완료", null));
     }
 

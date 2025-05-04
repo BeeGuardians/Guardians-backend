@@ -13,7 +13,8 @@
 /target/
 /build/
 .gradle/
-**/.gradle/**
+**/.gradle/*
+**/build/
 
 # Spring Native 관련
 spring-backend/wrapper/
@@ -23,7 +24,7 @@ spring-backend/caches/
 spring-backend/jdks/
 
 # ----------------------------------------
-# 💻 IDE 관련 (IntelliJ / Eclipse / VSCode 등)
+# 💻 IDE 관련 (IntelliJ / Eclipse / VSCode 등)	
 # ----------------------------------------
 .idea
 *.iws
