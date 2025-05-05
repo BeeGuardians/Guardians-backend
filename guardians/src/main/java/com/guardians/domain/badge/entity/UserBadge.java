@@ -1,5 +1,6 @@
-package com.guardians.domain.user.entity;
+package com.guardians.domain.badge.entity;
 
+import com.guardians.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
