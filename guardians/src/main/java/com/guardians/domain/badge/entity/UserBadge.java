@@ -20,7 +20,7 @@ public class UserBadge {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_user_badges_user"))
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)

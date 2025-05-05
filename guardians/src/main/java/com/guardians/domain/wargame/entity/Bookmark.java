@@ -18,7 +18,7 @@ public class Bookmark {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_bookmarks_user"))
     private User user;
 
     @Id
