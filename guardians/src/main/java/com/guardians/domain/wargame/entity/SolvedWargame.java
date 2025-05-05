@@ -18,7 +18,7 @@ public class SolvedWargame {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_solved_wargames_user"))
     private User user;
 
     @Id

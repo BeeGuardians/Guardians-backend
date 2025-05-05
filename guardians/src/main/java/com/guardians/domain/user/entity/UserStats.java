@@ -20,7 +20,7 @@ public class UserStats {
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_stats_user"))
     private User user;
 
     private int score;

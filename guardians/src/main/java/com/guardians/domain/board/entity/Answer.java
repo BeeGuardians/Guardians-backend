@@ -24,7 +24,7 @@ public class Answer {
     private Question question; // 어떤 질문에 대한 답변인지
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_answers_user"))
     private User user; // 답변 작성자
 
     @Column(nullable = false, columnDefinition = "TEXT")
