@@ -21,7 +21,7 @@ public class Board {
 
     // 작성자
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_boards_user"))
     private User user;
 
     @Column(nullable = false)
@@ -29,7 +29,6 @@ public class Board {
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
-
 
     @Enumerated(EnumType.STRING)
     @Column(name = "board_type", nullable = false)

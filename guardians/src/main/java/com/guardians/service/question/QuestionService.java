@@ -3,9 +3,9 @@ package com.guardians.service.question;
 import com.guardians.dto.question.req.ReqCreateQuestionDto;
 import com.guardians.dto.question.req.ReqUpdateQuestionDto;
 import com.guardians.dto.question.res.ResCreateQuestionDto;
-import com.guardians.dto.question.res.ResUpdateQuestionDto;
 import com.guardians.dto.question.res.ResQuestionDetailDto;
 import com.guardians.dto.question.res.ResQuestionListDto;
+import com.guardians.dto.question.res.ResUpdateQuestionDto;
 
 import java.util.List;
 

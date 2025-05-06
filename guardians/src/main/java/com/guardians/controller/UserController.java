@@ -19,7 +19,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "User API", description = "회원가입 및 로그인 관련 API")
 public class UserController {
 
-    private final UserService userService;
+    private final UserService   userService;
     private final EmailVerificationService emailVerificationService;
 
     // 회원가입
@@ -43,9 +42,17 @@ public class UserController {
     // 이메일 인증 코드 전송
     @Operation(summary = "이메일 인증코드 전송", description = "입력한 이메일로 인증코드 발송")
     @GetMapping("/send-code")
-    public ResponseEntity<ResWrapper<?>> sendCode(@RequestParam String email) {
-        emailVerificationService.sendVerificationCode(email);
-        return ResponseEntity.ok(ResWrapper.resSuccess("인증 코드 전송 완료", null));
+    public ResponseEntity<ResWrapper<?>> sendSignupCode(@RequestParam String email) {
+        emailVerificationService.sendVerificationCode(email, "mail/signup-verification.html");
+        return ResponseEntity.ok(ResWrapper.resSuccess("회원가입 인증 메일 전송 완료", null));
+    }
+
+    // 이메일 중복 체크
+    @Operation(summary = "이메일 중복 확인", description = "이미 가입된 이메일인지 확인")
+    @GetMapping("/check-email")
+    public ResponseEntity<ResWrapper<?>> checkEmailExists(@RequestParam String email) {
+        boolean exists = userService.isEmailExists(email);
+        return ResponseEntity.ok(ResWrapper.resSuccess("이메일 존재 여부", exists));
     }
 
     // 이메일 인증 코드 확인
@@ -133,13 +140,11 @@ public class UserController {
     // 비밀번호 찾기 - 이메일 인증 코드 전송
     @Operation(summary = "비밀번호 찾기 - 이메일 인증 코드 전송", description = "비밀번호 재설정을 위한 이메일 인증 코드 발송")
     @GetMapping("/{userId}/reset-password/send-code")
-    public ResponseEntity<ResWrapper<?>> sendResetPasswordCode(
-            @PathVariable Long userId
-    ) {
-        userService.sendResetPasswordCode(userId);
+    public ResponseEntity<ResWrapper<?>> sendResetPasswordCode(@PathVariable Long userId) {
+        String email = userService.getEmailByUserId(userId);
+        emailVerificationService.sendVerificationCode(email, "mail/password-reset.html");
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 재설정 코드 발송 완료", null));
     }
-
 
     // 비밀번호 찾기 - 이메일 검증 / 재설정
     @Operation(summary = "비밀번호 찾기 - 비밀번호 재설정", description = "인증 코드 검증 후 새로운 비밀번호 설정")

@@ -14,7 +14,8 @@
 /build/
 **/build/
 .gradle/
-**/.gradle/**
+**/.gradle/*
+**/build/
 
 # Spring Native 관련
 spring-backend/wrapper/
@@ -24,7 +25,7 @@ spring-backend/caches/
 spring-backend/jdks/
 
 # ----------------------------------------
-# 💻 IDE 관련 (IntelliJ / Eclipse / VSCode 등)
+# 💻 IDE 관련 (IntelliJ / Eclipse / VSCode 등)	
 # ----------------------------------------
 .idea
 *.iws
@@ -111,6 +112,7 @@ replay_pid*
 /querydsl/
 /build/
 .DS_Store
+*/.DS_Store
 # ----------------------------------------
 # 🧪 IntelliJ Plugin / Gradle 플러그인 관련 캐시
 # ----------------------------------------

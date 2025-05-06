@@ -22,7 +22,7 @@ public class WargameLike implements Serializable {
 
     // 좋아요 누른 유저
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_wargame_likes_user"))
     private User user;
 
     // 좋아요 대상 챌린지

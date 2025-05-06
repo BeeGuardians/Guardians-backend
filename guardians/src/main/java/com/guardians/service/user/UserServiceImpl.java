@@ -65,6 +65,12 @@ public class UserServiceImpl implements UserService {
         return ResLoginDto.fromEntity(user);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isEmailExists(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
     @Transactional
     @Override
     public ResLoginDto updateUserInfo(Long sessionUserId, Long targetUserId, ReqUpdateUserDto dto) {
@@ -96,14 +102,6 @@ public class UserServiceImpl implements UserService {
 
         String encodedNewPassword = passwordEncoder.encode(dto.getNewPassword());
         user.updatePassword(encodedNewPassword);
-    }
-
-    @Transactional
-    @Override
-    public void sendResetPasswordCode(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        emailVerificationService.sendVerificationCode(user.getEmail());
     }
 
     @Transactional
@@ -145,6 +143,14 @@ public class UserServiceImpl implements UserService {
                 .username(user.getUsername())
                 .build();
     }
+
+    @Override
+    public String getEmailByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return user.getEmail();
+    }
+
 
     @Override
     public Long findUserIdByEmail(String email) {
