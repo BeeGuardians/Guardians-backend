@@ -146,5 +146,10 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public Long findUserIdByEmail(String email) {
+        return userRepository.findIdByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
 
 }

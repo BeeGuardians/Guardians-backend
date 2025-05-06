@@ -62,14 +62,10 @@ public class UserController {
     // 로그인 여부 확인
     @Operation(summary = "로그인 여부 확인", description = "현재 세션에 유저 정보가 존재하는지 확인합니다.")
     @GetMapping("/check")
-    public ResponseEntity<ResWrapper<?>> checkLogin(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-
-        if (userId != null) {
-            return ResponseEntity.ok(ResWrapper.resSuccess("로그인 되어 있음", true));
-        } else {
-            return ResponseEntity.ok(ResWrapper.resSuccess("로그인 되어있지 않음", false));
-        }
+    public ResponseEntity<?> checkLogin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false); // 🔥 세션 강제 생성 방지
+        boolean isLoggedIn = (session != null && session.getAttribute("userId") != null);
+        return ResponseEntity.ok(ResWrapper.resSuccess("로그인 여부 확인", isLoggedIn));
     }
 
     // 로그인
@@ -91,9 +87,8 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<ResWrapper<?>> logout(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
+
+        session.invalidate();
 
         Cookie cookie = new Cookie("JSESSIONID", null);
         cookie.setMaxAge(0);        // 만료
@@ -158,6 +153,15 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 재설정 완료", null));
     }
 
+    // 비밀번호 찾기 - 유저ID 가져오기
+    @Operation(summary = "이메일로 유저 ID 조회", description = "입력된 이메일로 등록된 유저 ID를 반환")
+    @GetMapping("/find-id")
+    public ResponseEntity<ResWrapper<?>> findUserIdByEmail(@RequestParam String email) {
+        Long userId = userService.findUserIdByEmail(email);
+        return ResponseEntity.ok(ResWrapper.resSuccess("유저 ID 반환", userId));
+    }
+
+
     // 회원 탈퇴
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 처리")
     @DeleteMapping("/{userId}")
@@ -188,7 +192,7 @@ public class UserController {
             ResLoginDto user = userService.getUserInfo(userId);
             return ResponseEntity.ok(ResWrapper.resSuccess("유저 정보", user));
         } catch (Exception e) {
-            return ResponseEntity.ok(ResWrapper.resException(e)); // 여기서 null 넘기면 위처럼 터짐
+            return ResponseEntity.ok(ResWrapper.resException(e));
         }
     }
 
