@@ -9,6 +9,22 @@ metadata:
     app: jenkins-kaniko
 spec:
   containers:
+  - name: git
+    image: alpine/git:latest
+    command: ['sleep']
+    args: ['infinity']
+    volumeMounts:
+    - name: workspace-volume
+      mountPath: /workspace
+
+  - name: gradle
+    image: gradle:8.5-jdk17
+    command: ['sleep']
+    args: ['infinity']
+    volumeMounts:
+    - name: workspace-volume
+      mountPath: /workspace
+
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     command: ['sleep']
@@ -18,6 +34,7 @@ spec:
       mountPath: /kaniko/.docker
     - name: workspace-volume
       mountPath: /workspace
+
   volumes:
   - name: docker-config
     secret:
@@ -34,13 +51,13 @@ spec:
         IMAGE_TAG = "v${BUILD_NUMBER}"
         FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
         GIT_REPO = "https://github.com/BeeGuardians/Guardians-backend.git"
-        GIT_BRANCH = "feat/infra"
+        GIT_BRANCH = "dev"
     }
 
     stages {
         stage('Clone Repository') {
             steps {
-                container('kaniko') {
+                container('git') {
                     sh '''
                     cd /workspace
                     git clone -b ${GIT_BRANCH} ${GIT_REPO} .
@@ -51,7 +68,7 @@ spec:
 
         stage('Gradle Build') {
             steps {
-                container('kaniko') {
+                container('gradle') {
                     sh '''
                     cd /workspace
                     ./gradlew clean build -x test
