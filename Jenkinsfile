@@ -1,4 +1,7 @@
 pipeline {
+    options {
+        skipDefaultCheckout()
+    }
     agent {
         kubernetes {
             yaml """
@@ -14,27 +17,24 @@ spec:
     command: ['sleep']
     args: ['infinity']
     volumeMounts:
-    - name: workspace-volume
-      mountPath: /workspace
-
+    - mountPath: "/workspace"
+      name: "workspace-volume"
   - name: gradle
     image: gradle:8.5-jdk17
     command: ['sleep']
     args: ['infinity']
     volumeMounts:
-    - name: workspace-volume
-      mountPath: /workspace
-
+    - mountPath: "/workspace"
+      name: "workspace-volume"
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     command: ['sleep']
     args: ['infinity']
     volumeMounts:
-    - name: docker-config
-      mountPath: /kaniko/.docker
-    - name: workspace-volume
-      mountPath: /workspace
-
+    - mountPath: "/kaniko/.docker"
+      name: "docker-config"
+    - mountPath: "/workspace"
+      name: "workspace-volume"
   volumes:
   - name: docker-config
     secret:
