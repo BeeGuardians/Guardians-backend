@@ -18,8 +18,6 @@ spec:
     command: ['sleep']
     args: ['infinity']
     volumeMounts:
-    - mountPath: "/workspace"
-      name: workspace-volume
     - mountPath: "/home/jenkins/agent"
       name: workspace-volume
 
@@ -28,8 +26,6 @@ spec:
     command: ['sleep']
     args: ['infinity']
     volumeMounts:
-    - mountPath: "/workspace"
-      name: workspace-volume
     - mountPath: "/home/jenkins/agent"
       name: workspace-volume
 
@@ -40,8 +36,6 @@ spec:
     volumeMounts:
     - mountPath: "/kaniko/.docker"
       name: docker-config
-    - mountPath: "/workspace"
-      name: workspace-volume
     - mountPath: "/home/jenkins/agent"
       name: workspace-volume
 
@@ -65,35 +59,28 @@ spec:
     }
 
     stages {
-      stage('Clone Repository') {
-          steps {
-              container('git') {
-                sh '''
-                set -eux
-                echo "[DEBUG] Checking GIT_REPO and GIT_BRANCH"
-                echo "GIT_REPO=$GIT_REPO"
-                echo "GIT_BRANCH=$GIT_BRANCH"
-
-                echo "[DEBUG] Cleaning /workspace"
-                ls -al /workspace || true
-                cd /workspace
-                rm -rf ./* ./.??* || true
-
-                echo "[DEBUG] Starting clone"
-                git clone -b $GIT_BRANCH $GIT_REPO .
-
-                echo "[DEBUG] Clone complete"
-                ls -al
-                '''
-              }
-          }
-      }
+        stage('Clone Repository') {
+            steps {
+                container('git') {
+                    sh '''
+                    set -eux
+                    echo "[DEBUG] 현재 작업 디렉토리: $PWD"
+                    echo "[DEBUG] Jenkins Workspace: $WORKSPACE"
+                    cd $WORKSPACE
+                    rm -rf ./* ./.??* || true
+                    git clone -b $GIT_BRANCH $GIT_REPO .
+                    echo "[DEBUG] Clone 완료"
+                    ls -al
+                    '''
+                }
+            }
+        }
 
         stage('Gradle Build') {
             steps {
                 container('gradle') {
                     sh '''
-                    cd /workspace
+                    cd $WORKSPACE
                     ./gradlew clean build -x test
                     '''
                 }
@@ -103,15 +90,15 @@ spec:
         stage('Build and Push Docker Image') {
             steps {
                 container('kaniko') {
-                  sh """
-                  /kaniko/executor \
-                    --context=/workspace \
-                    --dockerfile=/workspace/Dockerfile \
-                    --destination=${FULL_IMAGE} \
-                    --insecure \
-                    --insecure-push \
-                    --skip-tls-verify
-                  """
+                    sh """
+                    /kaniko/executor \
+                      --context=$WORKSPACE \
+                      --dockerfile=$WORKSPACE/Dockerfile \
+                      --destination=${FULL_IMAGE} \
+                      --insecure \
+                      --insecure-push \
+                      --skip-tls-verify
+                    """
                 }
             }
         }
