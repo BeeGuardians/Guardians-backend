@@ -30,7 +30,8 @@ spec:
   stages {
     stage('Checkout') {
       steps {
-        checkout scm
+        sh 'echo 💡 Checking out branch: ${env.BRANCH_NAME}''
+        git branch: "${env.BRANCH_NAME}", url: 'https://github.com/BeeGuardians/Guardians-backend.git'
       }
     }
 
