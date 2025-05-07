@@ -2,21 +2,26 @@ pipeline {
   agent {
     kubernetes {
       yaml """
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-    - name: kaniko
-      image: gcr.io/kaniko-project/executor:latest
-      tty: true
-      volumeMounts:
-        - name: docker-config
-          mountPath: /kaniko/.docker
-  volumes:
-    - name: docker-config
-      secret:
-        secretName: harbor-secret
-"""
+  apiVersion: v1
+  kind: Pod
+  spec:
+    containers:
+      - name: kaniko
+        image: gcr.io/kaniko-project/executor:latest
+        command:
+          - /busybox/sh
+        args:
+          - -c
+          - cat
+        tty: true
+        volumeMounts:
+          - name: docker-config
+            mountPath: /kaniko/.docker
+    volumes:
+      - name: docker-config
+        secret:
+          secretName: harbor-secret
+  """
     }
   }
 
