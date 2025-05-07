@@ -34,9 +34,11 @@ public class Board {
     @Column(name = "board_type", nullable = false)
     private BoardType boardType; // FREE, INQUIRY, STUDY (하드코딩 값)
 
+    @Builder.Default
     @Column(name = "view_count")
     private int viewCount = 0;
 
+    @Builder.Default
     @Column(name = "like_count")
     private int likeCount = 0;
 

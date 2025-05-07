@@ -3,6 +3,7 @@ package com.guardians.domain.wargame.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.nio.file.FileStore;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,10 +24,12 @@ public class Wargame {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
-    private String level; // ex: EASY, MEDIUM, HARD
+    @Enumerated(EnumType.STRING)
+    private Difficulty difficulty;
 
     private int score;
 
+    @Builder.Default
     @Column(name = "like_count", nullable = false)
     private int likeCount = 0;
 
@@ -35,11 +38,12 @@ public class Wargame {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    private Category category; // ← 따로 카테고리 테이블이 있다고 가정
+    private Category category;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 }
