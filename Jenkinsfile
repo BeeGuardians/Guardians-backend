@@ -8,8 +8,8 @@ spec:
   containers:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:latest
-      args:
-        - --help
+      command:
+        - cat
       tty: true
       volumeMounts:
         - name: docker-config
@@ -72,7 +72,6 @@ spec:
       }
     }
   }
-
 
   post {
     success {
