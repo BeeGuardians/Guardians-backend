@@ -65,21 +65,28 @@ spec:
     }
 
     stages {
-        stage('Clone Repository') {
-            steps {
-                container('git') {
-                    sh '''
-                    echo "[INFO] Cleaning workspace..."
-                    cd /workspace
-                    rm -rf ./* ./.??*
-                    echo "[INFO] Cloning Git repository..."
-                    git clone -b ${GIT_BRANCH} ${GIT_REPO} .
-                    echo "[INFO] Repository cloned. Listing contents:"
-                    ls -al
-                    '''
-                }
-            }
-        }
+      stage('Clone Repository') {
+          steps {
+              container('git') {
+                  sh '''
+                  set -ex
+                  echo "[DEBUG] Current container: git"
+                  echo "[DEBUG] Current working directory: $(pwd)"
+                  echo "[DEBUG] Listing /workspace before cleanup:"
+                  ls -al /workspace || true
+
+                  cd /workspace
+                  rm -rf ./* ./.??* || true
+
+                  echo "[DEBUG] Cloning ${GIT_REPO} branch ${GIT_BRANCH}"
+                  git clone -b ${GIT_BRANCH} ${GIT_REPO} .
+
+                  echo "[DEBUG] Clone complete. Listing contents:"
+                  ls -al
+                  '''
+              }
+          }
+      }
 
         stage('Gradle Build') {
             steps {
