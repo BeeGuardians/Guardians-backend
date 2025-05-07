@@ -96,7 +96,6 @@ spec:
                     --dockerfile=$WORKSPACE/guardians/Dockerfile \
                     --destination=${FULL_IMAGE} \
                     --insecure \
-                    --insecure-push \
                     --skip-tls-verify
                   """
                 }
