@@ -57,8 +57,6 @@ spec:
     volumeMounts:
     - mountPath: "/kaniko/.docker"
       name: docker-config
-    - mountPath: "/kaniko/ssl/certs"
-      name: harbor-ca-cert
     - mountPath: "/home/jenkins/agent"
       name: workspace-volume
 
@@ -66,9 +64,6 @@ spec:
   - name: docker-config
     secret:
       secretName: harbor-secret
-  - name: harbor-ca-cert
-    configMap:
-      name: harbor-ca-cert
   - name: workspace-volume
     emptyDir: {}
 """
@@ -121,7 +116,9 @@ spec:
                     /kaniko/executor \
                       --context=$WORKSPACE/guardians \
                       --dockerfile=$WORKSPACE/guardians/Dockerfile \
-                      --destination=${FULL_IMAGE}
+                      --destination=${FULL_IMAGE} \
+                      --insecure \
+                      --skip-tls-verify
                     echo "[SUCCESS] Docker Image pushed to ${FULL_IMAGE}"
                     """
                 }
