@@ -80,7 +80,7 @@ spec:
             steps {
                 container('gradle') {
                     sh '''
-                    cd $WORKSPACE
+                    cd $WORKSPACE/guardians
                     ./gradlew clean build -x test
                     '''
                 }
@@ -90,15 +90,15 @@ spec:
         stage('Build and Push Docker Image') {
             steps {
                 container('kaniko') {
-                    sh """
-                    /kaniko/executor \
-                      --context=$WORKSPACE \
-                      --dockerfile=$WORKSPACE/Dockerfile \
-                      --destination=${FULL_IMAGE} \
-                      --insecure \
-                      --insecure-push \
-                      --skip-tls-verify
-                    """
+                  sh """
+                  /kaniko/executor \
+                    --context=$WORKSPACE/guardians \
+                    --dockerfile=$WORKSPACE/guardians/Dockerfile \
+                    --destination=${FULL_IMAGE} \
+                    --insecure \
+                    --insecure-push \
+                    --skip-tls-verify
+                  """
                 }
             }
         }
