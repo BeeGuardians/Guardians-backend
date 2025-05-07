@@ -23,7 +23,7 @@ spec:
   environment {
     HARBOR_HOST = "192.168.0.11:30401"
     HARBOR_IMAGE = "${HARBOR_HOST}/guardians/backend"
-    IMAGE_TAG = "v${env.BUILD_NUMBER}"
+    IMAGE_TAG = "v${BUILD_NUMBER}"
     FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
   }
 
@@ -45,13 +45,19 @@ spec:
     stage('Kaniko Build & Push') {
       steps {
         container('kaniko') {
+          // 환경 변수 확인용 디버깅
+          sh "echo '📦 FULL_IMAGE=${FULL_IMAGE}'"
+          sh "ls -alh guardians-backend"
+
+          // 이미지 빌드 및 푸시
           sh """
             /kaniko/executor \
               --context=guardians-backend \
               --dockerfile=guardians-backend/Dockerfile \
               --destination=${FULL_IMAGE} \
               --insecure \
-              --skip-tls-verify
+              --skip-tls-verify \
+              --verbosity=debug
           """
         }
       }
