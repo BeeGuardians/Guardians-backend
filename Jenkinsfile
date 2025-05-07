@@ -72,7 +72,7 @@ spec:
 
     environment {
         HARBOR_HOST = "192.168.0.11:30401"
-        HARBOR_IMAGE = "${HARBOR_HOST}/guardians-backend"
+        HARBOR_IMAGE = "${HARBOR_HOST}/guardians/backend"
         IMAGE_TAG = "v${BUILD_NUMBER}"
         FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
         GIT_REPO = "https://github.com/BeeGuardians/Guardians-backend.git"
