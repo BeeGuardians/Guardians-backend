@@ -17,6 +17,13 @@ spec:
     image: alpine/git:latest
     command: ['sleep']
     args: ['infinity']
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
     volumeMounts:
     - mountPath: "/home/jenkins/agent"
       name: workspace-volume
@@ -25,6 +32,13 @@ spec:
     image: gradle:8.5-jdk17
     command: ['sleep']
     args: ['infinity']
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1024Mi"
+      limits:
+        cpu: "1000m"
+        memory: "2048Mi"
     volumeMounts:
     - mountPath: "/home/jenkins/agent"
       name: workspace-volume
@@ -33,6 +47,13 @@ spec:
     image: gcr.io/kaniko-project/executor:debug
     command: ['sleep']
     args: ['infinity']
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1024Mi"
     volumeMounts:
     - mountPath: "/kaniko/.docker"
       name: docker-config
@@ -63,14 +84,12 @@ spec:
             steps {
                 container('git') {
                     sh '''
+                    echo "[START] Clone Repository"
                     set -eux
-                    echo "[DEBUG] 현재 작업 디렉토리: $PWD"
-                    echo "[DEBUG] Jenkins Workspace: $WORKSPACE"
                     cd $WORKSPACE
                     rm -rf ./* ./.??* || true
                     git clone -b $GIT_BRANCH $GIT_REPO .
-                    echo "[DEBUG] Clone 완료"
-                    ls -al
+                    echo "[SUCCESS] Clone completed"
                     '''
                 }
             }
@@ -80,8 +99,10 @@ spec:
             steps {
                 container('gradle') {
                     sh '''
+                    echo "[START] Gradle Build"
                     cd $WORKSPACE/guardians
                     ./gradlew clean build -x test
+                    echo "[SUCCESS] Gradle Build completed"
                     '''
                 }
             }
@@ -90,14 +111,16 @@ spec:
         stage('Build and Push Docker Image') {
             steps {
                 container('kaniko') {
-                  sh """
-                  /kaniko/executor \
-                    --context=$WORKSPACE/guardians \
-                    --dockerfile=$WORKSPACE/guardians/Dockerfile \
-                    --destination=${FULL_IMAGE} \
-                    --insecure \
-                    --skip-tls-verify
-                  """
+                    sh """
+                    echo "[START] Kaniko Build & Push"
+                    /kaniko/executor \
+                      --context=$WORKSPACE/guardians \
+                      --dockerfile=$WORKSPACE/guardians/Dockerfile \
+                      --destination=${FULL_IMAGE} \
+                      --insecure \
+                      --skip-tls-verify
+                    echo "[SUCCESS] Docker Image pushed to ${FULL_IMAGE}"
+                    """
                 }
             }
         }
