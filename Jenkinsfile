@@ -8,11 +8,6 @@ pipeline {
     containers:
       - name: kaniko
         image: gcr.io/kaniko-project/executor:latest
-        command:
-          - /bin/sh
-        args:
-          - -c
-          - cat
         tty: true
         volumeMounts:
           - name: docker-config
@@ -57,7 +52,7 @@ pipeline {
           sh "ls -alh guardians-backend || echo '❌ context not found'"
           sh "cat guardians-backend/Dockerfile || echo '❌ Dockerfile not found'"
 
-          sh """
+          sh '''
             /kaniko/executor \
               --context=guardians-backend \
               --dockerfile=guardians-backend/Dockerfile \
@@ -65,7 +60,7 @@ pipeline {
               --insecure \
               --skip-tls-verify \
               --verbosity=debug
-          """
+          '''
         }
       }
     }
