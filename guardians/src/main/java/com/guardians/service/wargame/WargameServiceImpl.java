@@ -62,6 +62,10 @@ public class WargameServiceImpl implements WargameService {
     @Override
     @Transactional
     public ResSubmitFlagDto submitFlag(Long userId, Long wargameId, String flag) {
+
+        if (userId == null) {
+            throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+        }
         Wargame wargame = wargameRepository.findById(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
 
@@ -94,6 +98,10 @@ public class WargameServiceImpl implements WargameService {
     @Transactional
     @Override
     public boolean toggleBookmark(Long userId, Long wargameId) {
+
+        if (userId == null) {
+            throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+        }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -119,6 +127,11 @@ public class WargameServiceImpl implements WargameService {
     @Transactional
     @Override
     public boolean toggleLike(Long userId, Long wargameId) {
+
+        if (userId == null) {
+            throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
