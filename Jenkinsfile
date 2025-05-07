@@ -19,7 +19,9 @@ spec:
     args: ['infinity']
     volumeMounts:
     - mountPath: "/workspace"
-      name: "workspace-volume"
+      name: workspace-volume
+    - mountPath: "/home/jenkins/agent"
+      name: workspace-volume
 
   - name: gradle
     image: gradle:8.5-jdk17
@@ -27,7 +29,9 @@ spec:
     args: ['infinity']
     volumeMounts:
     - mountPath: "/workspace"
-      name: "workspace-volume"
+      name: workspace-volume
+    - mountPath: "/home/jenkins/agent"
+      name: workspace-volume
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -35,9 +39,11 @@ spec:
     args: ['infinity']
     volumeMounts:
     - mountPath: "/kaniko/.docker"
-      name: "docker-config"
+      name: docker-config
     - mountPath: "/workspace"
-      name: "workspace-volume"
+      name: workspace-volume
+    - mountPath: "/home/jenkins/agent"
+      name: workspace-volume
 
   volumes:
   - name: docker-config
@@ -63,9 +69,13 @@ spec:
             steps {
                 container('git') {
                     sh '''
+                    echo "[INFO] Cleaning workspace..."
                     cd /workspace
                     rm -rf ./* ./.??*
+                    echo "[INFO] Cloning Git repository..."
                     git clone -b ${GIT_BRANCH} ${GIT_REPO} .
+                    echo "[INFO] Repository cloned. Listing contents:"
+                    ls -al
                     '''
                 }
             }
