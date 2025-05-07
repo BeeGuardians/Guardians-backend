@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "wargame_likes",
@@ -29,4 +30,7 @@ public class WargameLike implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wargame_id", nullable = false)
     private Wargame wargame;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 }
