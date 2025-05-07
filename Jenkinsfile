@@ -46,11 +46,12 @@ spec:
     stage('Kaniko Build & Push') {
       steps {
         container('kaniko') {
-          // 환경 변수 확인용 디버깅
-          sh "echo '📦 FULL_IMAGE=${FULL_IMAGE}'"
-          sh "ls -alh guardians-backend"
+          sh "echo '📦 FULL_IMAGE = ${FULL_IMAGE}'"
+          sh "printenv | grep IMAGE"
+          sh "ls -alh . || echo '❌ root not found'"
+          sh "ls -alh guardians-backend || echo '❌ context not found'"
+          sh "cat guardians-backend/Dockerfile || echo '❌ Dockerfile not found'"
 
-          // 이미지 빌드 및 푸시
           sh """
             /kaniko/executor \
               --context=guardians-backend \
