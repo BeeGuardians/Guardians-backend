@@ -68,22 +68,23 @@ spec:
       stage('Clone Repository') {
           steps {
               container('git') {
-                  sh '''
-                  set -ex
-                  echo "[DEBUG] Current container: git"
-                  echo "[DEBUG] Current working directory: $pwd"
-                  echo "[DEBUG] Listing /workspace before cleanup:"
-                  ls -al /workspace || true
+                sh '''
+                set -eux
+                echo "[DEBUG] Checking GIT_REPO and GIT_BRANCH"
+                echo "GIT_REPO=$GIT_REPO"
+                echo "GIT_BRANCH=$GIT_BRANCH"
 
-                  cd /workspace
-                  rm -rf ./* ./.??* || true
+                echo "[DEBUG] Cleaning /workspace"
+                ls -al /workspace || true
+                cd /workspace
+                rm -rf ./* ./.??* || true
 
-                  echo "[DEBUG] Cloning $GIT_REPO branch $GIT_BRANCH"
-                  git clone -b $GIT_BRANCH $GIT_REPO .
+                echo "[DEBUG] Starting clone"
+                git clone -b $GIT_BRANCH $GIT_REPO .
 
-                  echo "[DEBUG] Clone complete. Listing contents:"
-                  ls -al
-                  '''
+                echo "[DEBUG] Clone complete"
+                ls -al
+                '''
               }
           }
       }
