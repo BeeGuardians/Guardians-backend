@@ -45,14 +45,14 @@ spec:
     stage('Kaniko Build & Push') {
       steps {
         container('kaniko') {
-          sh '''
+          sh """
             /kaniko/executor \
               --context=guardians-backend \
               --dockerfile=guardians-backend/Dockerfile \
-              --destination=$FULL_IMAGE \
+              --destination=${FULL_IMAGE} \
               --insecure \
               --skip-tls-verify
-          '''
+          """
         }
       }
     }
@@ -61,10 +61,10 @@ spec:
       steps {
         dir('temp-infra-repo') {
           git url: 'git@github.com:BeeGuardians/Guardians-Infra.git', branch: 'dev', credentialsId: 'github-ssh'
-          sh "sed -i 's|image: .*|image: $FULL_IMAGE|' cloud-cluster/backend/deployment.yaml"
+          sh "sed -i 's|image: .*|image: ${FULL_IMAGE}|' cloud-cluster/backend/deployment.yaml"
           sh 'git config user.email "ci@yourdomain.com"'
           sh 'git config user.name "Jenkins CI"'
-          sh 'git commit -am "release : update image tag to $FULL_IMAGE"'
+          sh 'git commit -am "release : update image tag to ${FULL_IMAGE}"'
           sh 'git push origin dev'
         }
       }
