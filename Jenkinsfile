@@ -71,15 +71,15 @@ spec:
                   sh '''
                   set -ex
                   echo "[DEBUG] Current container: git"
-                  echo "[DEBUG] Current working directory: $(pwd)"
+                  echo "[DEBUG] Current working directory: $pwd"
                   echo "[DEBUG] Listing /workspace before cleanup:"
                   ls -al /workspace || true
 
                   cd /workspace
                   rm -rf ./* ./.??* || true
 
-                  echo "[DEBUG] Cloning ${GIT_REPO} branch ${GIT_BRANCH}"
-                  git clone -b ${GIT_BRANCH} ${GIT_REPO} .
+                  echo "[DEBUG] Cloning $GIT_REPO branch $GIT_BRANCH"
+                  git clone -b $GIT_BRANCH $GIT_REPO .
 
                   echo "[DEBUG] Clone complete. Listing contents:"
                   ls -al
