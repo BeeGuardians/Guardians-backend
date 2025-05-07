@@ -1,90 +1,80 @@
 pipeline {
-  agent {
-    kubernetes {
-      yaml """
-  apiVersion: v1
-  kind: Pod
-  spec:
-    containers:
-      - name: kaniko
-        image: gcr.io/kaniko-project/executor:latest
-        tty: true
-        volumeMounts:
-          - name: docker-config
-            mountPath: /kaniko/.docker
-    volumes:
-      - name: docker-config
-        secret:
-          secretName: harbor-secret
-  """
-    }
-  }
-
-  environment {
-    HARBOR_HOST = "192.168.0.11:30401"
-    HARBOR_IMAGE = "${HARBOR_HOST}/guardians/backend"
-    IMAGE_TAG = "v${BUILD_NUMBER}"
-    FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        sh "echo 💡 Checking out branch: ${env.BRANCH_NAME}"
-        git branch: "${env.BRANCH_NAME}", url: 'https://github.com/BeeGuardians/Guardians-backend.git'
-      }
-    }
-
-    stage('Gradle Build') {
-      steps {
-        dir('guardians-backend') {
-          sh './gradlew clean build -x test'
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: jenkins-kaniko
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:latest
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+    - name: docker-config
+      mountPath: /kaniko/.docker
+    - name: workspace-volume
+      mountPath: /workspace
+  volumes:
+  - name: docker-config
+    secret:
+      secretName: harbor-secret
+  - name: workspace-volume
+    emptyDir: {}
+"""
         }
-      }
     }
 
-    stage('Kaniko Build & Push') {
-      steps {
-        container('kaniko') {
-          sh "echo '📦 FULL_IMAGE = ${FULL_IMAGE}'"
-          sh "printenv | grep IMAGE"
-          sh "ls -alh . || echo '❌ root not found'"
-          sh "ls -alh guardians-backend || echo '❌ context not found'"
-          sh "cat guardians-backend/Dockerfile || echo '❌ Dockerfile not found'"
+    environment {
+        HARBOR_HOST = "192.168.0.11:30401"
+        HARBOR_IMAGE = "${HARBOR_HOST}/guardians/backend"
+        IMAGE_TAG = "v${BUILD_NUMBER}"
+        FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
+        GIT_REPO = "https://github.com/BeeGuardians/Guardians-backend.git"
+        GIT_BRANCH = "feat/infra"
+    }
 
-          sh '''
-            /kaniko/executor \
-              --context=guardians-backend \
-              --dockerfile=guardians-backend/Dockerfile \
-              --destination=${FULL_IMAGE} \
-              --insecure \
-              --skip-tls-verify \
-              --verbosity=debug
-          '''
+    stages {
+        stage('Clone Repository') {
+            steps {
+                container('kaniko') {
+                    sh '''
+                    cd /workspace
+                    git clone -b ${GIT_BRANCH} ${GIT_REPO} .
+                    '''
+                }
+            }
         }
-      }
-    }
 
-    stage('Update Deployment Manifest') {
-      steps {
-        dir('temp-infra-repo') {
-          git url: 'git@github.com:BeeGuardians/Guardians-Infra.git', branch: 'dev', credentialsId: 'github-ssh'
-          sh "sed -i 's|image: .*|image: ${FULL_IMAGE}|' cloud-cluster/backend/deployment.yaml"
-          sh 'git config user.email "ci@yourdomain.com"'
-          sh 'git config user.name "Jenkins CI"'
-          sh 'git commit -am "release : update image tag to ${FULL_IMAGE}"'
-          sh 'git push origin dev'
+        stage('Gradle Build') {
+            steps {
+                container('kaniko') {
+                    sh '''
+                    cd /workspace
+                    ./gradlew clean build -x test
+                    '''
+                }
+            }
         }
-      }
-    }
-  }
 
-  post {
-    success {
-      echo "✅ Pipeline completed successfully."
+        stage('Build and Push Docker Image') {
+            steps {
+                container('kaniko') {
+                    sh '''
+                    /kaniko/executor \
+                      --context=/workspace \
+                      --dockerfile=/workspace/Dockerfile \
+                      --destination=${FULL_IMAGE} \
+                      --insecure \
+                      --insecure-push \
+                      --skip-tls-verify
+                    '''
+                }
+            }
+        }
     }
-    failure {
-      echo "❌ Pipeline failed."
-    }
-  }
 }
