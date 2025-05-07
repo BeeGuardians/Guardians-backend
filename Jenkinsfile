@@ -2,6 +2,7 @@ pipeline {
     options {
         skipDefaultCheckout()
     }
+
     agent {
         kubernetes {
             yaml """
@@ -19,6 +20,7 @@ spec:
     volumeMounts:
     - mountPath: "/workspace"
       name: "workspace-volume"
+
   - name: gradle
     image: gradle:8.5-jdk17
     command: ['sleep']
@@ -26,6 +28,7 @@ spec:
     volumeMounts:
     - mountPath: "/workspace"
       name: "workspace-volume"
+
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     command: ['sleep']
@@ -35,6 +38,7 @@ spec:
       name: "docker-config"
     - mountPath: "/workspace"
       name: "workspace-volume"
+
   volumes:
   - name: docker-config
     secret:
@@ -60,6 +64,7 @@ spec:
                 container('git') {
                     sh '''
                     cd /workspace
+                    rm -rf ./* ./.??*
                     git clone -b ${GIT_BRANCH} ${GIT_REPO} .
                     '''
                 }
