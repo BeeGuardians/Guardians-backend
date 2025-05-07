@@ -102,15 +102,15 @@ spec:
         stage('Build and Push Docker Image') {
             steps {
                 container('kaniko') {
-                    sh '''
-                    /kaniko/executor \
-                      --context=/workspace \
-                      --dockerfile=/workspace/Dockerfile \
-                      --destination=${FULL_IMAGE} \
-                      --insecure \
-                      --insecure-push \
-                      --skip-tls-verify
-                    '''
+                  sh """
+                  /kaniko/executor \
+                    --context=/workspace \
+                    --dockerfile=/workspace/Dockerfile \
+                    --destination=${FULL_IMAGE} \
+                    --insecure \
+                    --insecure-push \
+                    --skip-tls-verify
+                  """
                 }
             }
         }
