@@ -12,6 +12,7 @@
 
 /target/
 /build/
+**/build/
 .gradle/
 **/.gradle/*
 **/build/
