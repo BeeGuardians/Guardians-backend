@@ -1,5 +1,6 @@
 package com.guardians.controller;
 
+import com.guardians.domain.board.entity.BoardType;
 import com.guardians.dto.board.req.ReqCreateBoardDto;
 import com.guardians.dto.board.req.ReqUpdateBoardDto;
 import com.guardians.dto.board.res.ResBoardDetailDto;
@@ -32,20 +33,22 @@ public class BoardController {
     @PostMapping
     public ResponseEntity<ResWrapper<?>> createBoard(
             HttpSession session,
+            @RequestParam("type") BoardType boardType,
             @RequestBody @Valid ReqCreateBoardDto dto
     ) {
         Long userId = (Long) session.getAttribute("userId");
-        ResCreateBoardDto result = boardService.createBoard(userId, dto);
+        ResCreateBoardDto result = boardService.createBoard(userId, dto, boardType);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글이 성공적으로 등록되었습니다.", result));
     }
 
     // 게시글 목록 조회
     @Operation(summary = "게시글 목록 조회", description = "모든 게시글을 조회합니다.")
     @GetMapping
-    public ResponseEntity<ResWrapper<?>> getBoardList() {
-        List<ResBoardListDto> result = boardService.getBoardList();
+    public ResponseEntity<ResWrapper<?>> getBoardList(@RequestParam("type") BoardType boardType) {
+        List<ResBoardListDto> result = boardService.getBoardList(boardType);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 목록 조회 성공", result));
     }
+
 
     // 게시글 상세 조회
     @Operation(summary = "게시글 상세 조회", description = "특정 게시글 ID로 상세 정보를 조회합니다.")

@@ -2,6 +2,7 @@ package com.guardians.service.board;
 
 import com.guardians.domain.board.entity.Board;
 import com.guardians.domain.board.entity.BoardLike;
+import com.guardians.domain.board.entity.BoardType;
 import com.guardians.domain.board.repository.BoardLikeRepository;
 import com.guardians.domain.board.repository.BoardRepository;
 import com.guardians.domain.user.entity.User;
@@ -31,15 +32,16 @@ public class BoardServiceImpl implements BoardService {
     private final BoardLikeRepository boardLikeRepository;
     private final UserRepository userRepository;
 
+
     @Override
-    public ResCreateBoardDto createBoard(Long userId, ReqCreateBoardDto dto) {
+    public ResCreateBoardDto createBoard(Long userId, ReqCreateBoardDto dto, BoardType boardType) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Board board = Board.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .boardType(dto.getBoardType())
+                .boardType(boardType)
                 .user(user)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -56,8 +58,8 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public List<ResBoardListDto> getBoardList() {
-        List<Board> boards = boardRepository.findAllWithUser();
+    public List<ResBoardListDto> getBoardList(BoardType boardType) {
+        List<Board> boards = boardRepository.findByBoardType(boardType);
 
         return boards.stream().map(board -> ResBoardListDto.builder()
                 .boardId(board.getId())
