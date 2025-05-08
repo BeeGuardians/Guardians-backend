@@ -5,6 +5,7 @@ import com.guardians.dto.wargame.req.ReqSubmitFlagDto;
 import com.guardians.dto.wargame.res.ResSubmitFlagDto;
 import com.guardians.dto.wargame.res.ResWargameListDto;
 import com.guardians.service.wargame.WargameService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +22,10 @@ public class WargameController {
     private final WargameService wargameService;
 
     @GetMapping
-    public ResponseEntity<ResWrapper<?>> getWargameList(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+    public ResponseEntity<ResWrapper<?>> getWargameList(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        Long userId = (session != null) ? (Long) session.getAttribute("userId") : null;
+
         List<ResWargameListDto> result = wargameService.getWargameList(userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 목록 조회 성공", result));
     }
@@ -57,6 +60,4 @@ public class WargameController {
         boolean liked = wargameService.toggleLike(userId, wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("좋아요 토글 완료", Map.of("liked", liked)));
     }
-
-
 }

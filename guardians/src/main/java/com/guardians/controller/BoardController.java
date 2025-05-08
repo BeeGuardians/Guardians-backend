@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/boards")
@@ -80,25 +81,18 @@ public class BoardController {
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 삭제 완료", null));
     }
 
-    //게시글 좋아요
-    @Operation(summary = "게시글 좋아요", description = "게시글에 좋아요를 추가합니다.")
+    // 게시글 좋아요 토글
     @PostMapping("/{boardId}/like")
-    public ResponseEntity<ResWrapper<?>> likeBoard(@PathVariable Long boardId) {
-        boardService.likeBoard(boardId);
-        return ResponseEntity.ok(ResWrapper.resSuccess("게시글 좋아요 성공", null));
+    public ResponseEntity<ResWrapper<?>> toggleBoardLike(
+            @PathVariable Long boardId,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        boolean liked = boardService.toggleLike(userId, boardId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("게시글 좋아요 토글 완료",
+                Map.of("liked", liked)
+        ));
     }
-    //게시글 좋아요 취소
-    @Operation(summary = "게시글 좋아요 취소", description = "게시글 좋아요를 취소합니다.")
-    @PatchMapping("/{boardId}/unlike")
-    public ResponseEntity<ResWrapper<?>> unlikeBoard(@PathVariable Long boardId) {
-        boardService.unlikeBoard(boardId);
-        return ResponseEntity.ok(ResWrapper.resSuccess("좋아요 취소 완료", null));
-    }
-
-
-
-
-
 
 
 }

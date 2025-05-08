@@ -16,19 +16,9 @@ public interface BoardService {
 
     ResBoardDetailDto getBoardDetail(Long boardId);
 
-    //게시글 수정
     ResUpdateBoardDto updateBoard(Long userId, Long boardId, ReqUpdateBoardDto dto);
 
-    //게시글 삭제
     void deleteBoard(Long userId, Long boardId);
 
-    //게시글 좋아요
-    void likeBoard(Long boardId);
-
-    //게시글 좋아요 취소
-    void unlikeBoard(Long boardId);
-
-    //댓글 기능
-
-
+    boolean toggleLike(Long userId, Long boardId);
 }
