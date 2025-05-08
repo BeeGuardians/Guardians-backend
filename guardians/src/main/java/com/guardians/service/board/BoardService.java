@@ -1,5 +1,6 @@
 package com.guardians.service.board;
 
+import com.guardians.domain.board.entity.BoardType;
 import com.guardians.dto.board.req.ReqCreateBoardDto;
 import com.guardians.dto.board.req.ReqUpdateBoardDto;
 import com.guardians.dto.board.res.ResBoardDetailDto;
@@ -10,9 +11,9 @@ import com.guardians.dto.board.res.ResUpdateBoardDto;
 import java.util.List;
 
 public interface BoardService {
-    ResCreateBoardDto createBoard(Long userId, ReqCreateBoardDto dto);
+    ResCreateBoardDto createBoard(Long userId, ReqCreateBoardDto dto, BoardType boardType);
 
-    List<ResBoardListDto> getBoardList();
+    List<ResBoardListDto> getBoardList(BoardType boardType);
 
     ResBoardDetailDto getBoardDetail(Long boardId);
 

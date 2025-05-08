@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface WargameService {
     List<ResWargameListDto> getWargameList(Long userId);
+    ResWargameListDto getWargameById(Long userId, Long wargameId);
     ResSubmitFlagDto submitFlag(Long userId, Long wargameId, String flag);
 
     boolean toggleBookmark(Long userId, Long wargameId);
