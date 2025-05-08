@@ -1,6 +1,7 @@
 package com.guardians.service.mypage;
 
 import com.guardians.domain.board.repository.BoardRepository;
+import com.guardians.domain.user.entity.UserStats;
 import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.domain.user.repository.UserStatsRepository;
 import com.guardians.domain.wargame.repository.BookmarkRepository;
@@ -12,6 +13,9 @@ import com.guardians.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -68,7 +72,21 @@ public class MypageServiceImpl implements MypageService {
     @Override
     public ResRankDto getRank(Long userId) {
         return userStatsRepository.findById(userId)
-                .map(ResRankDto::fromEntity)
+                .map(stats -> ResRankDto.fromEntity(stats, 0)) // 개별 조회이므로 rank는 임시 0
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ResRankDto> getAllRanks() {
+        List<UserStats> statsList = userStatsRepository.findAllWithUserOrderByScoreDesc();
+        List<ResRankDto> result = new ArrayList<>();
+
+        int currentRank = 1;
+        for (UserStats stats : statsList) {
+            result.add(ResRankDto.fromEntity(stats, currentRank++));
+        }
+
+        return result;
     }
 }
