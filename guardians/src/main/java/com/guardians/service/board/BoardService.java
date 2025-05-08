@@ -13,7 +13,7 @@ import java.util.List;
 public interface BoardService {
     ResCreateBoardDto createBoard(Long userId, ReqCreateBoardDto dto, BoardType boardType);
 
-    List<ResBoardListDto> getBoardList();
+    List<ResBoardListDto> getBoardList(BoardType boardType);
 
     ResBoardDetailDto getBoardDetail(Long boardId);
 

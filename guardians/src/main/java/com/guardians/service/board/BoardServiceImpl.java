@@ -58,8 +58,8 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public List<ResBoardListDto> getBoardList() {
-        List<Board> boards = boardRepository.findAllWithUser();
+    public List<ResBoardListDto> getBoardList(BoardType boardType) {
+        List<Board> boards = boardRepository.findByBoardType(boardType);
 
         return boards.stream().map(board -> ResBoardListDto.builder()
                 .boardId(board.getId())
