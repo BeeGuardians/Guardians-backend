@@ -30,6 +30,17 @@ public class WargameController {
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 목록 조회 성공", result));
     }
 
+    @GetMapping("/{wargameId}")
+    public ResponseEntity<ResWrapper<?>> getWargameById(
+            @PathVariable Long wargameId,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        ResWargameListDto result = wargameService.getWargameById(userId, wargameId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("워게임 상세 조회 성공", result));
+    }
+
+
     @PostMapping("/{wargameId}/submit")
     public ResponseEntity<ResWrapper<?>> submitFlag(
             @PathVariable Long wargameId,
@@ -60,4 +71,5 @@ public class WargameController {
         boolean liked = wargameService.toggleLike(userId, wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("좋아요 토글 완료", Map.of("liked", liked)));
     }
+
 }

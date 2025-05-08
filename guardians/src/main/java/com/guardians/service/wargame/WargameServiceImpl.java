@@ -50,13 +50,45 @@ public class WargameServiceImpl implements WargameService {
                     .fileUrl(wargame.getFileUrl())
                     .category(wargame.getCategory().getId())
                     .difficulty(wargame.getDifficulty())
+                    .likeCount(wargame.getLikeCount())
                     .createdAt(wargame.getCreatedAt())
                     .updatedAt(wargame.getUpdatedAt())
                     .solved(solved)
                     .bookmarked(bookmarked)
-                    .liked(liked) // ✅ 추가
+                    .liked(liked)
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public ResWargameListDto getWargameById(Long userId, Long wargameId) {
+        Wargame wargame = wargameRepository.findById(wargameId)
+                .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
+
+        boolean solved = false;
+        boolean bookmarked = false;
+        boolean liked = false;
+
+        if (userId != null) {
+            solved = solvedWargameRepository.existsByUserIdAndWargameId(userId, wargameId);
+            bookmarked = bookmarkRepository.existsByUserIdAndWargameId(userId, wargameId);
+            liked = wargameLikeRepository.existsByUserIdAndWargameId(userId, wargameId);
+        }
+
+        return ResWargameListDto.builder()
+                .id(wargame.getId())
+                .title(wargame.getTitle())
+                .description(wargame.getDescription())
+                .fileUrl(wargame.getFileUrl())
+                .category(wargame.getCategory().getId())
+                .difficulty(wargame.getDifficulty())
+                .likeCount(wargame.getLikeCount())
+                .createdAt(wargame.getCreatedAt())
+                .updatedAt(wargame.getUpdatedAt())
+                .solved(solved)
+                .bookmarked(bookmarked)
+                .liked(liked)
+                .build();
     }
 
     @Override
@@ -127,7 +159,6 @@ public class WargameServiceImpl implements WargameService {
     @Transactional
     @Override
     public boolean toggleLike(Long userId, Long wargameId) {
-
         if (userId == null) {
             throw new CustomException(ErrorCode.NOT_LOGGED_IN);
         }
@@ -142,7 +173,12 @@ public class WargameServiceImpl implements WargameService {
 
         if (likeOpt.isPresent()) {
             wargameLikeRepository.delete(likeOpt.get());
-            return false; // 좋아요 취소됨
+
+            // 🔥 likeCount 감소
+            wargame.setLikeCount(Math.max(0, wargame.getLikeCount() - 1));
+            wargameRepository.save(wargame);
+
+            return false;
         } else {
             WargameLike like = WargameLike.builder()
                     .user(user)
@@ -150,7 +186,12 @@ public class WargameServiceImpl implements WargameService {
                     .createdAt(LocalDateTime.now())
                     .build();
             wargameLikeRepository.save(like);
-            return true; // 좋아요 추가됨
+
+            wargame.setLikeCount(wargame.getLikeCount() + 1);
+            wargameRepository.save(wargame);
+
+            return true;
         }
     }
+
 }

@@ -36,12 +36,13 @@ public class QnaController {
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 등록 완료", null));
     }
 
-    // 질문 전체 조회
-    @GetMapping("/questions")
-    public ResponseEntity<ResWrapper<?>> getQuestionList() {
-        List<ResQuestionListDto> response = questionService.getQuestionList();
-        return ResponseEntity.ok(ResWrapper.resSuccess("질문 목록 조회 성공", response));
+    // 특정 워게임 질문 목록 조회
+    @GetMapping("/wargames/{wargameId}/questions")
+    public ResponseEntity<ResWrapper<?>> getQuestionsByWargame(@PathVariable Long wargameId) {
+        List<ResQuestionListDto> response = questionService.getQuestionsByWargame(wargameId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("워게임 질문 목록 조회 성공", response));
     }
+
 
     // 질문 단건 상세 조회
     @GetMapping("/questions/{questionId}")
