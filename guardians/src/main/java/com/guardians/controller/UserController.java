@@ -75,36 +75,34 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("로그인 여부 확인", isLoggedIn));
     }
 
-    // 로그인
-    @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인")
     @PostMapping("/login")
     public ResponseEntity<ResWrapper<?>> login(
             @RequestBody @Valid ReqLoginDto loginDto,
             HttpSession session
     ) {
         ResLoginDto loginUser = userService.login(loginDto);
-
-        // Redis 세션에 사용자 정보 저장
         session.setAttribute("userId", loginUser.getId());
-
         return ResponseEntity.ok(ResWrapper.resSuccess("로그인 성공", loginUser));
     }
 
-    @Operation(summary = "로그아웃", description = "세션을 만료시키고 JSESSIONID 쿠키를 제거합니다.")
+
     @PostMapping("/logout")
     public ResponseEntity<ResWrapper<?>> logout(HttpServletRequest request, HttpServletResponse response) {
-        HttpSession session = request.getSession(false);
+        HttpSession session = request.getSession(false); // 세션이 없으면 null
+        if (session != null) {
+            session.invalidate();
+        }
 
-        session.invalidate();
-
+        // ✅ JSESSIONID 쿠키 명시적으로 제거
         Cookie cookie = new Cookie("JSESSIONID", null);
-        cookie.setMaxAge(0);        // 만료
-        cookie.setPath("/");        // 경로 맞춰야 삭제됨
-        cookie.setHttpOnly(true);   // 클라이언트 JS 접근 방지 (선택)
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
         response.addCookie(cookie);
 
         return ResponseEntity.ok(ResWrapper.resSuccess("로그아웃 완료 (세션 + 쿠키 삭제)", null));
     }
+
 
 
     // 유저정보 - 닉네임 수정

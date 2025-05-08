@@ -1,6 +1,8 @@
 package com.guardians.service.board;
 
 import com.guardians.domain.board.entity.Board;
+import com.guardians.domain.board.entity.BoardLike;
+import com.guardians.domain.board.repository.BoardLikeRepository;
 import com.guardians.domain.board.repository.BoardRepository;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +28,7 @@ import java.util.stream.Collectors;
 public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
+    private final BoardLikeRepository boardLikeRepository;
     private final UserRepository userRepository;
 
     @Override
@@ -58,13 +62,12 @@ public class BoardServiceImpl implements BoardService {
         return boards.stream().map(board -> ResBoardListDto.builder()
                 .boardId(board.getId())
                 .title(board.getTitle())
-                .username(board.getUser().getUsername())  // 이제 Lazy 문제 없음
+                .username(board.getUser().getUsername())
                 .viewCount(board.getViewCount())
                 .likeCount(board.getLikeCount())
                 .createdAt(board.getCreatedAt())
                 .build()).collect(Collectors.toList());
     }
-
 
     @Override
     public ResBoardDetailDto getBoardDetail(Long boardId) {
@@ -88,12 +91,10 @@ public class BoardServiceImpl implements BoardService {
         Board board = boardRepository.findByIdWithUser(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
 
-        // 작성자 확인
         if (!board.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        // 필드 수정
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
         board.setBoardType(dto.getBoardType());
@@ -102,11 +103,11 @@ public class BoardServiceImpl implements BoardService {
         Board updatedBoard = boardRepository.save(board);
 
         return ResUpdateBoardDto.builder()
-                .boardId(board.getId())
-                .title(board.getTitle())
-                .content(board.getContent())
-                .username(board.getUser().getUsername())
-                .updatedAt(board.getUpdatedAt())
+                .boardId(updatedBoard.getId())
+                .title(updatedBoard.getTitle())
+                .content(updatedBoard.getContent())
+                .username(updatedBoard.getUser().getUsername())
+                .updatedAt(updatedBoard.getUpdatedAt())
                 .build();
     }
 
@@ -115,7 +116,6 @@ public class BoardServiceImpl implements BoardService {
         Board board = boardRepository.findByIdWithUser(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
 
-        // 작성자만 삭제 가능
         if (!board.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
@@ -123,29 +123,28 @@ public class BoardServiceImpl implements BoardService {
         boardRepository.delete(board);
     }
 
-
-    @Override
-    public void likeBoard(Long boardId) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-
-        board.setLikeCount(board.getLikeCount() + 1);
-        boardRepository.save(board);
-    }
-
     @Override
     @Transactional
-    public void unlikeBoard(Long boardId) {
+    public boolean toggleLike(Long userId, Long boardId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
 
-        if (board.getLikeCount() > 0) {
+        Optional<BoardLike> existing = boardLikeRepository.findByUserIdAndBoardId(userId, boardId);
+
+        if (existing.isPresent()) {
+            boardLikeRepository.delete(existing.get());
             board.setLikeCount(board.getLikeCount() - 1);
+            boardRepository.save(board);
+            return false; // 좋아요 취소
+        } else {
+            BoardLike like = BoardLike.of(user, board);
+            boardLikeRepository.save(like);
+            board.setLikeCount(board.getLikeCount() + 1);
+            boardRepository.save(board);
+            return true; // 좋아요 등록
         }
-
-        boardRepository.save(board);
     }
-
-
-
 }
