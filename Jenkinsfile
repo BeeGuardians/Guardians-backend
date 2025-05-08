@@ -71,7 +71,7 @@ spec:
     }
 
     environment {
-        HARBOR_HOST = "harbor.harbor.svc.cluster.local"
+        HARBOR_HOST = "harbor-core.harbor.svc.cluster.local"
         HARBOR_IMAGE = "${HARBOR_HOST}/guardians/backend"
         IMAGE_TAG = "v${BUILD_NUMBER}"
         FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
