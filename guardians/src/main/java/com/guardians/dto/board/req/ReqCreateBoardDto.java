@@ -9,5 +9,4 @@ import lombok.Setter;
 public class ReqCreateBoardDto {
     private String title;
     private String content;
-    private BoardType boardType;
 }
