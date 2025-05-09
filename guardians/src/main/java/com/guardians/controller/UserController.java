@@ -222,7 +222,7 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 탈퇴 완료", null));
     }
 
-    // UserId 반환
+    // UserId 정보 반환
     @GetMapping("/me")
     public ResponseEntity<ResWrapper<?>> getCurrentUser(HttpSession session) {
         try {

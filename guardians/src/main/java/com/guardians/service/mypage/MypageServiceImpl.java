@@ -89,4 +89,43 @@ public class MypageServiceImpl implements MypageService {
 
         return result;
     }
+
+    @Override
+    public ResUserStatsDto getUserStats(Long userId) {
+        List<UserStats> statsList = userStatsRepository.findAllWithUserOrderByScoreDesc();
+
+        int rank = -1;
+        int idx = 1;
+
+        for (UserStats stats : statsList) {
+            if (stats.getUser().getId().equals(userId)) {
+                rank = idx;
+                break;
+            }
+            idx++;
+        }
+
+        if (rank == -1) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND); // 또는 "통계 없음"
+        }
+
+        UserStats myStats = statsList.get(rank - 1);
+
+        return ResUserStatsDto.builder()
+                .score(myStats.getScore())
+                .rank(rank)
+                .solvedCount(myStats.getTotalSolved())
+                .build();
+    }
+
+    @Transactional
+    public void updateAllUserSolvedCounts() {
+        List<Object[]> counts = solvedWargameRepository.countSolvedCountByUser();
+
+        for (Object[] row : counts) {
+            Long userId = (Long) row[0];
+            Long solvedCount = (Long) row[1];
+            userStatsRepository.updateSolvedCount(userId, solvedCount);
+        }
+    }
 }

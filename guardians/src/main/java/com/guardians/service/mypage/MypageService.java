@@ -1,6 +1,7 @@
 package com.guardians.service.mypage;
 
 import com.guardians.dto.mypage.res.*;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ public interface MypageService {
     ResPostDto getPosts(Long userId);
     ResReviewDto getReviews(Long userId);
     ResRankDto getRank(Long userId);
-
-    // ✅ 전체 랭킹 조회 추가
     List<ResRankDto> getAllRanks();
+    ResUserStatsDto getUserStats(Long userId);
+
 }
