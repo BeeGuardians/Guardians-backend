@@ -63,22 +63,13 @@ spec:
         HARBOR_IMAGE = "${HARBOR_HOST}/guardians/backend"
         IMAGE_TAG = "v${BUILD_NUMBER}"
         FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
-        GIT_REPO = "https://github.com/BeeGuardians/Guardians-backend.git"
-        GIT_BRANCH = "feat/infra"
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
                 container('git') {
-                    sh '''
-                    echo "[START] Clone Repository"
-                    set -eux
-                    cd $WORKSPACE
-                    rm -rf ./* ./.??* || true
-                    git clone -b $GIT_BRANCH $GIT_REPO .
-                    echo "[SUCCESS] Clone completed"
-                    '''
+                    checkout scm
                 }
             }
         }
