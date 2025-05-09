@@ -64,6 +64,9 @@ spec:
   - name: docker-config
     secret:
       secretName: harbor-secret
+      items:
+        - key: .dockerconfigjson
+          path: config.json
   - name: workspace-volume
     emptyDir: {}
 """
@@ -103,6 +106,19 @@ spec:
                     cd $WORKSPACE/guardians
                     ./gradlew clean build -x test
                     echo "[SUCCESS] Gradle Build completed"
+                    '''
+                }
+            }
+        }
+
+        stage('Test Harbor Auth (Debug)') {
+            steps {
+                container('kaniko') {
+                    sh '''
+                    echo "[DEBUG] Testing Harbor API auth"
+                    curl -v -u 'robot$guardians+jenkins:K1LdhKCndPcgeUUjN2kgwcGAJ2hkHEbg' \
+                      -X GET https://harbor.example.com:30443/v2/guardians/backend/tags/list \
+                      --insecure || true
                     '''
                 }
             }
