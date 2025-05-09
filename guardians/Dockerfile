@@ -24,7 +24,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # 빌드 결과물 복사
-COPY --from=build /app/build/libs/*.jar app.jar
+COPY --from=build /app/build/libs/*.jar /app/
 
 # 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "app.jar"]
