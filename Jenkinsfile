@@ -60,13 +60,28 @@ spec:
     - mountPath: "/home/jenkins/agent"
       name: workspace-volume
 
+  - name: debug
+    image: curlimages/curl:latest
+    command: ['sleep']
+    args: ['infinity']
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: workspace-volume
+
   volumes:
   - name: docker-config
     secret:
       secretName: harbor-secret
       items:
-        - key: .dockerconfigjson
-          path: config.json
+      - key: .dockerconfigjson
+        path: config.json
   - name: workspace-volume
     emptyDir: {}
 """
@@ -113,7 +128,7 @@ spec:
 
         stage('Test Harbor Auth (Debug)') {
             steps {
-                container('kaniko') {
+                container('debug') {
                     sh '''
                     echo "[DEBUG] Testing Harbor API auth"
                     curl -v -u 'robot$guardians+jenkins:K1LdhKCndPcgeUUjN2kgwcGAJ2hkHEbg' \
