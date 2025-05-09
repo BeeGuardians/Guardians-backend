@@ -28,21 +28,6 @@ spec:
     - mountPath: "/home/jenkins/agent"
       name: workspace-volume
 
-  - name: gradle
-    image: gradle:8.5-jdk17
-    command: ['sleep']
-    args: ['infinity']
-    resources:
-      requests:
-        cpu: "500m"
-        memory: "1024Mi"
-      limits:
-        cpu: "1000m"
-        memory: "2048Mi"
-    volumeMounts:
-    - mountPath: "/home/jenkins/agent"
-      name: workspace-volume
-
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     command: ['sleep']
@@ -53,7 +38,7 @@ spec:
         memory: "512Mi"
       limits:
         cpu: "1000m"
-        memory: "1024Mi"
+        memory: "2048Mi"
     volumeMounts:
     - mountPath: "/kaniko/.docker"
       name: docker-config
@@ -93,19 +78,6 @@ spec:
                     rm -rf ./* ./.??* || true
                     git clone -b $GIT_BRANCH $GIT_REPO .
                     echo "[SUCCESS] Clone completed"
-                    '''
-                }
-            }
-        }
-
-        stage('Gradle Build') {
-            steps {
-                container('gradle') {
-                    sh '''
-                    echo "[START] Gradle Build"
-                    cd $WORKSPACE/guardians
-                    ./gradlew clean build -x test
-                    echo "[SUCCESS] Gradle Build completed"
                     '''
                 }
             }
