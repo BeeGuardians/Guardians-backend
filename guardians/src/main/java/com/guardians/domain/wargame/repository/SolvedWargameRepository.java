@@ -5,6 +5,7 @@ import com.guardians.domain.wargame.entity.SolvedWargame;
 import com.guardians.domain.wargame.entity.SolvedWargameId;
 import com.guardians.domain.wargame.entity.Wargame;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -17,4 +18,9 @@ public interface SolvedWargameRepository extends JpaRepository<SolvedWargame, So
     List<SolvedWargame> findByWargame(Wargame wargame);
     List<SolvedWargame> findByUser_Id(Long userId);
     boolean existsByUser_IdAndWargame_Id(Long userId, Long wargameId);
+    Long countByUser(User user);
+
+    @Query("SELECT sw.user.id, COUNT(sw) FROM SolvedWargame sw GROUP BY sw.user.id")
+    List<Object[]> countSolvedCountByUser();
+
 }

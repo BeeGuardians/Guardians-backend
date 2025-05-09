@@ -54,4 +54,13 @@ public class MypageController {
     public ResponseEntity<ResWrapper<?>> getRank(@PathVariable Long userId) {
         return ResponseEntity.ok(ResWrapper.resSuccess("내 랭킹 조회 성공", mypageService.getRank(userId)));
     }
+
+    @Operation(summary = "내 통계 정보 조회", description = "점수, 랭킹, 푼 문제 수 조회")
+    @GetMapping("/stats")
+    public ResponseEntity<ResWrapper<?>> getUserStats(@PathVariable Long userId) {
+        return ResponseEntity.ok(
+                ResWrapper.resSuccess("내 통계 정보 조회 성공", mypageService.getUserStats(userId))
+        );
+    }
+
 }
