@@ -63,22 +63,6 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public ResAnswerDetailDto getAnswerDetail(Long answerId) {
-        // 단건 답변 조회
-        Answer answer = answerRepository.findByIdWithUser(answerId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ANSWER_NOT_FOUND));
-
-        // 결과 반환
-        return ResAnswerDetailDto.builder()
-                .id(answer.getId())
-                .content(answer.getContent())
-                .username(answer.getUser().getUsername())
-                .createdAt(answer.getCreatedAt())
-                .updatedAt(answer.getUpdatedAt())
-                .build();
-    }
-
-    @Override
     public List<ResAnswerListDto> getAnswerListByQuestion(Long questionId) {
         // 특정 질문에 대한 답변 목록 조회
         List<Answer> answers = answerRepository.findAllByQuestionId(questionId);

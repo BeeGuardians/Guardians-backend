@@ -12,6 +12,7 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
 
     @Query("SELECT a FROM Answer a JOIN FETCH a.user WHERE a.id = :id")
     Optional<Answer> findByIdWithUser(@Param("id") Long id);
+    int countByQuestionId(Long questionId);
 
     List<Answer> findAllByQuestionId(Long questionId);
 }

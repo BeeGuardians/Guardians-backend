@@ -15,7 +15,7 @@
 **/build/
 .gradle/
 **/.gradle/*
-**/build/
+**/build/**
 
 # Spring Native 관련
 spring-backend/wrapper/
