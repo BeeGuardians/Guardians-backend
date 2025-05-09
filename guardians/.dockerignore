@@ -1,0 +1,18 @@
+# Gradle build artifacts
+build/
+.gradle/
+
+# Git
+.git/
+.gitignore
+
+# IDE & OS specific
+*.iml
+.idea/
+.vscode/
+.DS_Store
+
+# Documentation
+README.md
+LICENSE
+*.md
