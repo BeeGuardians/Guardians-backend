@@ -1,5 +1,6 @@
 package com.guardians.service.user;
 
+import com.guardians.config.AwsS3Properties;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.dto.user.req.ReqChangePasswordDto;
@@ -25,6 +26,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
+    private final AwsS3Properties awsS3Properties;
 
     // 중복 검사
     private void validateDuplicate(ReqCreateUserDto dto) {
@@ -44,7 +46,7 @@ public class UserServiceImpl implements UserService {
 
         String encodedPw = passwordEncoder.encode(dto.getPassword());
 
-        User user = User.create(dto.getUsername(), dto.getEmail(), encodedPw, "USER");
+        User user = User.create(dto.getUsername(), dto.getEmail(), encodedPw, "USER", awsS3Properties.getDefaultProfileUrl());
 
         User saved = userRepository.save(user);
         return ResCreateUserDto.fromEntity(saved);
@@ -139,8 +141,11 @@ public class UserServiceImpl implements UserService {
 
         return ResLoginDto.builder()
                 .id(user.getId())
-                .email(user.getEmail())
                 .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .lastLoginAt(user.getLastLoginAt())
+                .profileImageUrl(user.getProfileImageUrl())
                 .build();
     }
 
@@ -156,6 +161,15 @@ public class UserServiceImpl implements UserService {
     public Long findUserIdByEmail(String email) {
         return userRepository.findIdByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Override
+    public void updateProfileImageUrl(Long userId, String imageUrl) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        user.updateProfileImageUrl(imageUrl);
+        // 변경 감지를 위해 save 호출 불필요 (JPA 엔티티 상태 유지 중)
     }
 
 }

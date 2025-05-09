@@ -22,6 +22,8 @@ public class ResLoginDto {
     @Schema(description = "유저 이메일", example = "hacker01@example.com")
     private String email;
 
+    private String profileImageUrl;
+
     @Schema(description = "마지막 로그인 일시", example = "20250423220100")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyyMMddHHmmss")
     private LocalDateTime lastLoginAt;

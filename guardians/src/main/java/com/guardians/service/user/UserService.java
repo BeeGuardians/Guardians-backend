@@ -17,5 +17,7 @@ public interface UserService {
     Long findUserIdByEmail(String email);
     String getEmailByUserId(Long userId);
     ResLoginDto getUserInfo(Long userId);
-    boolean isEmailExists(String email); // 🔥 이메일 중복 확인 메서드
+    boolean isEmailExists(String email);
+    void updateProfileImageUrl(Long userId, String imageUrl);
+
 }
