@@ -46,12 +46,13 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public static User create(String username, String email, String password, String role) {
+    public static User create(String username, String email, String password, String role, String profileImageUrl) {
         User user = new User();
         user.username = username;
         user.email = email;
         user.password = password;
         user.role = role;
+        user.profileImageUrl = profileImageUrl;
         return user;
     }
 
