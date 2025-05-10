@@ -25,6 +25,17 @@ public class ResWrapper<T> {
                 .build();
     }
 
+    public static ResWrapper<ListResult> resList(String message, Object list, int count) {
+        return ResWrapper.<ListResult>builder()
+                .result(ListResult.builder()
+                        .status(200)
+                        .message(message)
+                        .data(list)
+                        .count(count)
+                        .build())
+                .build();
+    }
+
     public static ResWrapper<ErrorResult> resException(Exception e) {
         return ResWrapper.<ErrorResult>builder()
                 .result(ErrorResult.builder()

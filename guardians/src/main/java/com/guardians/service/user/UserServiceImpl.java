@@ -163,6 +163,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
+    @Transactional
     @Override
     public void updateProfileImageUrl(Long userId, String imageUrl) {
         User user = userRepository.findById(userId)

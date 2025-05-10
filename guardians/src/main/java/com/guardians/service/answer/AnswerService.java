@@ -14,9 +14,6 @@ public interface AnswerService {
     // 답변 등록
     ResCreateAnswerDto createAnswer(Long userId, ReqCreateAnswerDto dto);
 
-    // 답변 단건 상세 조회
-    ResAnswerDetailDto getAnswerDetail(Long answerId);
-
     // 특정 질문에 대한 답변 목록 조회
     List<ResAnswerListDto> getAnswerListByQuestion(Long questionId);
 

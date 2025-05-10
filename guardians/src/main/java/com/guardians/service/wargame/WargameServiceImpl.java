@@ -2,6 +2,7 @@ package com.guardians.service.wargame;
 
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
+import com.guardians.domain.user.repository.UserStatsRepository;
 import com.guardians.domain.wargame.entity.*;
 import com.guardians.domain.wargame.repository.*;
 import com.guardians.dto.wargame.res.ResSubmitFlagDto;
@@ -27,6 +28,7 @@ public class WargameServiceImpl implements WargameService {
     private final UserRepository userRepository;
     private final BookmarkRepository bookmarkRepository;
     private final WargameLikeRepository wargameLikeRepository; // ✅ 추가
+    private final UserStatsRepository userStatsRepository;
 
     @Override
     public List<ResWargameListDto> getWargameList(Long userId) {
@@ -98,26 +100,29 @@ public class WargameServiceImpl implements WargameService {
         if (userId == null) {
             throw new CustomException(ErrorCode.NOT_LOGGED_IN);
         }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         Wargame wargame = wargameRepository.findById(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
-
         WargameFlag wargameFlag = wargameFlagRepository.findById(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_VALID_ARGUMENT));
 
         boolean isCorrect = wargameFlag.getFlag().equals(flag);
 
-        if (isCorrect && userId != null) {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
+        if (isCorrect) {
             boolean alreadySolved = solvedWargameRepository.existsByUserAndWargame(user, wargame);
             if (!alreadySolved) {
-                SolvedWargame solved = SolvedWargame.builder()
-                        .user(user)
-                        .wargame(wargame)
-                        .solvedAt(LocalDateTime.now())
-                        .build();
-                solvedWargameRepository.save(solved);
+                solvedWargameRepository.save(
+                        SolvedWargame.builder()
+                                .user(user)
+                                .wargame(wargame)
+                                .solvedAt(LocalDateTime.now())
+                                .build()
+                );
+
+                long solvedCount = solvedWargameRepository.countByUser(user);
+                userStatsRepository.updateSolvedCount(user.getId(), solvedCount);
             }
         }
 
