@@ -4,8 +4,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    username: ${DB_USERNAME_FILE:}
+    password: ${DB_PASSWORD_FILE:}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -25,21 +25,21 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-  #      password: ${REDIS_PASSWORD}
+      password: ${REDIS_PASSWORD_FILE:}
 
   session:
     store-type: redis
     timeout: 1800s
     cookie:
       name : JSESSIONID
-      same-site: none  # ✅ SameSite=None
-      secure: false     # ✅ http 전용 쿠키 https 일때는 true
+      same-site: none
+      secure: false
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME_FILE:}
+    password: ${MAIL_PASSWORD_FILE:}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -49,8 +49,8 @@ cloud:
     s3:
       bucket: guardians-bucket-name
     credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
+      access-key: ${AWS_ACCESS_KEY_FILE:}
+      secret-key: ${AWS_SECRET_KEY_FILE:}
     region:
       static: ap-northeast-2
     stack:
