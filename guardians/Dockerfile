@@ -23,5 +23,12 @@ RUN ./gradlew clean build -x test --no-daemon --parallel --quiet
 FROM openjdk:17-jdk-slim
 WORKDIR /app
 
+# 앱 JAR 복사
 COPY --from=build /app/build/libs/guardians-0.0.1-SNAPSHOT.jar /app/app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# entrypoint.sh 복사
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+# 엔트리포인트 변경
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
