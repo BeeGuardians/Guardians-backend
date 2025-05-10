@@ -23,8 +23,5 @@ RUN ./gradlew clean build -x test --no-daemon --parallel --quiet
 FROM openjdk:17-jdk-slim
 WORKDIR /app
 
-# 빌드 결과물 복사 (파일명 고정)
-COPY --from=build /app/build/libs/*.jar /app/app.jar
-
-# 애플리케이션 실행
+COPY --from=build /app/build/libs/guardians-0.0.1-SNAPSHOT.jar /app/app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
