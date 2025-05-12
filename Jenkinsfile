@@ -3,10 +3,6 @@ pipeline {
         skipDefaultCheckout()
     }
 
-    triggers {
-        pollSCM('* * * * *')
-    }
-
     agent {
         kubernetes {
             yaml """
