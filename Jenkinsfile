@@ -99,7 +99,7 @@ spec:
                     echo "[START] Kaniko Build & Push"
                     /kaniko/executor \
                       --context=$WORKSPACE/guardians \
-                      --dockerfile=$WORKSPACE/guardians/Dockerfile \
+                      --dockerfile=$WORKSPACE/guardians/guardians/Dockerfile \
                       --destination=${FULL_IMAGE} \
                       --insecure \
                       --skip-tls-verify
