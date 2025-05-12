@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     //댓글 목록 조회용
-    @Query("SELECT c FROM Comment c JOIN FETCH c.user WHERE c.post.id = :boardId")
+    @Query("SELECT c FROM Comment c JOIN FETCH c.user WHERE c.board.id = :boardId")
     List<Comment> findByBoardIdWithUser(@Param("boardId") Long boardId);
     //특정댓글 수정, 삭제용
     @Query("SELECT c FROM Comment c JOIN FETCH c.user WHERE c.id = :commentId")

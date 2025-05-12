@@ -37,7 +37,7 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = Comment.builder()
                 .user(user)
-                .post(board)
+                .board(board)
                 .content(dto.getContent())
                 .build();
 
