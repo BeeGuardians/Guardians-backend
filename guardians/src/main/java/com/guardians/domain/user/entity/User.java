@@ -46,6 +46,14 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserStats userStats;
+
+    public void setUserStats(UserStats userStats) {
+        this.userStats = userStats;
+    }
+
+
     public static User create(String username, String email, String password, String role, String profileImageUrl) {
         User user = new User();
         user.username = username;
@@ -53,8 +61,20 @@ public class User {
         user.password = password;
         user.role = role;
         user.profileImageUrl = profileImageUrl;
+
+        UserStats stats = UserStats.builder()
+                .user(user)
+                .score(1000)
+                .totalSolved(0)
+                .lastSolvedAt(null)
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        user.setUserStats(stats);
+
         return user;
     }
+
 
     public void updateLastLoginAt() {
         this.lastLoginAt = LocalDateTime.now();
