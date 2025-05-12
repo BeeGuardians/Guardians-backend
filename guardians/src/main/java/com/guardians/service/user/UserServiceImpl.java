@@ -2,7 +2,9 @@ package com.guardians.service.user;
 
 import com.guardians.config.AwsS3Properties;
 import com.guardians.domain.user.entity.User;
+import com.guardians.domain.user.entity.UserStats;
 import com.guardians.domain.user.repository.UserRepository;
+import com.guardians.domain.user.repository.UserStatsRepository;
 import com.guardians.dto.user.req.ReqChangePasswordDto;
 import com.guardians.dto.user.req.ReqCreateUserDto;
 import com.guardians.dto.user.req.ReqLoginDto;
@@ -18,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -27,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
     private final AwsS3Properties awsS3Properties;
+    private final UserStatsRepository userStatsRepository;
 
     // 중복 검사
     private void validateDuplicate(ReqCreateUserDto dto) {
