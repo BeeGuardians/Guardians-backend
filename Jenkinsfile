@@ -69,7 +69,7 @@ spec:
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Source') {
             steps {
                 container('git') {
                     withCredentials([usernamePassword(
@@ -80,7 +80,12 @@ spec:
                         sh """
                         git config --global user.email "ci-bot@example.com"
                         git config --global user.name "CI Bot"
-                        git clone --single-branch --branch feat/infra https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-backend.git .
+
+                        echo "[CLONE] Guardians-backend"
+                        git clone --single-branch --branch feat/infra https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-backend.git guardians
+
+                        echo "[CLONE] Guardians-Infra"
+                        git clone --single-branch --branch dev https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git infra
                         """
                     }
                 }
@@ -114,6 +119,7 @@ spec:
                     )]) {
                         sh """
                         echo "[INFO] Updating image tag in deployment.yaml"
+                        cd infra
                         sed -i "s|image: harbor.example.com:30443/guardians/backend:.*|image: ${FULL_IMAGE}|" cloud-cluster/backend/deployment.yaml
 
                         echo "[INFO] Git commit and push"
