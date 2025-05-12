@@ -23,7 +23,7 @@ public class UserStats {
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_stats_user"))
     private User user;
 
-    private int score = 1000;
+    private int score;
 
     @Column(name = "total_solved")
     private int totalSolved;

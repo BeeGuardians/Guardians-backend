@@ -51,9 +51,17 @@ public class UserServiceImpl implements UserService {
 
         String encodedPw = passwordEncoder.encode(dto.getPassword());
 
-        User user = User.create(dto.getUsername(), dto.getEmail(), encodedPw, "USER", awsS3Properties.getDefaultProfileUrl());
+        User user = User.create(
+                dto.getUsername(),
+                dto.getEmail(),
+                encodedPw,
+                "USER",
+                awsS3Properties.getDefaultProfileUrl()
+        );
 
-        User saved = userRepository.save(user);
+        // 여기서 userStats도 내부에서 생성되어 연결된 상태
+        User saved = userRepository.save(user); // 🚨 userStats도 cascade로 같이 저장됨
+
         return ResCreateUserDto.fromEntity(saved);
     }
 

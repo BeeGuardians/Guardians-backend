@@ -1,10 +1,13 @@
 package com.guardians.domain.wargame.entity;
 
+import com.guardians.domain.board.entity.Question;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.nio.file.FileStore;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "wargames")
@@ -45,5 +48,20 @@ public class Wargame {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToOne(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private WargameFlag wargameFlag;
+
+    @OneToMany(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<WargameLike> wargameLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<SolvedWargame> solvedWargames = new ArrayList<>();
+
+    @OneToMany(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Question> questions = new ArrayList<>();
 
 }

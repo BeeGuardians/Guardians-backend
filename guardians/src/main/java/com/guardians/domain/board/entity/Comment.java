@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "comments")
@@ -21,8 +23,8 @@ public class Comment {
 
     // 댓글이 달린 게시글
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
-    private Board post;
+    @JoinColumn(name = "board_id", nullable = false)
+    private Board board;
 
     // 댓글 작성자
     @ManyToOne(fetch = FetchType.LAZY)
