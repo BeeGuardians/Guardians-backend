@@ -3,6 +3,10 @@ pipeline {
         skipDefaultCheckout()
     }
 
+    triggers {
+        pollSCM('* * * * *')
+    }
+
     agent {
         kubernetes {
             yaml """
@@ -86,6 +90,26 @@ spec:
                       --insecure \
                       --skip-tls-verify
                     echo "[SUCCESS] Docker Image pushed to ${FULL_IMAGE}"
+                    """
+                }
+            }
+        }
+
+        stage('Update Deployment Image Tag') {
+            steps {
+                container('git') {
+                    sh """
+                    echo "[INFO] Updating image tag in deployment.yaml"
+                    sed -i "s|image: harbor.example.com:30443/guardians/backend:.*|image: ${FULL_IMAGE}|" cloud-cluster/backend/deployment.yaml
+
+                    echo "[INFO] Committing updated deployment.yaml"
+                    git config user.email "ci-bot@example.com"
+                    git config user.name "CI Bot"
+                    git add cloud-cluster/backend/deployment.yaml
+                    git commit -m "release : update backend image to ${FULL_IMAGE}" || echo "No changes to commit"
+
+                    echo "[INFO] Pushing to dev branch"
+                    git push origin dev
                     """
                 }
             }
