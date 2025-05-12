@@ -17,9 +17,6 @@ spec:
     image: alpine/git:latest
     command: ['sleep']
     args: ['infinity']
-    env:
-    - name: GIT_SSL_NO_VERIFY
-      value: "true"
     resources:
       requests:
         cpu: "100m"
@@ -69,25 +66,10 @@ spec:
     }
 
     stages {
-        stage('Checkout Source') {
+        stage('Checkout') {
             steps {
                 container('git') {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'github-token',
-                        usernameVariable: 'GIT_USER',
-                        passwordVariable: 'GIT_TOKEN'
-                    )]) {
-                        sh """
-                        git config --global user.email "ci-bot@example.com"
-                        git config --global user.name "CI Bot"
-
-                        echo "[CLONE] Guardians-backend"
-                        git clone --single-branch --branch feat/infra https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-backend.git guardians
-
-                        echo "[CLONE] Guardians-Infra"
-                        git clone --single-branch --branch dev https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git infra
-                        """
-                    }
+                    checkout scm
                 }
             }
         }
@@ -99,7 +81,7 @@ spec:
                     echo "[START] Kaniko Build & Push"
                     /kaniko/executor \
                       --context=$WORKSPACE/guardians \
-                      --dockerfile=$WORKSPACE/guardians/guardians/Dockerfile \
+                      --dockerfile=$WORKSPACE/guardians/Dockerfile \
                       --destination=${FULL_IMAGE} \
                       --insecure \
                       --skip-tls-verify
@@ -109,25 +91,22 @@ spec:
             }
         }
 
-        stage('Update Deployment Image Tag and Push') {
+        stage('Update Deployment Image Tag') {
             steps {
                 container('git') {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'github-token',
-                        usernameVariable: 'GIT_USER',
-                        passwordVariable: 'GIT_TOKEN'
-                    )]) {
-                        sh """
-                        echo "[INFO] Updating image tag in deployment.yaml"
-                        cd infra
-                        sed -i "s|image: harbor.example.com:30443/guardians/backend:.*|image: ${FULL_IMAGE}|" cloud-cluster/backend/deployment.yaml
+                    sh """
+                    echo "[INFO] Updating image tag in deployment.yaml"
+                    sed -i "s|image: harbor.example.com:30443/guardians/backend:.*|image: ${FULL_IMAGE}|" cloud-cluster/backend/deployment.yaml
 
-                        echo "[INFO] Git commit and push"
-                        git add cloud-cluster/backend/deployment.yaml
-                        git commit -m "release : update backend image to ${FULL_IMAGE}" || echo "No changes to commit"
-                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git dev
-                        """
-                    }
+                    echo "[INFO] Committing updated deployment.yaml"
+                    git config user.email "ci-bot@example.com"
+                    git config user.name "CI Bot"
+                    git add cloud-cluster/backend/deployment.yaml
+                    git commit -m "release : update backend image to ${FULL_IMAGE}" || echo "No changes to commit"
+
+                    echo "[INFO] Pushing to dev branch"
+                    git push origin dev
+                    """
                 }
             }
         }
