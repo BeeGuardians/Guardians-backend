@@ -33,6 +33,7 @@ dependencyManagement {
     imports {
         mavenBom "io.opentelemetry:opentelemetry-bom:1.34.0"
         mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.32.0-alpha"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.1"
     }
 }
 
@@ -87,6 +88,10 @@ dependencies {
 
     // AWS S3
     implementation 'software.amazon.awssdk:s3:2.31.30'
+
+    // Vault
+    implementation("org.springframework.cloud:spring-cloud-starter-vault-config")
+
 
     // OTel
 //    implementation 'io.opentelemetry:opentelemetry-api'

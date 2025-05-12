@@ -2,10 +2,27 @@ spring:
   application:
     name: guardians
 
+  config:
+    import: vault://
+
+  cloud:
+    vault:
+      uri: http://vault.ns-vault.svc:8200
+      authentication: approle
+      app-role:
+        role-id: ${VAULT_ROLE_ID}
+        secret-id: ${VAULT_SECRET_ID}
+      kv:
+        enabled: true
+        backend: secret
+        default-context: guardians
+        profile-separator: '/'
+      fail-fast: true
+
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
-    username: ${DB_USERNAME_FILE:}
-    password: ${DB_PASSWORD_FILE:}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -25,7 +42,7 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD_FILE:}
+      password: ${REDIS_PASSWORD}
 
   session:
     store-type: redis
@@ -38,8 +55,8 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME_FILE:}
-    password: ${MAIL_PASSWORD_FILE:}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -49,8 +66,8 @@ cloud:
     s3:
       bucket: guardians-bucket-name
     credentials:
-      access-key: ${AWS_ACCESS_KEY_FILE:}
-      secret-key: ${AWS_SECRET_KEY_FILE:}
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
     region:
       static: ap-northeast-2
     stack:
