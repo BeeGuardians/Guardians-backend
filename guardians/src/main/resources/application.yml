@@ -7,7 +7,7 @@ spring:
 
   cloud:
     vault:
-      uri: http://vault.ns-vault.svc:8200
+      uri: ${VAULT_URI}
       authentication: approle
       app-role:
         role-id: ${VAULT_ROLE_ID}
