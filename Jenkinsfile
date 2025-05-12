@@ -91,22 +91,29 @@ spec:
             }
         }
 
-        stage('Update Deployment Image Tag') {
+        stage('Update Deployment YAML in Infra Repo') {
             steps {
                 container('git') {
-                    sh """
-                    echo "[INFO] Updating image tag in deployment.yaml"
-                    sed -i "s|image: harbor.example.com:30443/guardians/backend:.*|image: ${FULL_IMAGE}|" cloud-cluster/backend/deployment.yaml
+                    withCredentials([usernamePassword(
+                        credentialsId: 'github-token',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_TOKEN'
+                    )]) {
+                        sh """
+                        echo "[CLONE] Guardians-Infra"
+                        git clone --single-branch --branch dev https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git infra
 
-                    echo "[INFO] Committing updated deployment.yaml"
-                    git config user.email "ci-bot@example.com"
-                    git config user.name "CI Bot"
-                    git add cloud-cluster/backend/deployment.yaml
-                    git commit -m "release : update backend image to ${FULL_IMAGE}" || echo "No changes to commit"
+                        echo "[PATCH] Updating deployment.yaml image tag"
+                        sed -i "s|image: .*|image: ${FULL_IMAGE}|" infra/cloud-cluster/backend/deployment.yaml
 
-                    echo "[INFO] Pushing to dev branch"
-                    git push origin dev
-                    """
+                        cd infra
+                        git config user.email "ci-bot@example.com"
+                        git config user.name "CI Bot"
+                        git add cloud-cluster/backend/deployment.yaml
+                        git commit -m "release: update backend image to ${FULL_IMAGE}" || echo "No changes to commit"
+                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git dev
+                        """
+                    }
                 }
             }
         }
