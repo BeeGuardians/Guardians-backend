@@ -26,9 +26,5 @@ WORKDIR /app
 # 앱 JAR 복사
 COPY --from=build /app/build/libs/guardians-0.0.1-SNAPSHOT.jar /app/app.jar
 
-# entrypoint.sh 복사
-COPY docker-entrypoint.sh /app/docker-entrypoint.sh
-RUN chmod +x /app/docker-entrypoint.sh
-
-# 엔트리포인트 변경
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+# 실행 명령어 설정
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
