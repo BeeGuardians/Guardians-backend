@@ -16,4 +16,5 @@ public class ResBoardDetailDto {
     private int likeCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long userId;
 }

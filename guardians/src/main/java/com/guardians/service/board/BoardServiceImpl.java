@@ -85,6 +85,7 @@ public class BoardServiceImpl implements BoardService {
                 .likeCount(board.getLikeCount())
                 .createdAt(board.getCreatedAt())
                 .updatedAt(board.getUpdatedAt())
+                .userId(board.getUser().getId())
                 .build();
     }
 
