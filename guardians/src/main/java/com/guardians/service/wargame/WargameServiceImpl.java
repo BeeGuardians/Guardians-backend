@@ -27,7 +27,7 @@ public class WargameServiceImpl implements WargameService {
     private final SolvedWargameRepository solvedWargameRepository;
     private final UserRepository userRepository;
     private final BookmarkRepository bookmarkRepository;
-    private final WargameLikeRepository wargameLikeRepository; // ✅ 추가
+    private final WargameLikeRepository wargameLikeRepository;
     private final UserStatsRepository userStatsRepository;
 
     @Override
@@ -37,12 +37,12 @@ public class WargameServiceImpl implements WargameService {
         return wargames.stream().map(wargame -> {
             boolean solved = false;
             boolean bookmarked = false;
-            boolean liked = false; // ✅ 선언
+            boolean liked = false;
 
             if (userId != null) {
                 solved = solvedWargameRepository.existsByUserIdAndWargameId(userId, wargame.getId());
                 bookmarked = bookmarkRepository.existsByUserIdAndWargameId(userId, wargame.getId());
-                liked = wargameLikeRepository.existsByUserIdAndWargameId(userId, wargame.getId()); // ✅ 수정
+                liked = wargameLikeRepository.existsByUserIdAndWargameId(userId, wargame.getId());
             }
 
             return ResWargameListDto.builder()
@@ -50,6 +50,7 @@ public class WargameServiceImpl implements WargameService {
                     .title(wargame.getTitle())
                     .description(wargame.getDescription())
                     .fileUrl(wargame.getFileUrl())
+                    .dockerImageUrl(wargame.getDockerImageUrl())
                     .category(wargame.getCategory().getId())
                     .difficulty(wargame.getDifficulty())
                     .likeCount(wargame.getLikeCount())
@@ -82,6 +83,7 @@ public class WargameServiceImpl implements WargameService {
                 .title(wargame.getTitle())
                 .description(wargame.getDescription())
                 .fileUrl(wargame.getFileUrl())
+                .dockerImageUrl(wargame.getDockerImageUrl())
                 .category(wargame.getCategory().getId())
                 .difficulty(wargame.getDifficulty())
                 .likeCount(wargame.getLikeCount())
