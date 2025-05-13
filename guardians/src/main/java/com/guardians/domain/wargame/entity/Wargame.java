@@ -24,6 +24,8 @@ public class Wargame {
 
     private String title;
 
+    private String dockerImageUrl;
+
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 

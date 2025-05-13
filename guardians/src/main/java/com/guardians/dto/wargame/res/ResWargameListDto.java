@@ -17,6 +17,7 @@ public class ResWargameListDto {
     private String title;
     private String description;
     private String fileUrl;
+    private String dockerImageUrl;
     private int likeCount;
 
     // 분류 및 난이도
