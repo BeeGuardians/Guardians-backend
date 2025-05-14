@@ -1,7 +1,10 @@
 package com.guardians.controller;
 
 import com.guardians.dto.common.ResWrapper;
+import com.guardians.dto.wargame.req.ReqCreateReviewDto;
 import com.guardians.dto.wargame.req.ReqSubmitFlagDto;
+import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
+import com.guardians.dto.wargame.res.ResReviewListDto;
 import com.guardians.dto.wargame.res.ResSubmitFlagDto;
 import com.guardians.dto.wargame.res.ResWargameListDto;
 import com.guardians.service.wargame.KubernetesPodService;
@@ -29,7 +32,7 @@ public class WargameController {
         Long userId = (session != null) ? (Long) session.getAttribute("userId") : null;
 
         List<ResWargameListDto> result = wargameService.getWargameList(userId);
-        return ResponseEntity.ok(ResWrapper.resSuccess("워게임 목록 조회 성공", result));
+        return ResponseEntity.ok(ResWrapper.resList("워게임 목록 조회 성공", result, result.size()));
     }
 
     @GetMapping("/{wargameId}")
@@ -73,6 +76,47 @@ public class WargameController {
         boolean liked = wargameService.toggleLike(userId, wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("좋아요 토글 완료", Map.of("liked", liked)));
     }
+
+    @GetMapping("/{wargameId}/reviews")
+    public ResponseEntity<ResWrapper<?>> getWargameReviews(
+            @PathVariable Long wargameId
+    ) {
+        List<ResReviewListDto> reviews = wargameService.getWargameReviews(wargameId);
+        return ResponseEntity.ok(ResWrapper.resList("워게임 리뷰 조회 성공", reviews, reviews.size()));
+    }
+
+    @PostMapping("/{wargameId}/reviews")
+    public ResponseEntity<ResWrapper<?>> createReview(
+            @PathVariable Long wargameId,
+            @RequestBody ReqCreateReviewDto request,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        ResReviewListDto result = wargameService.createReview(userId, wargameId, request);
+        return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 작성 성공", result));
+    }
+
+    @PatchMapping("/reviews/{reviewId}")
+    public ResponseEntity<ResWrapper<?>> updateReview(
+            @PathVariable Long reviewId,
+            @RequestBody ReqUpdateReviewDto request,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        ResReviewListDto result = wargameService.updateReview(userId, reviewId, request);
+        return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 수정 성공", result));
+    }
+
+    @DeleteMapping("/reviews/{reviewId}")
+    public ResponseEntity<ResWrapper<?>> deleteReview(
+            @PathVariable Long reviewId,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        wargameService.deleteReview(userId, reviewId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 삭제 성공", null));
+    }
+
 
     @PostMapping("/{wargameId}/start")
     public ResponseEntity<ResWrapper<?>> startWargamePod(

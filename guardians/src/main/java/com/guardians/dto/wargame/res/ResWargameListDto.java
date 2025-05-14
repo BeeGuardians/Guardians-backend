@@ -1,8 +1,7 @@
 package com.guardians.dto.wargame.res;
 
 import com.guardians.domain.wargame.entity.Difficulty;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import com.guardians.domain.wargame.entity.Wargame;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,7 +21,6 @@ public class ResWargameListDto {
 
     // 분류 및 난이도
     private Long category;
-
     private Difficulty difficulty;
 
     // 시간 정보
@@ -30,12 +28,25 @@ public class ResWargameListDto {
     private LocalDateTime updatedAt;
 
     // 유저 기준 상태
-    private boolean solved;  // 현재 로그인한 유저가 이 문제 풀었는지
-
-    // 유저 북마크 상태
+    private boolean solved;
     private boolean bookmarked;
-
-    // 유저 좋아요 상태
     private boolean liked;
 
+    public static ResWargameListDto fromEntity(Wargame wargame, boolean solved, boolean bookmarked, boolean liked) {
+        return ResWargameListDto.builder()
+                .id(wargame.getId())
+                .title(wargame.getTitle())
+                .description(wargame.getDescription())
+                .fileUrl(wargame.getFileUrl())
+                .dockerImageUrl(wargame.getDockerImageUrl())
+                .likeCount(wargame.getLikeCount())
+                .category(wargame.getCategory().getId())
+                .difficulty(wargame.getDifficulty())
+                .createdAt(wargame.getCreatedAt())
+                .updatedAt(wargame.getUpdatedAt())
+                .solved(solved)
+                .bookmarked(bookmarked)
+                .liked(liked)
+                .build();
+    }
 }
