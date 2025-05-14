@@ -39,8 +39,8 @@ public class MypageController {
 
     @Operation(summary = "작성한 게시글 리스트 조회", description = "내가 작성한 자유게시판 글 목록")
     @GetMapping("/boards")
-    public ResponseEntity<ResWrapper<?>> getPosts(@PathVariable Long userId) {
-        return ResponseEntity.ok(ResWrapper.resSuccess("내 게시글 조회 성공", mypageService.getPosts(userId)));
+    public ResponseEntity<ResWrapper<?>> getBoards(@PathVariable Long userId) {
+        return ResponseEntity.ok(ResWrapper.resSuccess("내 게시글 조회 성공", mypageService.getBoards(userId)));
     }
 
     @Operation(summary = "작성한 리뷰 리스트 조회", description = "내가 작성한 워게임 리뷰 목록")

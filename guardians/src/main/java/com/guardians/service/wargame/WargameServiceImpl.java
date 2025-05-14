@@ -181,7 +181,6 @@ public class WargameServiceImpl implements WargameService {
         if (likeOpt.isPresent()) {
             wargameLikeRepository.delete(likeOpt.get());
 
-            // 🔥 likeCount 감소
             wargame.setLikeCount(Math.max(0, wargame.getLikeCount() - 1));
             wargameRepository.save(wargame);
 

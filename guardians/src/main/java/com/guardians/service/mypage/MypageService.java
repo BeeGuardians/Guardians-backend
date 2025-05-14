@@ -10,7 +10,7 @@ public interface MypageService {
     ResProfileDto getProfile(Long userId);
     ResSolvedDto getSolvedProblems(Long userId);
     ResBookmarkDto getBookmarks(Long userId);
-    ResPostDto getPosts(Long userId);
+    ResPostDto getBoards(Long userId);
     ResReviewDto getReviews(Long userId);
     ResRankDto getRank(Long userId);
     List<ResRankDto> getAllRanks();
