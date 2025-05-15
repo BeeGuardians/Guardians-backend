@@ -87,6 +87,7 @@ public class UserController {
     ) {
         ResLoginDto loginUser = userService.login(loginDto);
         session.setAttribute("userId", loginUser.getId());
+        session.setAttribute("role", loginUser.getRole());
         return ResponseEntity.ok(ResWrapper.resSuccess("로그인 성공", loginUser));
     }
 
