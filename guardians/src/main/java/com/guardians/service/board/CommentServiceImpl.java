@@ -15,6 +15,7 @@ import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,14 +52,17 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
+    @Transactional
     @Override
     public List<ResCommentListDto> getCommentsByBoard(Long boardId) {
-        List<Comment> comments = commentRepository.findByBoardIdWithUser(boardId);
+        List<Comment> comments = commentRepository.findByBoardIdOrderByCreatedAtAsc(boardId);
 
         return comments.stream().map(comment -> ResCommentListDto.builder()
                         .commentId(comment.getId())
                         .content(comment.getContent())
                         .username(comment.getUser().getUsername())
+                        .createdAt(comment.getCreatedAt())
+                        .userId(comment.getUser().getId())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -83,6 +87,8 @@ public class CommentServiceImpl implements CommentService {
                 .commentId(updated.getId())
                 .content(updated.getContent())
                 .username(updated.getUser().getUsername())
+                .createdAt(comment.getCreatedAt())
+                .userId(comment.getUser().getId())
                 .build();
     }
 
