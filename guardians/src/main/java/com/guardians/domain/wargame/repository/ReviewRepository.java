@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findAllByUserId(Long userId);
-
+    List<Review> findAllByWargameId(Long wargameId);
+    List<Review> findAllByWargameIdOrderByCreatedAtAsc(Long wargameId);
 }

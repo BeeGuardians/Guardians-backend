@@ -23,4 +23,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     // 전체 질문 목록 조회 (작성자, 워게임 함께)
     @Query("SELECT q FROM Question q JOIN FETCH q.user u JOIN FETCH q.wargame w")
     List<Question> findAllWithUserAndWargame();
+
+    @Query("SELECT q FROM Question q JOIN FETCH q.user u JOIN FETCH q.wargame w WHERE w.id = :wargameId")
+    List<Question> findAllByWargameId(@Param("wargameId") Long wargameId);
 }

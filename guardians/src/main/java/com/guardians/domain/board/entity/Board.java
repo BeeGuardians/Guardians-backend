@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "boards")
@@ -19,7 +21,6 @@ public class Board {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 작성자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_boards_user"))
     private User user;
@@ -34,9 +35,11 @@ public class Board {
     @Column(name = "board_type", nullable = false)
     private BoardType boardType; // FREE, INQUIRY, STUDY (하드코딩 값)
 
+    @Builder.Default
     @Column(name = "view_count")
     private int viewCount = 0;
 
+    @Builder.Default
     @Column(name = "like_count")
     private int likeCount = 0;
 
@@ -45,6 +48,12 @@ public class Board {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<BoardLike> boardLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

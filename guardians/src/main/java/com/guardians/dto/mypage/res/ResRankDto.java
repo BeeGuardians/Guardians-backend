@@ -7,16 +7,19 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ResRankDto {
-
+    private String username;
     private int score;
     private int totalSolved;
-    private int rank; // 나중에 랭킹계산 기능 넣으면 여기서 뽑을 수 있음
+    private int rank;
+    private String userProfileUrl;
 
-    public static ResRankDto fromEntity(UserStats stats) {
+    public static ResRankDto fromEntity(UserStats stats, int rank) {
         return ResRankDto.builder()
+                .username(stats.getUser().getUsername())
                 .score(stats.getScore())
                 .totalSolved(stats.getTotalSolved())
-                .rank(0) // 랭킹 계산 안했으면 기본 0
+                .rank(rank)
+                .userProfileUrl(stats.getUser().getProfileImageUrl())
                 .build();
     }
 }

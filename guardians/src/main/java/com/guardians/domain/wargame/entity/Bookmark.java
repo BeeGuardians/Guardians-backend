@@ -26,5 +26,7 @@ public class Bookmark {
     @JoinColumn(name = "wargame_id")
     private Wargame wargame;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
 }

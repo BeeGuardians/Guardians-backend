@@ -19,4 +19,5 @@ public class SuccessResult {
 
     @Schema(description = "성공 메시지", example = "요청 성공")
     private String message;
+
 }

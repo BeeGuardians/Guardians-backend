@@ -24,14 +24,15 @@ public class Review {
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_reviews_user"))
     private User user;
 
-    // 관련 챌린지
+    // 관련 워게임
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "challenge_id", nullable = false)
+    @JoinColumn(name = "wargame_id", nullable = false)
     private Wargame wargame;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @Builder.Default
     @Column(name = "like_count", nullable = false)
     private int likeCount = 0;
 

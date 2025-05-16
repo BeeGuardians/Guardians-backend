@@ -1,5 +1,6 @@
 package com.guardians.controller;
 
+import com.guardians.domain.board.entity.BoardType;
 import com.guardians.dto.board.req.ReqCreateBoardDto;
 import com.guardians.dto.board.req.ReqUpdateBoardDto;
 import com.guardians.dto.board.res.ResBoardDetailDto;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/boards")
@@ -31,20 +33,22 @@ public class BoardController {
     @PostMapping
     public ResponseEntity<ResWrapper<?>> createBoard(
             HttpSession session,
+            @RequestParam("type") BoardType boardType,
             @RequestBody @Valid ReqCreateBoardDto dto
     ) {
         Long userId = (Long) session.getAttribute("userId");
-        ResCreateBoardDto result = boardService.createBoard(userId, dto);
+        ResCreateBoardDto result = boardService.createBoard(userId, dto, boardType);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글이 성공적으로 등록되었습니다.", result));
     }
 
     // 게시글 목록 조회
     @Operation(summary = "게시글 목록 조회", description = "모든 게시글을 조회합니다.")
     @GetMapping
-    public ResponseEntity<ResWrapper<?>> getBoardList() {
-        List<ResBoardListDto> result = boardService.getBoardList();
+    public ResponseEntity<ResWrapper<?>> getBoardList(@RequestParam("type") BoardType boardType) {
+        List<ResBoardListDto> result = boardService.getBoardList(boardType);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 목록 조회 성공", result));
     }
+
 
     // 게시글 상세 조회
     @Operation(summary = "게시글 상세 조회", description = "특정 게시글 ID로 상세 정보를 조회합니다.")
@@ -80,25 +84,18 @@ public class BoardController {
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 삭제 완료", null));
     }
 
-    //게시글 좋아요
-    @Operation(summary = "게시글 좋아요", description = "게시글에 좋아요를 추가합니다.")
+    // 게시글 좋아요 토글
     @PostMapping("/{boardId}/like")
-    public ResponseEntity<ResWrapper<?>> likeBoard(@PathVariable Long boardId) {
-        boardService.likeBoard(boardId);
-        return ResponseEntity.ok(ResWrapper.resSuccess("게시글 좋아요 성공", null));
+    public ResponseEntity<ResWrapper<?>> toggleBoardLike(
+            @PathVariable Long boardId,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        boolean liked = boardService.toggleLike(userId, boardId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("게시글 좋아요 토글 완료",
+                Map.of("liked", liked)
+        ));
     }
-    //게시글 좋아요 취소
-    @Operation(summary = "게시글 좋아요 취소", description = "게시글 좋아요를 취소합니다.")
-    @PatchMapping("/{boardId}/unlike")
-    public ResponseEntity<ResWrapper<?>> unlikeBoard(@PathVariable Long boardId) {
-        boardService.unlikeBoard(boardId);
-        return ResponseEntity.ok(ResWrapper.resSuccess("좋아요 취소 완료", null));
-    }
-
-
-
-
-
 
 
 }

@@ -28,9 +28,9 @@ public enum ErrorCode {
     WARGAME_NOT_FOUND(1401, "해당 워게임을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // 기타 (9000~)
-
-    NOT_VALID_ARGUMENT(9001, "입력 값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST)
-    ;
+    NOT_LOGGED_IN(9002, "로그인이 되지 않았습니다. 로그인을 해주세요.", HttpStatus.UNAUTHORIZED),
+    NOT_VALID_ARGUMENT(9001, "입력 값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
+    JOB_NOT_FOUND(9003, "채용 공고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 
 
     private final int code;

@@ -87,7 +87,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // AWS S3
-    implementation 'software.amazon.awssdk:s3:2.31.30'
+    implementation 'software.amazon.awssdk:s3:2.25.15'
+    implementation 'software.amazon.awssdk:auth:2.25.15'
+
+    // k8s
+    implementation "io.fabric8:kubernetes-client:6.10.0"
 
     // Vault
     implementation("org.springframework.cloud:spring-cloud-starter-vault-config")

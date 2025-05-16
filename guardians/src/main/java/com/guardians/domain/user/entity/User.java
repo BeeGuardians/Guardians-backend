@@ -1,5 +1,8 @@
 package com.guardians.domain.user.entity;
 
+import com.guardians.domain.badge.entity.UserBadge;
+import com.guardians.domain.board.entity.*;
+import com.guardians.domain.wargame.entity.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,6 +12,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -34,7 +39,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role; // USER, ADMIN
+    private String role;
 
     private LocalDateTime lastLoginAt;
 
@@ -46,13 +51,62 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public static User create(String username, String email, String password, String role) {
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserStats userStats;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Answer> answers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Board> boards = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Question> questions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<SolvedWargame> solvedWargames = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<UserBadge> userBadges = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Bookmark> bookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<BoardLike> boardLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<WargameLike> wargameLikes = new ArrayList<>();
+
+    public static User create(String username, String email, String password, String role, String profileImageUrl) {
         User user = new User();
         user.username = username;
         user.email = email;
         user.password = password;
         user.role = role;
+        user.profileImageUrl = profileImageUrl;
+
+        UserStats stats = UserStats.builder()
+                .user(user)
+                .score(1000)
+                .totalSolved(0)
+                .lastSolvedAt(null)
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        user.userStats = stats;
+
         return user;
+    }
+
+    public void setUserStats(UserStats userStats) {
+        this.userStats = userStats;
     }
 
     public void updateLastLoginAt() {
@@ -66,8 +120,8 @@ public class User {
     public void updateUsername(String username) {
         this.username = username;
     }
+
     public void updatePassword(String newPassword) {
         this.password = newPassword;
     }
-
 }

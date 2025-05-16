@@ -10,6 +10,7 @@ import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
 import com.guardians.service.auth.EmailVerificationService;
+import com.guardians.service.s3.S3Service;
 import com.guardians.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +22,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/users")
@@ -30,6 +34,7 @@ public class UserController {
 
     private final UserService   userService;
     private final EmailVerificationService emailVerificationService;
+    private final S3Service s3Service;
 
     // 회원가입
     @Operation(summary = "회원가입", description = "유저 정보를 받아 회원가입 처리")
@@ -75,37 +80,32 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("로그인 여부 확인", isLoggedIn));
     }
 
-    // 로그인
-    @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인")
     @PostMapping("/login")
     public ResponseEntity<ResWrapper<?>> login(
             @RequestBody @Valid ReqLoginDto loginDto,
             HttpSession session
     ) {
         ResLoginDto loginUser = userService.login(loginDto);
-
-        // Redis 세션에 사용자 정보 저장
         session.setAttribute("userId", loginUser.getId());
-
         return ResponseEntity.ok(ResWrapper.resSuccess("로그인 성공", loginUser));
     }
 
-    @Operation(summary = "로그아웃", description = "세션을 만료시키고 JSESSIONID 쿠키를 제거합니다.")
+
     @PostMapping("/logout")
     public ResponseEntity<ResWrapper<?>> logout(HttpServletRequest request, HttpServletResponse response) {
-        HttpSession session = request.getSession(false);
-
-        session.invalidate();
+        HttpSession session = request.getSession(false); // 세션이 없으면 null
+        if (session != null) {
+            session.invalidate();
+        }
 
         Cookie cookie = new Cookie("JSESSIONID", null);
-        cookie.setMaxAge(0);        // 만료
-        cookie.setPath("/");        // 경로 맞춰야 삭제됨
-        cookie.setHttpOnly(true);   // 클라이언트 JS 접근 방지 (선택)
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
         response.addCookie(cookie);
 
         return ResponseEntity.ok(ResWrapper.resSuccess("로그아웃 완료 (세션 + 쿠키 삭제)", null));
     }
-
 
     // 유저정보 - 닉네임 수정
     @PatchMapping("/{userId}/update")
@@ -121,7 +121,43 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 정보 수정 완료", updatedUser));
     }
 
-    // 프로필 사진 업로드
+    // 프로필 이미지 업로드
+    @Operation(summary = "프로필 이미지 업로드", description = "S3에 프로필 이미지를 업로드하고 URL을 저장")
+    @PostMapping("/{userId}/profile-image")
+    public ResponseEntity<ResWrapper<?>> uploadProfileImage(
+            @PathVariable Long userId,
+            @RequestParam("file") MultipartFile file,
+            HttpSession session
+    ) throws IOException {
+        Long sessionUserId = (Long) session.getAttribute("userId");
+        if (!sessionUserId.equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        String imageUrl = s3Service.uploadProfileImage(file);
+        userService.updateProfileImageUrl(userId, imageUrl);
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("프로필 이미지 업로드 성공", imageUrl));
+    }
+
+    // 프로필 이미지 삭제 → 기본 이미지로 복구
+    @Operation(summary = "프로필 이미지 삭제", description = "프로필 이미지를 기본 이미지로 롤백")
+    @DeleteMapping("/{userId}/profile-image")
+    public ResponseEntity<ResWrapper<?>> deleteProfileImage(
+            @PathVariable Long userId,
+            HttpSession session
+    ) {
+        Long sessionUserId = (Long) session.getAttribute("userId");
+        if (!sessionUserId.equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        String defaultUrl = s3Service.getDefaultProfileUrl();
+        userService.updateProfileImageUrl(userId, defaultUrl);
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("프로필 이미지 기본으로 변경 완료", defaultUrl));
+    }
+
 
     // 비밀번호 변경
     @PatchMapping("/{userId}/reset-password")
@@ -186,7 +222,7 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 탈퇴 완료", null));
     }
 
-    // UserId 반환
+    // UserId 정보 반환
     @GetMapping("/me")
     public ResponseEntity<ResWrapper<?>> getCurrentUser(HttpSession session) {
         try {

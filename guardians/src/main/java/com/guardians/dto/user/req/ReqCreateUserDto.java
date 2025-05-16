@@ -37,7 +37,7 @@ public class ReqCreateUserDto {
     }
 
     // Service에서 바로 entity 생성 가능
-    public User toEntity(String encodedPassword) {
-        return User.create(username, email, encodedPassword, "USER");
+    public User toEntity(String encodedPassword, String defaultProfileImageUrl) {
+        return User.create(username, email, encodedPassword, "USER", defaultProfileImageUrl);
     }
 }
