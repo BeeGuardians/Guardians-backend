@@ -54,8 +54,8 @@ public class MypageServiceImpl implements MypageService {
 
     @Transactional(readOnly = true)
     @Override
-    public ResPostDto getBoards(Long userId) {
-        return ResPostDto.fromEntities(
+    public ResBoardDto getBoards(Long userId) {
+        return ResBoardDto.fromEntities(
                 boardRepository.findAllByUserId(userId)
         );
     }
