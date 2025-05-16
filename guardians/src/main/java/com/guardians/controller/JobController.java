@@ -1,5 +1,7 @@
 package com.guardians.controller;
 
+import com.guardians.domain.user.entity.User;
+import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.job.req.ReqCreateJobDto;
 import com.guardians.dto.job.req.ReqUpdateJobDto;
@@ -25,6 +27,7 @@ import java.util.List;
 public class JobController {
 
     private final JobService jobService;
+    private final UserRepository userRepository;
 
     private static final String ADMIN_ROLE = "ADMIN";
 
@@ -35,7 +38,8 @@ public class JobController {
             @RequestBody @Valid ReqCreateJobDto dto,
             HttpSession session
     ) {
-        checkAdmin(session);
+        Long userId = (Long) session.getAttribute("userId");
+        checkAdmin(userId);
         jobService.createJob(dto);
         return ResponseEntity.ok(ResWrapper.resSuccess("채용공고 등록 완료", null));
     }
@@ -48,7 +52,8 @@ public class JobController {
             @RequestBody @Valid ReqUpdateJobDto dto,
             HttpSession session
     ) {
-        checkAdmin(session);
+        Long userId = (Long) session.getAttribute("userId");
+        checkAdmin(userId);
         jobService.updateJob(jobId, dto);
         return ResponseEntity.ok(ResWrapper.resSuccess("채용공고 수정 완료", null));
     }
@@ -59,7 +64,8 @@ public class JobController {
             @PathVariable Long jobId,
             HttpSession session
     ) {
-        checkAdmin(session);
+        Long userId = (Long) session.getAttribute("userId");
+        checkAdmin(userId);
         jobService.deleteJob(jobId);
         return ResponseEntity.ok(ResWrapper.resSuccess("채용공고 삭제 완료", null));
     }
@@ -79,11 +85,17 @@ public class JobController {
         ResJobDto result = jobService.getJobDetail(jobId);
         return ResponseEntity.ok(ResWrapper.resSuccess("채용공고 상세 조회 성공", result));
     }
-    private void checkAdmin(HttpSession session) {
+    private void checkAdmin(Long userId) {
+        if (userId == null) {
+            throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+        }
 
-        String role = (String) session.getAttribute("role");
-        if (role == null || !role.equals(ADMIN_ROLE)) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!"ADMIN".equals(user.getRole())) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
     }
+
 }

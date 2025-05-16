@@ -1,14 +1,15 @@
 package com.guardians.domain.job.entity;
 
+import com.guardians.dto.job.req.ReqUpdateJobDto;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Setter
+@Builder
+@AllArgsConstructor
 @Entity
 @Table(name = "job")
 @Getter
@@ -49,6 +50,7 @@ public class Job {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
 
     @PrePersist
     protected void onCreate() {
