@@ -28,13 +28,17 @@ public class MypageController {
     @Operation(summary = "푼 문제 리스트 조회", description = "내가 푼 문제 목록")
     @GetMapping("/solved")
     public ResponseEntity<ResWrapper<?>> getSolvedProblems(@PathVariable Long userId) {
-        return ResponseEntity.ok(ResWrapper.resSuccess("푼 문제 조회 성공", mypageService.getSolvedProblems(userId)));
+        var dto = mypageService.getSolvedProblems(userId);
+        int count = dto.getSolvedList().size();
+        return ResponseEntity.ok(ResWrapper.resList("푼 문제 조회 성공", dto, count));
     }
 
     @Operation(summary = "북마크한 문제 리스트 조회", description = "내가 북마크한 문제 목록")
     @GetMapping("/bookmarks")
     public ResponseEntity<ResWrapper<?>> getBookmarks(@PathVariable Long userId) {
-        return ResponseEntity.ok(ResWrapper.resSuccess("북마크 조회 성공", mypageService.getBookmarks(userId)));
+        var dto = mypageService.getBookmarks(userId); // ResBookmarkDto
+        int count = dto.getBookmarks().size();
+        return ResponseEntity.ok(ResWrapper.resList("북마크 조회 성공", dto, count));
     }
 
     @Operation(summary = "작성한 게시글 리스트 조회", description = "내가 작성한 자유게시판 글 목록")
@@ -48,7 +52,9 @@ public class MypageController {
     @Operation(summary = "작성한 리뷰 리스트 조회", description = "내가 작성한 워게임 리뷰 목록")
     @GetMapping("/reviews")
     public ResponseEntity<ResWrapper<?>> getReviews(@PathVariable Long userId) {
-        return ResponseEntity.ok(ResWrapper.resSuccess("내 리뷰 조회 성공", mypageService.getReviews(userId)));
+        var dto = mypageService.getReviews(userId); // ResReviewDto
+        int count = dto.getReviews().size();
+        return ResponseEntity.ok(ResWrapper.resList("내 리뷰 조회 성공", dto, count));
     }
 
     @Operation(summary = "내 랭킹 조회", description = "현재 내 랭킹 정보 조회")
