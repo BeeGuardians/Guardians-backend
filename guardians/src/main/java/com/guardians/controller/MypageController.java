@@ -40,9 +40,9 @@ public class MypageController {
     @Operation(summary = "작성한 게시글 리스트 조회", description = "내가 작성한 자유게시판 글 목록")
     @GetMapping("/boards")
     public ResponseEntity<ResWrapper<?>> getBoards(@PathVariable Long userId) {
-        var dto = mypageService.getBoards(userId);
-        int count = dto.getPosts().size();
-        return ResponseEntity.ok(ResWrapper.resList("내 게시글 조회 성공", dto, count));
+        var result = mypageService.getBoards(userId);
+        int count = result.getBoards().size();
+        return ResponseEntity.ok(ResWrapper.resList("내 게시글 조회 성공", result, count));
     }
 
     @Operation(summary = "작성한 리뷰 리스트 조회", description = "내가 작성한 워게임 리뷰 목록")

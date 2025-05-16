@@ -11,11 +11,11 @@ import java.util.stream.Collectors;
 @Builder
 public class ResBoardDto {
 
-    private List<PostInfo> posts;
+    private List<BoardInfo> boards;
 
     @Getter
     @Builder
-    public static class PostInfo {
+    public static class BoardInfo {
         private Long boardId;
         private String title;
         private String content;
@@ -24,9 +24,9 @@ public class ResBoardDto {
 
     public static ResBoardDto fromEntities(List<Board> boardList) {
         return ResBoardDto.builder()
-                .posts(
+                .boards(
                         boardList.stream()
-                                .map(board -> PostInfo.builder()
+                                .map(board -> BoardInfo.builder()
                                         .boardId(board.getId())
                                         .title(board.getTitle())
                                         .content(board.getContent())
