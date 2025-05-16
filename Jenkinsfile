@@ -1,87 +1,121 @@
 pipeline {
-  agent {
-    kubernetes {
-      yaml """
+    options {
+        skipDefaultCheckout()
+    }
+
+    agent {
+        kubernetes {
+            yaml """
 apiVersion: v1
 kind: Pod
+metadata:
+  labels:
+    app: jenkins-kaniko
 spec:
   containers:
-    - name: kaniko
-      image: gcr.io/kaniko-project/executor:latest
-      command:
-        - cat
-      tty: true
-      volumeMounts:
-        - name: docker-config
-          mountPath: /kaniko/.docker
+  - name: git
+    image: alpine/git:latest
+    command: ['sleep']
+    args: ['infinity']
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: workspace-volume
+
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    command: ['sleep']
+    args: ['infinity']
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "2048Mi"
+    volumeMounts:
+    - mountPath: "/kaniko/.docker"
+      name: docker-config
+    - mountPath: "/home/jenkins/agent"
+      name: workspace-volume
+
   volumes:
-    - name: docker-config
-      secret:
-        secretName: harbor-secret
+  - name: docker-config
+    secret:
+      secretName: harbor-secret
+      items:
+      - key: .dockerconfigjson
+        path: config.json
+  - name: workspace-volume
+    emptyDir: {}
 """
-    }
-  }
-
-  environment {
-    HARBOR_IMAGE = "harbor.yourdomain.com/yourproject/guardians"
-    IMAGE_TAG = "v${env.BUILD_NUMBER}"
-    FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        echo "[SKIPPED] Git checkout skipped."
-        // checkout scm
-      }
+        }
     }
 
-    stage('Gradle Build') {
-      steps {
-        echo "[SKIPPED] Gradle build skipped."
-        // dir('guardians') {
-        //   sh './gradlew clean build -x test'
-        // }
-      }
+    environment {
+        HARBOR_HOST = "harbor.example.com:30443"
+        HARBOR_IMAGE = "${HARBOR_HOST}/guardians/backend"
+        IMAGE_TAG = "v${BUILD_NUMBER}"
+        FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
     }
 
-    stage('Kaniko Build & Push') {
-      steps {
-        echo "[SKIPPED] Kaniko build skipped."
-        // container('kaniko') {
-        //   sh '''
-        //     /kaniko/executor \
-        //       --context=./guardians \
-        //       --dockerfile=./guardians/Dockerfile \
-        //       --destination=$FULL_IMAGE \
-        //       --insecure \
-        //       --skip-tls-verify
-        //   '''
-        // }
-      }
-    }
+    stages {
+        stage('Checkout') {
+            steps {
+                container('git') {
+                    checkout scm
+                }
+            }
+        }
 
-    stage('Update Deployment Manifest') {
-      steps {
-        echo "[SKIPPED] Manifest update skipped."
-        // dir('temp-infra-repo') {
-        //   git url: 'git@github.com:yourorg/infra-repo.git', branch: 'main', credentialsId: 'github-ssh'
-        //   sh "sed -i 's|image: .*|image: $FULL_IMAGE|' infra/manifest/deployment.yaml"
-        //   sh 'git config user.email "ci@yourdomain.com"'
-        //   sh 'git config user.name "Jenkins CI"'
-        //   sh 'git commit -am "ci: update image tag to $FULL_IMAGE"'
-        //   sh 'git push origin main'
-        // }
-      }
-    }
-  }
+        stage('Build and Push Docker Image') {
+            steps {
+                container('kaniko') {
+                    sh """
+                    echo "[START] Kaniko Build & Push"
+                    /kaniko/executor \
+                      --context=$WORKSPACE/guardians \
+                      --dockerfile=$WORKSPACE/guardians/Dockerfile \
+                      --destination=${FULL_IMAGE} \
+                      --insecure \
+                      --skip-tls-verify
+                    echo "[SUCCESS] Docker Image pushed to ${FULL_IMAGE}"
+                    """
+                }
+            }
+        }
 
-  post {
-    success {
-      echo "✅ [DRY RUN] Pipeline completed successfully (no steps executed)."
+        stage('Update Deployment YAML in Infra Repo') {
+            steps {
+                container('git') {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'github-token',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_TOKEN'
+                    )]) {
+                        sh """
+                        echo "[CLONE] Guardians-Infra"
+                        git clone --single-branch --branch dev https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git infra
+
+                        echo "[PATCH] Updating deployment.yaml image tag"
+                        sed -i "s|image: .*|image: ${FULL_IMAGE}|" infra/cloud-cluster/backend/deployment.yaml
+
+                        cd infra
+                        git config user.email "ci-bot@example.com"
+                        git config user.name "CI Bot"
+                        git add cloud-cluster/backend/deployment.yaml
+                        git commit -m "release : update backend image to guardians/backend:${IMAGE_TAG}" || echo "No changes to commit"
+                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git dev
+                        """
+                    }
+                }
+            }
+        }
     }
-    failure {
-      echo "❌ Pipeline failed (though all stages are currently skipped)."
-    }
-  }
 }
