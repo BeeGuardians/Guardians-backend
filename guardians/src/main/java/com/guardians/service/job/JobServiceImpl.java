@@ -26,19 +26,20 @@ public class JobServiceImpl implements JobService {
     @Override
     @Transactional
     public void createJob(ReqCreateJobDto dto) {
-        Job job = new Job();
-        job.setCompanyName(dto.getCompanyName());
-        job.setTitle(dto.getTitle());
-        job.setDescription(dto.getDescription());
-        job.setLocation(dto.getLocation());
-        job.setEmploymentType(dto.getEmploymentType());
-        job.setCareerLevel(dto.getCareerLevel());
-        job.setSalary(dto.getSalary());
-        job.setDeadline(dto.getDeadline());
-        job.setSourceUrl(dto.getSourceUrl());
-        job.setIsActive(true);
-        job.setCreatedAt(LocalDateTime.now());
-        job.setUpdatedAt(LocalDateTime.now());
+        Job job = Job.builder()
+                .companyName(dto.getCompanyName())
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .location(dto.getLocation())
+                .employmentType(dto.getEmploymentType())
+                .careerLevel(dto.getCareerLevel())
+                .salary(dto.getSalary())
+                .deadline(dto.getDeadline())
+                .sourceUrl(dto.getSourceUrl())
+                .isActive(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
 
         jobRepository.save(job);
     }
