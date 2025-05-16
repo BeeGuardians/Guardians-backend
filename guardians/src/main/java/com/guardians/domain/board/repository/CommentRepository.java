@@ -17,4 +17,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     //특정댓글 수정, 삭제용
     @Query("SELECT c FROM Comment c JOIN FETCH c.user WHERE c.id = :commentId")
     Optional<Comment> findByIdWithUser(@Param("commentId") Long commentId);
+
+    List<Comment> findByBoardIdOrderByCreatedAtAsc(Long boardId);
+
 }
