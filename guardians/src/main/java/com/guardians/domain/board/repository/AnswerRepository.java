@@ -14,5 +14,5 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     Optional<Answer> findByIdWithUser(@Param("id") Long id);
     int countByQuestionId(Long questionId);
 
-    List<Answer> findAllByQuestionId(Long questionId);
+    List<Answer> findAllByQuestionIdOrderByCreatedAtAsc(Long questionId);
 }
