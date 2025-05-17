@@ -61,8 +61,6 @@ spec:
     environment {
         HARBOR_HOST = "harbor.example.com:30443"
         HARBOR_IMAGE = "${HARBOR_HOST}/guardians/backend"
-        IMAGE_TAG = "v${BUILD_NUMBER}"
-        FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
     }
 
     stages {
@@ -70,6 +68,12 @@ spec:
             steps {
                 container('git') {
                     checkout scm
+                    script {
+                        sh "git config --global --add safe.directory ${env.WORKSPACE}"
+                        IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                        FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
+                        echo "Docker Image Tag: ${IMAGE_TAG}"
+                    }
                 }
             }
         }
