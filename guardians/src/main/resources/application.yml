@@ -65,8 +65,8 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${spring.mail.username}
+    password: ${spring.mail.password}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
