@@ -65,7 +65,7 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public List<ResAnswerListDto> getAnswerListByQuestion(Long questionId) {
         // 특정 질문에 대한 답변 목록 조회
-        List<Answer> answers = answerRepository.findAllByQuestionId(questionId);
+        List<Answer> answers = answerRepository.findAllByQuestionIdOrderByCreatedAtAsc(questionId);
 
         // DTO 변환
         return answers.stream()
@@ -73,6 +73,7 @@ public class AnswerServiceImpl implements AnswerService {
                         .id(a.getId())
                         .content(a.getContent())
                         .username(a.getUser().getUsername())
+                        .userId(a.getUser().getId())
                         .createdAt(a.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
@@ -99,6 +100,7 @@ public class AnswerServiceImpl implements AnswerService {
         // 결과 반환
         return ResUpdateAnswerDto.builder()
                 .id(updated.getId())
+                .userId(updated.getUser().getId())
                 .content(updated.getContent())
                 .build();
     }

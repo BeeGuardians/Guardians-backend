@@ -12,6 +12,8 @@ import com.guardians.dto.question.res.ResQuestionDetailDto;
 import com.guardians.dto.question.res.ResQuestionListDto;
 import com.guardians.service.answer.AnswerService;
 import com.guardians.service.question.QuestionService;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +32,9 @@ public class QnaController {
     // 질문 작성
     @PostMapping("/questions")
     public ResponseEntity<ResWrapper<?>> createQuestion(
-            @RequestParam Long userId,
-            @RequestBody ReqCreateQuestionDto dto) {
+            HttpSession session,
+            @RequestBody @Valid ReqCreateQuestionDto dto) {
+        Long userId = (Long) session.getAttribute("userId");
         questionService.createQuestion(userId, dto);
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 등록 완료", null));
     }
@@ -100,6 +103,7 @@ public class QnaController {
             @PathVariable Long answerId,
             @RequestBody ReqUpdateAnswerDto dto) {
         answerService.updateAnswer(userId, answerId, dto);
+
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 수정 완료", null));
     }
 

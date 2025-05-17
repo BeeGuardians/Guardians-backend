@@ -96,6 +96,7 @@ public class QuestionServiceImpl implements QuestionService {
                 .title(question.getTitle())
                 .content(question.getContent())
                 .username(question.getUser().getUsername())
+                .wargameId(question.getWargame().getId())
                 .wargameTitle(question.getWargame().getTitle())
                 .createdAt(question.getCreatedAt())
                 .updatedAt(question.getUpdatedAt())

@@ -12,4 +12,5 @@ import lombok.Setter;
 public class ResUpdateAnswerDto {
     private Long id;
     private String content;
+    private Long userId;
 }
