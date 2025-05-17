@@ -19,6 +19,9 @@ spring:
         default-context: guardians
         profile-separator: '/'
       fail-fast: true
+      config:
+        lifecycle:
+          enabled: true
 
   servlet:
     multipart:
@@ -62,8 +65,8 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${spring.mail.username}
-    password: ${spring.mail.password}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
