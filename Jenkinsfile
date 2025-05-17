@@ -69,6 +69,7 @@ spec:
                 container('git') {
                     checkout scm
                     script {
+                        sh "git config --global --add safe.directory ${env.WORKSPACE}"
                         IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                         FULL_IMAGE = "${HARBOR_IMAGE}:${IMAGE_TAG}"
                         echo "Docker Image Tag: ${IMAGE_TAG}"
