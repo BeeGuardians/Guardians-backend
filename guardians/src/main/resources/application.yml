@@ -57,7 +57,7 @@ spring:
     cookie:
       name : JSESSIONID
       same-site: none
-      secure: false
+      secure: ${COOKIE_SESSION}
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
