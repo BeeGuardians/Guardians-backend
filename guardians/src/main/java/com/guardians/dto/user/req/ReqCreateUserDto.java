@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 @Schema(description = "회원가입 요청 DTO")
 public class ReqCreateUserDto {
 
-    @Schema(description = "사용자 ID (3~20자)", example = "guardian123")
+    @Schema(description = "사용자 ID (3~40자)", example = "guardian123")
     @NotBlank(message = "아이디는 필수입니다.")
-    @Size(min = 3, max = 20)
+    @Size(min = 3, max = 40)
     private String username;
 
     @Schema(description = "사용자 이메일", example = "user@example.com")
