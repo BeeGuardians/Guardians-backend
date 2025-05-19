@@ -2,25 +2,25 @@ spring:
   application:
     name: guardians
 
-    config:
-      import: vault://
+  config:
+    import: vault://
 
-    cloud:
-      vault:
-        uri: ${VAULT_URI}
-        authentication: approle
-        app-role:
-          role-id: ${VAULT_ROLE_ID}
-          secret-id: ${VAULT_SECRET_ID}
-        kv:
+  cloud:
+    vault:
+      uri: ${VAULT_URI}
+      authentication: approle
+      app-role:
+        role-id: ${VAULT_ROLE_ID}
+        secret-id: ${VAULT_SECRET_ID}
+      kv:
+        enabled: true
+        backend: secret
+        default-context: guardians
+        profile-separator: '/'
+      fail-fast: true
+      config:
+        lifecycle:
           enabled: true
-          backend: secret
-          default-context: guardians
-          profile-separator: '/'
-        fail-fast: true
-        config:
-          lifecycle:
-            enabled: true
 
   servlet:
     multipart:
