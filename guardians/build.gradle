@@ -91,7 +91,7 @@ dependencies {
     implementation 'software.amazon.awssdk:auth:2.25.15'
 
     // k8s
-    implementation "io.fabric8:kubernetes-client:6.10.0"
+    implementation "io.fabric8:kubernetes-client:6.9.2"
 
     // Vault
     implementation("org.springframework.cloud:spring-cloud-starter-vault-config")
