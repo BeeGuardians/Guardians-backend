@@ -70,11 +70,13 @@ public class BoardServiceImpl implements BoardService {
                 .createdAt(board.getCreatedAt())
                 .build()).collect(Collectors.toList());
     }
-
+    @Transactional
     @Override
-    public ResBoardDetailDto getBoardDetail(Long boardId) {
+    public ResBoardDetailDto getBoardDetail(Long boardId,Long userId) {
         Board board = boardRepository.findByIdWithUser(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+
+        boolean liked = boardLikeRepository.existsByBoardIdAndUserId(boardId, userId);
 
         return ResBoardDetailDto.builder()
                 .boardId(board.getId())
@@ -86,9 +88,11 @@ public class BoardServiceImpl implements BoardService {
                 .createdAt(board.getCreatedAt())
                 .updatedAt(board.getUpdatedAt())
                 .userId(board.getUser().getId())
+                .boardType(board.getBoardType().name())
+                .liked(liked)
                 .build();
     }
-
+    @Transactional
     @Override
     public ResUpdateBoardDto updateBoard(Long userId, Long boardId, ReqUpdateBoardDto dto) {
         Board board = boardRepository.findByIdWithUser(boardId)
@@ -100,7 +104,6 @@ public class BoardServiceImpl implements BoardService {
 
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
-        board.setBoardType(dto.getBoardType());
         board.setUpdatedAt(LocalDateTime.now());
 
         Board updatedBoard = boardRepository.save(board);
@@ -111,6 +114,7 @@ public class BoardServiceImpl implements BoardService {
                 .content(updatedBoard.getContent())
                 .username(updatedBoard.getUser().getUsername())
                 .updatedAt(updatedBoard.getUpdatedAt())
+                .boardType(board.getBoardType().name())
                 .build();
     }
 

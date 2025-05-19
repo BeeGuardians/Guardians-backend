@@ -16,5 +16,8 @@ public class ResBoardDetailDto {
     private int likeCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String boardType;
     private Long userId;
+    private boolean liked;
+
 }
