@@ -133,7 +133,8 @@ public class WargameController {
         String namespace = "default";
 
         kubernetesPodService.createWargamePod(podName, wargameId, userId, namespace);
-        String url = "http://" + podName + ".example.com";
+
+        String url = "http://wargames.bee-guardians.com/wargame/" + wargameId + "/" + userId + "/";
 
         return ResponseEntity.ok(
                 ResWrapper.resSuccess("워게임 인스턴스 시작됨", Map.of(
@@ -159,9 +160,18 @@ public class WargameController {
 
         boolean deleted = kubernetesPodService.deleteWargamePod(podName, namespace);
         if (deleted) {
-            return ResponseEntity.ok(ResWrapper.resSuccess("워게임 인스턴스 종료됨", null));
+            return ResponseEntity.ok(
+                    ResWrapper.resSuccess("워게임 인스턴스 종료됨", Map.of(
+                            "podName", podName,
+                            "url", "http://wargames.bee-guardians.com/wargame/" + wargameId + "/" + userId + "/"
+                    ))
+            );
         } else {
-            return ResponseEntity.ok(ResWrapper.resSuccess("종료할 워게임 인스턴스를 찾을 수 없음", null));
+            return ResponseEntity.ok(
+                    ResWrapper.resSuccess("종료할 워게임 인스턴스를 찾을 수 없음", Map.of(
+                            "podName", podName
+                    ))
+            );
         }
     }
 
