@@ -2,6 +2,7 @@ package com.guardians.dto.board.res;
 
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -14,4 +15,5 @@ public class ResUpdateBoardDto {
     private String content;
     private String username;
     private LocalDateTime updatedAt;
+    private String boardType;
 }
