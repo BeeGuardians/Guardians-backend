@@ -132,7 +132,7 @@ public class WargameController {
         String podName = "wargame-" + userId + "-" + wargameId;
         String namespace = "default";
 
-        kubernetesPodService.createWargamePod(podName, wargameId, namespace);
+        kubernetesPodService.createWargamePod(podName, wargameId, userId, namespace);
         String url = "http://" + podName + ".example.com";
 
         return ResponseEntity.ok(

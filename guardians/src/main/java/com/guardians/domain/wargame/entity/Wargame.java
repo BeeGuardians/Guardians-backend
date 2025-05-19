@@ -54,15 +54,19 @@ public class Wargame {
     @OneToOne(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private WargameFlag wargameFlag;
 
+    @Builder.Default
     @OneToMany(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<WargameLike> wargameLikes = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<SolvedWargame> solvedWargames = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Question> questions = new ArrayList<>();
 

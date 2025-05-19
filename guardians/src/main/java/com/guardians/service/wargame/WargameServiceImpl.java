@@ -1,6 +1,7 @@
 package com.guardians.service.wargame;
 
 import com.guardians.domain.user.entity.User;
+import com.guardians.domain.user.entity.UserStats;
 import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.domain.user.repository.UserStatsRepository;
 import com.guardians.domain.wargame.entity.*;
@@ -59,6 +60,7 @@ public class WargameServiceImpl implements WargameService {
         boolean solved = false;
         boolean bookmarked = false;
         boolean liked = false;
+        int score = wargame.getScore();
 
         if (userId != null) {
             solved = solvedWargameRepository.existsByUserIdAndWargameId(userId, wargameId);
@@ -91,6 +93,11 @@ public class WargameServiceImpl implements WargameService {
                     .build());
             long solvedCount = solvedWargameRepository.countByUser(user);
             userStatsRepository.updateSolvedCount(user.getId(), solvedCount);
+
+            int score = wargame.getScore();
+            UserStats stats = userStatsRepository.findById(user.getId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+            stats.addScore(score);
         }
 
         return ResSubmitFlagDto.builder()

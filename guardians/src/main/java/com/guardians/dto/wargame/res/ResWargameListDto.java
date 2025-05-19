@@ -18,6 +18,7 @@ public class ResWargameListDto {
     private String fileUrl;
     private String dockerImageUrl;
     private int likeCount;
+    private int score;
 
     // 분류 및 난이도
     private Long category;
@@ -40,6 +41,7 @@ public class ResWargameListDto {
                 .fileUrl(wargame.getFileUrl())
                 .dockerImageUrl(wargame.getDockerImageUrl())
                 .likeCount(wargame.getLikeCount())
+                .score(wargame.getScore())
                 .category(wargame.getCategory().getId())
                 .difficulty(wargame.getDifficulty())
                 .createdAt(wargame.getCreatedAt())

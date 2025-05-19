@@ -36,6 +36,7 @@ public class Question {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Builder.Default
     @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Answer> answers = new ArrayList<>();
 
@@ -44,4 +45,5 @@ public class Question {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 }

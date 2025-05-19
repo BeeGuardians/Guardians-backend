@@ -33,4 +33,10 @@ public class UserStats {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void addScore(int scoreToAdd) {
+        this.score += scoreToAdd;
+        this.updatedAt = LocalDateTime.now(); // 마지막 업데이트 타임도 갱신해주면 굿
+    }
+
 }
