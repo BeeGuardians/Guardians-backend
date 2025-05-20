@@ -21,7 +21,7 @@ public class ResSolvedDto {
         private String title;
         private String category;
         private Integer score;
-        private LocalDateTime createdAt;
+        private LocalDateTime solvedAt;
     }
 
     public static ResSolvedDto fromEntities(List<SolvedWargame> solvedList) {
@@ -33,7 +33,7 @@ public class ResSolvedDto {
                                         .title(solved.getWargame().getTitle())
                                         .category(solved.getWargame().getCategory().getName())
                                         .score(solved.getWargame().getScore())
-                                        .createdAt(solved.getWargame().getCreatedAt())
+                                        .solvedAt(solved.getSolvedAt())
                                         .build())
                                 .collect(Collectors.toList())
                 )

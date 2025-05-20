@@ -85,6 +85,7 @@ public class JobController {
         ResJobDto result = jobService.getJobDetail(jobId);
         return ResponseEntity.ok(ResWrapper.resSuccess("채용공고 상세 조회 성공", result));
     }
+
     private void checkAdmin(Long userId) {
         if (userId == null) {
             throw new CustomException(ErrorCode.NOT_LOGGED_IN);

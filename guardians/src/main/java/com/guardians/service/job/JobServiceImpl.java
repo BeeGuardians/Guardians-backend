@@ -63,6 +63,7 @@ public class JobServiceImpl implements JobService {
                         .companyName(job.getCompanyName())
                         .location(job.getLocation())
                         .employmentType(job.getEmploymentType())
+                        .careerLevel(job.getCareerLevel())
                         .deadline(job.getDeadline())
                         .build())
                 .collect(Collectors.toList());
