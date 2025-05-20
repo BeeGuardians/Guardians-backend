@@ -1,13 +1,24 @@
 package com.guardians.domain.wargame.repository;
 
 import com.guardians.domain.wargame.entity.Wargame;
+import com.guardians.dto.wargame.res.ResHotWargameDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
+import org.springframework.data.jpa.repository.Query;
 
 public interface WargameRepository extends JpaRepository<Wargame, Long> {
 
-    List<Wargame> findByCategory_Id(Long categoryId);
-
-    List<Wargame> findByTitleContaining(String keyword);
+    @Query("""
+        SELECT new com.guardians.dto.wargame.res.ResHotWargameDto(
+            w.id,
+            w.title,
+            COUNT(sw)
+        )
+        FROM SolvedWargame sw
+        JOIN sw.wargame w
+        GROUP BY w.id, w.title
+        ORDER BY COUNT(sw) DESC
+    """)
+    Page<ResHotWargameDto> findHotWargames(Pageable pageable);
 }

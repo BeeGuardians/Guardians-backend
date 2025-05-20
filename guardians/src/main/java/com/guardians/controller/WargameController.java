@@ -4,9 +4,9 @@ import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.wargame.req.ReqCreateReviewDto;
 import com.guardians.dto.wargame.req.ReqSubmitFlagDto;
 import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
-import com.guardians.dto.wargame.res.ResReviewListDto;
-import com.guardians.dto.wargame.res.ResSubmitFlagDto;
-import com.guardians.dto.wargame.res.ResWargameListDto;
+import com.guardians.dto.wargame.res.*;
+import com.guardians.exception.CustomException;
+import com.guardians.exception.ErrorCode;
 import com.guardians.service.wargame.KubernetesPodService;
 import com.guardians.service.wargame.WargameService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -173,6 +174,42 @@ public class WargameController {
                     ))
             );
         }
+    }
+
+    @GetMapping("/{wargameId}/status")
+    public ResponseEntity<ResWrapper<?>> getPodStatus(
+            @PathVariable Long wargameId,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+        }
+
+        String podName = "wargame-" + userId + "-" + wargameId;
+        String namespace = "default";
+
+        PodStatusDto podStatus = kubernetesPodService.getPodStatus(podName, namespace);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("status", podStatus.getStatus());
+        result.put("url", podStatus.getUrl());
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("Pod 상태 조회 성공", result));
+    }
+
+    @GetMapping("/hot")
+    public ResponseEntity<ResWrapper<?>> getHotWargames() {
+        List<ResHotWargameDto> hotWargames = wargameService.getHotWargames();
+        return ResponseEntity.ok(
+                ResWrapper.resList("지금 핫한 워게임 TOP 10", hotWargames, hotWargames.size())
+        );
+    }
+
+    @GetMapping("/{wargameId}/active-users/list")
+    public ResponseEntity<ResWrapper<?>> getActiveUserList(@PathVariable Long wargameId) {
+        List<ResUserStatusDto> users = wargameService.getActiveUsersByWargame(wargameId);
+        return ResponseEntity.ok(ResWrapper.resList("현재 워게임 풀고 있는 유저 목록", users, users.size()));
     }
 
 

@@ -2,22 +2,20 @@ package com.guardians.service.wargame;
 
 import com.guardians.domain.wargame.entity.Wargame;
 import com.guardians.domain.wargame.repository.WargameRepository;
+import com.guardians.dto.wargame.res.PodStatusDto;
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
-import io.fabric8.kubernetes.api.model.StatusDetails;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressBackendBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressBuilder;
-import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.ConfigBuilder;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,22 +38,18 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
     @Override
     public void createWargamePod(String podName, Long wargameId, Long userId, String namespace) {
         try (KubernetesClient client = getK8sClient()) {
-            // 1. 워게임 정보 가져오기
             Wargame wargame = wargameRepository.findById(wargameId)
                     .orElseThrow(() -> new IllegalArgumentException("해당 워게임이 존재하지 않습니다."));
             String imageName = wargame.getDockerImageUrl();
 
-            // 2. 이미 Pod가 존재하면 삭제 후 대기
             if (client.pods().inNamespace(namespace).withName(podName).get() != null) {
                 deleteWargamePod(podName, namespace);
 
-                boolean podDeleted = false, svcDeleted = false, ingDeleted = false;
                 int retry = 0;
-
                 while (retry < 10) {
-                    podDeleted = client.pods().inNamespace(namespace).withName(podName).get() == null;
-                    svcDeleted = client.services().inNamespace(namespace).withName("svc-" + userId + "-" + wargameId).get() == null;
-                    ingDeleted = client.network().v1().ingresses().inNamespace(namespace).withName("ing-" + userId + "-" + wargameId).get() == null;
+                    boolean podDeleted = client.pods().inNamespace(namespace).withName(podName).get() == null;
+                    boolean svcDeleted = client.services().inNamespace(namespace).withName("svc-" + userId + "-" + wargameId).get() == null;
+                    boolean ingDeleted = client.network().v1().ingresses().inNamespace(namespace).withName("ing-" + userId + "-" + wargameId).get() == null;
 
                     if (podDeleted && svcDeleted && ingDeleted) break;
 
@@ -63,12 +57,9 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
                     retry++;
                 }
 
-                if (!(podDeleted && svcDeleted && ingDeleted)) {
-                    throw new RuntimeException("기존 인스턴스 삭제가 지연되어 새 인스턴스를 생성할 수 없습니다.");
-                }
+                if (retry == 10) throw new RuntimeException("기존 인스턴스 삭제 지연");
             }
 
-            // 3. Pod 생성
             Pod pod = new PodBuilder()
                     .withNewMetadata().withName(podName).addToLabels("app", podName).endMetadata()
                     .withNewSpec()
@@ -81,20 +72,19 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
                     .build();
             client.pods().inNamespace(namespace).resource(pod).create();
 
-            // 4. Service 생성
-            io.fabric8.kubernetes.api.model.Service svc = new io.fabric8.kubernetes.api.model.ServiceBuilder()
-                    .withNewMetadata().withName("svc-" + userId + "-" + wargameId).endMetadata()
-                    .withNewSpec()
-                    .addNewPort()
-                    .withPort(80)
-                    .withTargetPort(new IntOrString(8000))
-                    .endPort()
-                    .withSelector(Map.of("app", podName))
-                    .endSpec()
-                    .build();
-            client.services().inNamespace(namespace).resource(svc).create();
+            client.services().inNamespace(namespace).resource(
+                    new io.fabric8.kubernetes.api.model.ServiceBuilder()
+                            .withNewMetadata().withName("svc-" + userId + "-" + wargameId).endMetadata()
+                            .withNewSpec()
+                            .addNewPort()
+                            .withPort(80)
+                            .withTargetPort(new IntOrString(8000))
+                            .endPort()
+                            .withSelector(Map.of("app", podName))
+                            .endSpec()
+                            .build()
+            ).create();
 
-            // 5. Ingress 생성
             Ingress ingress = new IngressBuilder()
                     .withNewMetadata()
                     .withName("ing-" + userId + "-" + wargameId)
@@ -123,7 +113,6 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
                     .build();
             client.network().v1().ingresses().inNamespace(namespace).resource(ingress).create();
 
-            // 6. 인그레스 등록 후 대기 (URL 접속 가능성 고려)
             Thread.sleep(3000);
         } catch (Exception e) {
             throw new RuntimeException("워게임 인스턴스 생성 실패: " + e.getMessage(), e);
@@ -133,8 +122,9 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
     @Override
     public boolean deleteWargamePod(String podName, String namespace) {
         try (KubernetesClient client = getK8sClient()) {
-            String userId = podName.split("-")[1];
-            String wargameId = podName.split("-")[2];
+            String[] parts = podName.split("-");
+            String userId = parts[1];
+            String wargameId = parts[2];
 
             client.pods().inNamespace(namespace).withName(podName).delete();
             client.services().inNamespace(namespace).withName("svc-" + userId + "-" + wargameId).delete();
@@ -147,7 +137,6 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
                 boolean ingDeleted = client.network().v1().ingresses().inNamespace(namespace).withName("ing-" + userId + "-" + wargameId).get() == null;
 
                 if (podDeleted && svcDeleted && ingDeleted) return true;
-
                 Thread.sleep(1000);
                 retry++;
             }
@@ -160,10 +149,52 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
     }
 
     @Override
-    public String getPodStatus(String podName, String namespace) {
+    public List<Pod> getRunningPodsByWargameId(Long wargameId, String namespace) {
+        try (KubernetesClient client = getK8sClient()) {
+            return client.pods()
+                    .inNamespace(namespace)
+                    .list()
+                    .getItems()
+                    .stream()
+                    .filter(pod -> {
+                        String name = pod.getMetadata().getName();
+                        String phase = pod.getStatus().getPhase();
+                        return name.contains("-" + wargameId) && "Running".equals(phase);
+                    })
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public PodStatusDto getPodStatus(String podName, String namespace) {
         try (KubernetesClient client = getK8sClient()) {
             Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
-            return pod != null ? pod.getStatus().getPhase() : "Not Found";
+
+            if (pod == null) {
+                return new PodStatusDto("Not Found", null);
+            }
+
+            if (pod.getMetadata().getDeletionTimestamp() != null) {
+                return new PodStatusDto("Terminating", generateIngressUrl(podName));
+            }
+
+            String phase = pod.getStatus().getPhase();
+            if ("Succeeded".equals(phase) || "Failed".equals(phase)) {
+                return new PodStatusDto("Not Found", null);
+            }
+
+            return new PodStatusDto(phase, generateIngressUrl(podName));
+        }
+    }
+
+    public String generateIngressUrl(String podName) {
+        try {
+            String[] parts = podName.split("-");
+            Long userId = Long.parseLong(parts[1]);
+            Long wargameId = Long.parseLong(parts[2]);
+            return String.format("http://wargames.bee-guardians.com/wargame/%d/%d/", wargameId, userId);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid pod name format: " + podName);
         }
     }
 }

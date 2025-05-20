@@ -8,17 +8,20 @@ import com.guardians.domain.wargame.entity.*;
 import com.guardians.domain.wargame.repository.*;
 import com.guardians.dto.wargame.req.ReqCreateReviewDto;
 import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
-import com.guardians.dto.wargame.res.ResReviewListDto;
-import com.guardians.dto.wargame.res.ResSubmitFlagDto;
-import com.guardians.dto.wargame.res.ResWargameListDto;
+import com.guardians.dto.wargame.res.*;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
+import io.fabric8.kubernetes.api.model.Pod;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,6 +37,8 @@ public class WargameServiceImpl implements WargameService {
     private final WargameLikeRepository wargameLikeRepository;
     private final UserStatsRepository userStatsRepository;
     private final ReviewRepository reviewRepository;
+    private final KubernetesPodService kubernetesPodService;
+
 
     @Override
     public List<ResWargameListDto> getWargameList(Long userId) {
@@ -219,4 +224,32 @@ public class WargameServiceImpl implements WargameService {
 
         reviewRepository.delete(review);
     }
+
+    @Override
+    public List<ResHotWargameDto> getHotWargames() {
+        Pageable top10 = PageRequest.of(0, 10);
+        return wargameRepository.findHotWargames(top10).getContent();
+    }
+
+    @Override
+    public List<ResUserStatusDto> getActiveUsersByWargame(Long wargameId) {
+        String namespace = "default";
+        List<Pod> pods = kubernetesPodService.getRunningPodsByWargameId(wargameId, namespace);
+
+        return pods.stream().map(pod -> {
+            String podName = pod.getMetadata().getName();
+            String[] parts = podName.split("-");
+            Long userId = Long.parseLong(parts[1]);
+
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) return null;
+
+            return new ResUserStatusDto(
+                    user.getUsername(),
+                    pod.getMetadata().getCreationTimestamp(), // 접속 시간
+                    false
+            );
+        }).filter(Objects::nonNull).toList();
+    }
+
 }
