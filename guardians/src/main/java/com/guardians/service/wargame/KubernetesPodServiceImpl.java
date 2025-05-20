@@ -25,7 +25,7 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
 
     private KubernetesClient getK8sClient() {
         if ("true".equalsIgnoreCase(System.getenv("IN_CLUSTER"))) {
-            return new DefaultKubernetesClient(Config.autoConfigure());
+            return new DefaultKubernetesClient(Config.autoConfigure(null));
         } else {
             Config config = new ConfigBuilder()
                     .withMasterUrl(System.getenv("K8S_SERVER"))
