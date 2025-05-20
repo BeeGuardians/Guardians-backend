@@ -131,7 +131,7 @@ public class WargameController {
         }
 
         String podName = "wargame-" + userId + "-" + wargameId;
-        String namespace = "default";
+        String namespace = "ns-wargame";
 
         kubernetesPodService.createWargamePod(podName, wargameId, userId, namespace);
 
