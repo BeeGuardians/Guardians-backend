@@ -94,17 +94,15 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
                     .withNewMetadata()
                     .withName("ing-" + userId + "-" + wargameId)
                     .withNamespace(namespace)
-                    .addToAnnotations("nginx.ingress.kubernetes.io/rewrite-target", "/$2")
-                    .addToAnnotations("nginx.ingress.kubernetes.io/use-regex", "true")
                     .endMetadata()
                     .withNewSpec()
                     .withIngressClassName("nginx")
                     .addNewRule()
-                    .withHost("wargames.bee-guardians.com")
+                    .withHost(wargameId + "-" + userId + ".wargames.bee-guardians.com")
                     .withNewHttp()
                     .addNewPath()
-                    .withPath("/wargame/" + wargameId + "/" + userId + "(/|$)(.*)")
-                    .withPathType("ImplementationSpecific")
+                    .withPath("/")
+                    .withPathType("Prefix")
                     .withBackend(new IngressBackendBuilder()
                             .withNewService()
                             .withName("svc-" + userId + "-" + wargameId)
@@ -197,7 +195,7 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
             String[] parts = podName.split("-");
             Long userId = Long.parseLong(parts[1]);
             Long wargameId = Long.parseLong(parts[2]);
-            return String.format("http://wargames.bee-guardians.com/wargame/%d/%d/", wargameId, userId);
+            return String.format("https://%d-%d.wargames.bee-guardians.com", wargameId, userId);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid pod name format: " + podName);
         }
