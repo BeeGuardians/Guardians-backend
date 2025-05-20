@@ -25,9 +25,9 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
 
     private KubernetesClient getK8sClient() {
         if ("true".equalsIgnoreCase(System.getenv("IN_CLUSTER"))) {
-            return new DefaultKubernetesClient(Config.autoConfigure(null))
-                    .withNamespace("ns-wargame")
-                    .build();
+            Config config = Config.autoConfigure(null);
+            config.setNamespace("ns-wargame");
+            return new DefaultKubernetesClient(config);
         } else {
             Config config = new ConfigBuilder()
                     .withMasterUrl(System.getenv("K8S_SERVER"))
