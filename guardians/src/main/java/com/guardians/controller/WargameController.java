@@ -135,7 +135,7 @@ public class WargameController {
 
         kubernetesPodService.createWargamePod(podName, wargameId, userId, namespace);
 
-        String url = "http://wargames.bee-guardians.com/wargame/" + wargameId + "/" + userId + "/";
+        String url = String.format("https://%d-%d.wargames.bee-guardians.com", wargameId, userId);
 
         return ResponseEntity.ok(
                 ResWrapper.resSuccess("워게임 인스턴스 시작됨", Map.of(
