@@ -24,15 +24,18 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
     private final WargameRepository wargameRepository;
 
     private KubernetesClient getK8sClient() {
-        Config config = new ConfigBuilder()
-                .withMasterUrl(System.getenv("K8S_SERVER"))
-                .withClientCertData(System.getenv("K8S_CLIENT_CERT"))
-                .withClientKeyData(System.getenv("K8S_CLIENT_KEY"))
-                .withNamespace(System.getenv("K8S_NAMESPACE"))
-                .withTrustCerts(true)
-                .build();
-
-        return new DefaultKubernetesClient(config);
+        if ("true".equalsIgnoreCase(System.getenv("IN_CLUSTER"))) {
+            return new DefaultKubernetesClient(Config.autoConfigure(null));
+        } else {
+            Config config = new ConfigBuilder()
+                    .withMasterUrl(System.getenv("K8S_SERVER"))
+                    .withClientCertData(System.getenv("K8S_CLIENT_CERT"))
+                    .withClientKeyData(System.getenv("K8S_CLIENT_KEY"))
+                    .withNamespace(System.getenv("K8S_NAMESPACE"))
+                    .withTrustCerts(true)
+                    .build();
+            return new DefaultKubernetesClient(config);
+        }
     }
 
     @Override
