@@ -157,7 +157,7 @@ public class WargameController {
         }
 
         String podName = "wargame-" + userId + "-" + wargameId;
-        String namespace = "default";
+        String namespace = "ns-wargame";
 
         boolean deleted = kubernetesPodService.deleteWargamePod(podName, namespace);
         if (deleted) {
@@ -187,7 +187,7 @@ public class WargameController {
         }
 
         String podName = "wargame-" + userId + "-" + wargameId;
-        String namespace = "default";
+        String namespace = "ns-wargame";
 
         PodStatusDto podStatus = kubernetesPodService.getPodStatus(podName, namespace);
 

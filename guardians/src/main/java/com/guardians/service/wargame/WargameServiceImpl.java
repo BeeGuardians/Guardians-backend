@@ -233,7 +233,7 @@ public class WargameServiceImpl implements WargameService {
 
     @Override
     public List<ResUserStatusDto> getActiveUsersByWargame(Long wargameId) {
-        String namespace = "default";
+        String namespace = "ns-wargame";
         List<Pod> pods = kubernetesPodService.getRunningPodsByWargameId(wargameId, namespace);
 
         return pods.stream().map(pod -> {
