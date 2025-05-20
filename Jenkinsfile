@@ -108,7 +108,7 @@ spec:
                         git clone --single-branch --branch dev https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git infra
 
                         echo "[PATCH] Updating deployment.yaml image tag"
-                        sed -i "s|image: .*|image: ${FULL_IMAGE}|" infra/cloud-cluster/backend/deployment.yaml
+                        sed -i "s|image: .*|image: ${FULL_IMAGE}|" infra/cloud-cluster/backend/deployment-dev.yaml
 
                         cd infra
                         git config user.email "ci-bot@example.com"
