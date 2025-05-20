@@ -113,7 +113,7 @@ spec:
                         cd infra
                         git config user.email "ci-bot@example.com"
                         git config user.name "CI Bot"
-                        git add cloud-cluster/backend/deployment.yaml
+                        git add cloud-cluster/backend/deployment-dev.yaml
                         git commit -m "release : update backend image to guardians/backend:${IMAGE_TAG}" || echo "No changes to commit"
                         git push https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git dev
                         """
