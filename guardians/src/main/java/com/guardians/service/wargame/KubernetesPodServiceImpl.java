@@ -25,9 +25,7 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
 
     private KubernetesClient getK8sClient() {
         if ("true".equalsIgnoreCase(System.getenv("IN_CLUSTER"))) {
-            Config config = Config.autoConfigure(null);
-            config.setNamespace("ns-wargame");
-            return new DefaultKubernetesClient(config);
+            return new DefaultKubernetesClient(Config.autoConfigure(null));
         } else {
             Config config = new ConfigBuilder()
                     .withMasterUrl(System.getenv("K8S_SERVER"))
@@ -98,10 +96,10 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
                     .withNewSpec()
                     .withIngressClassName("nginx")
                     .addNewRule()
-                    .withHost(wargameId + "-" + userId + ".wargames.bee-guardians.com")
+                    .withHost(String.format("%d-%d.wargames.bee-guardians.com", wargameId, userId))
                     .withNewHttp()
                     .addNewPath()
-                    .withPath("/")
+                    .withPath("/") // 루트로 노출
                     .withPathType("Prefix")
                     .withBackend(new IngressBackendBuilder()
                             .withNewService()
@@ -190,14 +188,17 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
         }
     }
 
+    @Override
     public String generateIngressUrl(String podName) {
         try {
             String[] parts = podName.split("-");
             Long userId = Long.parseLong(parts[1]);
             Long wargameId = Long.parseLong(parts[2]);
+
             return String.format("https://%d-%d.wargames.bee-guardians.com", wargameId, userId);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid pod name format: " + podName);
         }
     }
+
 }

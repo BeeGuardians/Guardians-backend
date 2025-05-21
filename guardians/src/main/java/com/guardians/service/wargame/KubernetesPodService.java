@@ -10,6 +10,7 @@ public interface KubernetesPodService {
     boolean deleteWargamePod(String podName, String namespace);
     PodStatusDto getPodStatus(String podName, String namespace); // ✅ 인터페이스도 DTO로 변경
     List<Pod> getRunningPodsByWargameId(Long wargameId, String namespace);
+    String generateIngressUrl(String podName);
 
 }
 

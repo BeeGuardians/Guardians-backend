@@ -164,10 +164,11 @@ public class WargameController {
             return ResponseEntity.ok(
                     ResWrapper.resSuccess("워게임 인스턴스 종료됨", Map.of(
                             "podName", podName,
-                            "url", "http://wargames.bee-guardians.com/wargame/" + wargameId + "/" + userId + "/"
+                            "url", kubernetesPodService.generateIngressUrl(podName)
                     ))
             );
-        } else {
+        }
+        else {
             return ResponseEntity.ok(
                     ResWrapper.resSuccess("종료할 워게임 인스턴스를 찾을 수 없음", Map.of(
                             "podName", podName
