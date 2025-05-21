@@ -24,4 +24,7 @@ public interface BoardService {
     void deleteBoard(Long userId, Long boardId);
 
     boolean toggleLike(Long userId, Long boardId);
+
+    void increaseViewCount(Long boardId);
+
 }

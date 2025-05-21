@@ -15,6 +15,7 @@ import com.guardians.dto.board.res.ResCreateBoardDto;
 import com.guardians.dto.board.res.ResUpdateBoardDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,6 +95,8 @@ public class BoardServiceImpl implements BoardService {
 
         boolean liked = boardLikeRepository.existsByBoardIdAndUserId(boardId, userId);
 
+        board.increaseViewCount();
+
         return ResBoardDetailDto.builder()
                 .boardId(board.getId())
                 .title(board.getTitle())
@@ -169,5 +172,12 @@ public class BoardServiceImpl implements BoardService {
             boardRepository.save(board);
             return true; // 좋아요 등록
         }
+    }
+
+    @Transactional
+    public void increaseViewCount(Long boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
+        board.increaseViewCount();
     }
 }
