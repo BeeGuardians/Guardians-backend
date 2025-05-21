@@ -70,6 +70,22 @@ public class BoardServiceImpl implements BoardService {
                 .createdAt(board.getCreatedAt())
                 .build()).collect(Collectors.toList());
     }
+
+    @Override
+    public List<ResBoardListDto> getBoardList(BoardType boardType, String keyword) {
+        List<Board> boards;
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            boards = boardRepository.findByBoardTypeAndKeyword(boardType, keyword.trim());
+        } else {
+            boards = boardRepository.findByBoardType(boardType);
+        }
+
+        return boards.stream()
+                .map(ResBoardListDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     @Override
     public ResBoardDetailDto getBoardDetail(Long boardId,Long userId) {
