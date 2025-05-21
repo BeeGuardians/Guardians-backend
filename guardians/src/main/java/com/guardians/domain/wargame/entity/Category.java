@@ -17,7 +17,7 @@ public class Category {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String name; // ex: Web, Pwn, Crypto, Forensic, Reversing
+    private String name;
 
     @Column(columnDefinition = "TEXT")
     private String description;

@@ -42,7 +42,7 @@ public class WargameServiceImpl implements WargameService {
 
     @Override
     public List<ResWargameListDto> getWargameList(Long userId) {
-        return wargameRepository.findAll().stream().map(wargame -> {
+        return wargameRepository.findAllWithCategory().stream().map(wargame -> {
             boolean solved = false;
             boolean bookmarked = false;
             boolean liked = false;
@@ -59,7 +59,7 @@ public class WargameServiceImpl implements WargameService {
 
     @Override
     public ResWargameListDto getWargameById(Long userId, Long wargameId) {
-        Wargame wargame = wargameRepository.findById(wargameId)
+        Wargame wargame = wargameRepository.findByIdWithCategory(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
 
         boolean solved = false;
