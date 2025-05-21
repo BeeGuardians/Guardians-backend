@@ -15,16 +15,20 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 @RestController
 @RequestMapping("/api/boards")
 @RequiredArgsConstructor
 @Tag(name = "Board API", description = "자유게시판 관련 API")
-public class BoardController {
+public class    BoardController {
 
     private final BoardService boardService;
 
@@ -34,8 +38,17 @@ public class BoardController {
     public ResponseEntity<ResWrapper<?>> createBoard(
             HttpSession session,
             @RequestParam("type") BoardType boardType,
-            @RequestBody @Valid ReqCreateBoardDto dto
+            @RequestBody @Valid ReqCreateBoardDto dto,
+            BindingResult bindingResult
     ) {
+
+        if (bindingResult.hasErrors()) {
+            String errorMsg = bindingResult.getFieldErrors().stream()
+                    .map(err -> err.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.badRequest().body(ResWrapper.resError("유효성 검사 실패: " + errorMsg));
+        }
+
         Long userId = (Long) session.getAttribute("userId");
         ResCreateBoardDto result = boardService.createBoard(userId, dto, boardType);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글이 성공적으로 등록되었습니다.", result));
@@ -44,8 +57,17 @@ public class BoardController {
     // 게시글 목록 조회
     @Operation(summary = "게시글 목록 조회", description = "모든 게시글을 조회합니다.")
     @GetMapping
-    public ResponseEntity<ResWrapper<?>> getBoardList(@RequestParam("type") BoardType boardType) {
-        List<ResBoardListDto> result = boardService.getBoardList(boardType);
+    public ResponseEntity<ResWrapper<?>> getBoardList(
+            @RequestParam("type") BoardType boardType,
+            @RequestParam(value = "keyword", required = false) String keyword
+    ) {
+        System.out.println("✅ BoardController 실행됨");
+        if (keyword != null && keyword.trim().length() < 2) {
+            return ResponseEntity.badRequest().body(
+                    ResWrapper.resError("검색어는 2자 이상 입력해주세요.")
+            );
+        }
+        List<ResBoardListDto> result = boardService.getBoardList(boardType, keyword);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 목록 조회 성공", result));
     }
 

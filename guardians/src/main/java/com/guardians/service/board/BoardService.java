@@ -15,6 +15,8 @@ public interface BoardService {
 
     List<ResBoardListDto> getBoardList(BoardType boardType);
 
+    List<ResBoardListDto> getBoardList(BoardType boardType, String keyword);
+
     ResBoardDetailDto getBoardDetail(Long boardId, Long userId);
 
     ResUpdateBoardDto updateBoard(Long userId, Long boardId, ReqUpdateBoardDto dto);
