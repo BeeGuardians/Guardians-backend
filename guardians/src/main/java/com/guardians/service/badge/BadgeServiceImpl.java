@@ -99,8 +99,6 @@ public class BadgeServiceImpl implements BadgeService {
             assignBadgeIfNeeded(user.getId(), "지옥을 맛본 자");
         }
 
-
-
         // 카테고리별 체크
         Set<String> categories = solvedWargameRepository.findDistinctCategoryNamesByUserId(userId);
 
@@ -108,8 +106,8 @@ public class BadgeServiceImpl implements BadgeService {
             assignBadgeIfNeeded(userId, "웹 해커");
         }
 
-        if (categories.contains("Reverse") && !owned.contains("리버싱 달인")) {
-            assignBadgeIfNeeded(userId, "리버싱 달인");
+        if (categories.contains("Forensic") && !owned.contains("포렌식 달인")) {
+            assignBadgeIfNeeded(userId, "포렌식 달인");
         }
 
         if (categories.contains("Crypto") && !owned.contains("암호 해독자")) {
@@ -125,7 +123,7 @@ public class BadgeServiceImpl implements BadgeService {
         }
 
         // 탐험가: 모든 카테고리 하나씩
-        if (categories.containsAll(List.of("Web", "Reverse", "Crypto", "BruteForce", "SourceLeak"))
+        if (categories.containsAll(List.of("Web", "Forensic", "Crypto", "BruteForce", "SourceLeak"))
                 && !owned.contains("탐험가")) {
             assignBadgeIfNeeded(userId, "탐험가");
         }
