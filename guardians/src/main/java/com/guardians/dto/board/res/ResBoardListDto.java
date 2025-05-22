@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 public class ResBoardListDto {
     private Long boardId;
     private String title;
@@ -16,6 +16,8 @@ public class ResBoardListDto {
     private int likeCount;
     private LocalDateTime createdAt;
     private String boardType;
+    private long commentCount;
+
 
     public static ResBoardListDto fromEntity(Board board) {
         return ResBoardListDto.builder()
@@ -28,4 +30,5 @@ public class ResBoardListDto {
                 .boardType(board.getBoardType().name())
                 .build();
     }
+
 }

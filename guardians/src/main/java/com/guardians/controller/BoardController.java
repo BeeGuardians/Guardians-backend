@@ -3,10 +3,7 @@ package com.guardians.controller;
 import com.guardians.domain.board.entity.BoardType;
 import com.guardians.dto.board.req.ReqCreateBoardDto;
 import com.guardians.dto.board.req.ReqUpdateBoardDto;
-import com.guardians.dto.board.res.ResBoardDetailDto;
-import com.guardians.dto.board.res.ResBoardListDto;
-import com.guardians.dto.board.res.ResCreateBoardDto;
-import com.guardians.dto.board.res.ResUpdateBoardDto;
+import com.guardians.dto.board.res.*;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.service.board.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +25,7 @@ import static java.util.stream.Collectors.*;
 @RequestMapping("/api/boards")
 @RequiredArgsConstructor
 @Tag(name = "Board API", description = "자유게시판 관련 API")
-public class    BoardController {
+public class BoardController {
 
     private final BoardService boardService;
 
@@ -61,7 +58,6 @@ public class    BoardController {
             @RequestParam("type") BoardType boardType,
             @RequestParam(value = "keyword", required = false) String keyword
     ) {
-        System.out.println("✅ BoardController 실행됨");
         if (keyword != null && keyword.trim().length() < 2) {
             return ResponseEntity.badRequest().body(
                     ResWrapper.resError("검색어는 2자 이상 입력해주세요.")
@@ -71,6 +67,12 @@ public class    BoardController {
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 목록 조회 성공", result));
     }
 
+    @Operation(summary = "핫 게시글 조회", description = "좋아요 수와 조회수를 기반으로 상위 10개의 핫 게시글을 조회합니다.")
+    @GetMapping("/hot")
+    public ResponseEntity<ResWrapper<?>> getHotBoards() {
+        List<ResHotBoardDto> result = boardService.getHotBoards();
+        return ResponseEntity.ok(ResWrapper.resSuccess("핫 게시글 조회 성공", result));
+    }
 
     // 게시글 상세 조회
     @Operation(summary = "게시글 상세 조회", description = "특정 게시글 ID로 상세 정보를 조회합니다.")
