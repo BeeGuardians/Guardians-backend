@@ -64,7 +64,7 @@ public class MypageServiceImpl implements MypageService {
     @Override
     public ResReviewDto getReviews(Long userId) {
         return ResReviewDto.fromEntities(
-                reviewRepository.findAllByUserId(userId)
+                reviewRepository.findAllWithWargameByUserId(userId)
         );
     }
 

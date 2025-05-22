@@ -18,6 +18,7 @@ public class ResReviewDto {
     public static class ReviewDto {
         private Long id;
         private String content;
+        private String wargameTitle;
         private String createdAt;
     }
 
@@ -26,6 +27,7 @@ public class ResReviewDto {
                 .map(review -> ReviewDto.builder()
                         .id(review.getId())
                         .content(review.getContent())
+                        .wargameTitle(review.getWargame().getTitle())
                         .createdAt(review.getCreatedAt().toString()) // LocalDateTime -> String 변환 예시
                         .build())
                 .collect(Collectors.toList());
