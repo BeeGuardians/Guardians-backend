@@ -103,20 +103,25 @@ spec:
                         usernameVariable: 'GIT_USER',
                         passwordVariable: 'GIT_TOKEN'
                     )]) {
-                        sh """
-                        echo "[CLONE] Guardians-Infra"
-                        git clone --single-branch --branch dev https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git infra
+                        script {
+                            def branch = env.BRANCH_NAME
+                            def deploymentFile = branch == "main" ? "cloud-cluster/backend/deployment.yaml" : "cloud-cluster/backend/deployment-${branch}.yaml"
 
-                        echo "[PATCH] Updating deployment.yaml image tag"
-                        sed -i "s|image: .*|image: ${FULL_IMAGE}|" infra/cloud-cluster/backend/deployment-dev.yaml
+                            sh """
+                            echo "[CLONE] Guardians-Infra"
+                            git clone --single-branch --branch dev https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git infra
 
-                        cd infra
-                        git config user.email "ci-bot@example.com"
-                        git config user.name "CI Bot"
-                        git add cloud-cluster/backend/deployment-dev.yaml
-                        git commit -m "release : update backend image to guardians/backend:${IMAGE_TAG}" || echo "No changes to commit"
-                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git dev
-                        """
+                            echo "[PATCH] Updating ${deploymentFile}"
+                            sed -i "s|image: .*|image: ${FULL_IMAGE}|" infra/${deploymentFile}
+
+                            cd infra
+                            git config user.email "ci-bot@example.com"
+                            git config user.name "CI Bot"
+                            git add ${deploymentFile}
+                            git commit -m "release : update backend image to guardians/backend:${IMAGE_TAG}" || echo "No changes to commit"
+                            git push https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git dev
+                            """
+                        }
                     }
                 }
             }
