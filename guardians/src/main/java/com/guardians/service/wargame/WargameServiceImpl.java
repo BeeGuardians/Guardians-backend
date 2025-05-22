@@ -11,6 +11,7 @@ import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
 import com.guardians.dto.wargame.res.*;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
+import com.guardians.service.badge.BadgeService;
 import io.fabric8.kubernetes.api.model.Pod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +39,7 @@ public class WargameServiceImpl implements WargameService {
     private final UserStatsRepository userStatsRepository;
     private final ReviewRepository reviewRepository;
     private final KubernetesPodService kubernetesPodService;
+    private final BadgeService badgeService;
 
 
     @Override
@@ -85,7 +87,7 @@ public class WargameServiceImpl implements WargameService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         Wargame wargame = wargameRepository.findById(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
-        WargameFlag wargameFlag = wargameFlagRepository.findById(wargameId)
+        WargameFlag wargameFlag = wargameFlagRepository.findByWargame_Id(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_VALID_ARGUMENT));
 
         boolean isCorrect = wargameFlag.getFlag().equals(flag);
@@ -103,6 +105,8 @@ public class WargameServiceImpl implements WargameService {
             UserStats stats = userStatsRepository.findById(user.getId())
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
             stats.addScore(score);
+
+            badgeService.checkAndAssignBadges(user);
         }
 
         return ResSubmitFlagDto.builder()
@@ -239,17 +243,24 @@ public class WargameServiceImpl implements WargameService {
         return pods.stream().map(pod -> {
             String podName = pod.getMetadata().getName();
             String[] parts = podName.split("-");
-            Long userId = Long.parseLong(parts[1]);
+
+            Long userId;
+            try {
+                userId = Long.parseLong(parts[1]);
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                return null;
+            }
 
             User user = userRepository.findById(userId).orElse(null);
             if (user == null) return null;
 
             return new ResUserStatusDto(
                     user.getUsername(),
-                    pod.getMetadata().getCreationTimestamp(), // 접속 시간
+                    pod.getMetadata().getCreationTimestamp(),
                     false
             );
         }).filter(Objects::nonNull).toList();
+
     }
 
 }
