@@ -22,6 +22,9 @@ public class Badge {
     @Column(nullable = false)
     private String description;  // 뱃지 설명
 
-    @Column(name = "icon_url")
-    private String iconUrl;  // 뱃지 아이콘 이미지 S3 URL
+    @Column(name = "true_icon_url")
+    private String trueIconUrl;  // 획득했을 때 보여줄 이미지 URL
+
+    @Column(name = "false_icon_url")
+    private String falseIconUrl;  // 미획득일 때 보여줄 이미지 URL
 }

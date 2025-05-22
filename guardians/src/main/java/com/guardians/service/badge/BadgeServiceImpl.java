@@ -46,7 +46,8 @@ public class BadgeServiceImpl implements BadgeService {
                         .id(badge.getId())
                         .name(badge.getName())
                         .description(badge.getDescription())
-                        .iconUrl(badge.getIconUrl())
+                        .trueIconUrl(badge.getTrueIconUrl())
+                        .falseIconUrl(badge.getFalseIconUrl())
                         .earned(earnedBadgeIds.contains(badge.getId()))
                         .build())
                 .collect(Collectors.toList());
@@ -65,7 +66,8 @@ public class BadgeServiceImpl implements BadgeService {
                             .id(badge.getId())
                             .name(badge.getName())
                             .description(badge.getDescription())
-                            .iconUrl(badge.getIconUrl())
+                            .trueIconUrl(badge.getTrueIconUrl())
+                            .falseIconUrl(badge.getFalseIconUrl())
                             .earned(true)
                             .build();
                 })
