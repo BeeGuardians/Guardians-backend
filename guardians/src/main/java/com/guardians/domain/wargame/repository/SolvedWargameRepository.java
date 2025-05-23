@@ -16,12 +16,7 @@ import java.util.Set;
 public interface SolvedWargameRepository extends JpaRepository<SolvedWargame, SolvedWargameId> {
     List<SolvedWargame> findAllByUserId(Long userId); // 추가
     boolean existsByUserIdAndWargameId(Long userId, Long wargameId);
-    List<SolvedWargame> findByUser(User user);
-    Long countByWargame(Wargame wargame);
     boolean existsByUserAndWargame(User user, Wargame wargame);
-    List<SolvedWargame> findByWargame(Wargame wargame);
-    List<SolvedWargame> findByUser_Id(Long userId);
-    boolean existsByUser_IdAndWargame_Id(Long userId, Long wargameId);
     Long countByUser(User user);
 
     // 뱃지 관련
@@ -47,5 +42,7 @@ public interface SolvedWargameRepository extends JpaRepository<SolvedWargame, So
 
     @Query("SELECT sw.user.id, COUNT(sw) FROM SolvedWargame sw GROUP BY sw.user.id")
     List<Object[]> countSolvedCountByUser();
+
+    long countByUserAndWargame_Difficulty(User user, Difficulty difficulty);
 
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -85,42 +86,42 @@ public class BadgeServiceImpl implements BadgeService {
         long totalSolved = solvedWargameRepository.countByUser(user);
 
         // 입문자: 첫 문제 성공
-        if (totalSolved == 1 && !owned.contains("입문자")) {
+        if (totalSolved >= 1 && !owned.contains("입문자")) {
             assignBadgeIfNeeded(userId, "입문자");
         }
 
         // 신참 해커: 5문제 이상
-        if (totalSolved >= 5 && !owned.contains("신참 해커")) {
-            assignBadgeIfNeeded(userId, "신참 해커");
+        if (totalSolved >= 5 && !owned.contains("워게임 마스터")) {
+            assignBadgeIfNeeded(userId, "워게임 마스터");
         }
 
-        // 지옥을 맛본 자: HARD 문제 푼 적 있음
-        boolean solvedHard = solvedWargameRepository.existsByUserAndWargame_Difficulty(user, Difficulty.HARD);
+// 지옥을 맛본 자: HARD 3문제 이상 해결
+        long hardCount = solvedWargameRepository.countByUserAndWargame_Difficulty(user, Difficulty.HARD);
 
-        if (solvedHard && !owned.contains("지옥을 맛본 자")) {
+        if (hardCount >= 3 && !owned.contains("지옥을 맛본 자")) {
             assignBadgeIfNeeded(user.getId(), "지옥을 맛본 자");
         }
 
         // 카테고리별 체크
         Set<String> categories = solvedWargameRepository.findDistinctCategoryNamesByUserId(userId);
 
-        if (categories.contains("Web") && !owned.contains("웹 해커")) {
+        if (Collections.frequency(categories, "Web") >= 3 && !owned.contains("웹 해커")) {
             assignBadgeIfNeeded(userId, "웹 해커");
         }
 
-        if (categories.contains("Forensic") && !owned.contains("포렌식 달인")) {
-            assignBadgeIfNeeded(userId, "포렌식 달인");
+        if (Collections.frequency(categories, "Forensic") >= 3 && !owned.contains("디지털 추적자")) {
+            assignBadgeIfNeeded(userId, "디지털 추적자");
         }
 
-        if (categories.contains("Crypto") && !owned.contains("암호 해독자")) {
+        if (Collections.frequency(categories, "Crypto") >= 3 && !owned.contains("암호 해독자")) {
             assignBadgeIfNeeded(userId, "암호 해독자");
         }
 
-        if (categories.contains("BruteForce") && !owned.contains("무차별 해커")) {
+        if (Collections.frequency(categories, "BruteForce") >= 3 && !owned.contains("무차별 해커")) {
             assignBadgeIfNeeded(userId, "무차별 해커");
         }
 
-        if (categories.contains("SourceLeak") && !owned.contains("정보 침투자")) {
+        if (Collections.frequency(categories, "SourceLeak") >= 3 && !owned.contains("정보 침투자")) {
             assignBadgeIfNeeded(userId, "정보 침투자");
         }
 
