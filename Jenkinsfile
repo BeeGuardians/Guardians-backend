@@ -12,6 +12,15 @@ metadata:
   labels:
     app: jenkins-kaniko
 spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - guardians7
   containers:
   - name: git
     image: alpine/git:latest
@@ -37,13 +46,15 @@ spec:
         cpu: "500m"
         memory: "512Mi"
       limits:
-        cpu: "1000m"
-        memory: "2048Mi"
+        cpu: "4000m"
+        memory: "3072Mi"
     volumeMounts:
     - mountPath: "/kaniko/.docker"
       name: docker-config
     - mountPath: "/home/jenkins/agent"
       name: workspace-volume
+    - mountPath: "/root/.gradle"
+      name: gradle-cache
 
   volumes:
   - name: docker-config
@@ -54,6 +65,9 @@ spec:
         path: config.json
   - name: workspace-volume
     emptyDir: {}
+  - name: gradle-cache
+    emptyDir: {}
+
 """
         }
     }
@@ -88,7 +102,9 @@ spec:
                       --dockerfile=$WORKSPACE/guardians/Dockerfile \
                       --destination=${FULL_IMAGE} \
                       --insecure \
-                      --skip-tls-verify
+                      --skip-tls-verify \
+                      --cache=true \
+                      --cache-repo=${HARBOR_HOST}/guardians/cache
                     echo "[SUCCESS] Docker Image pushed to ${FULL_IMAGE}"
                     """
                 }
