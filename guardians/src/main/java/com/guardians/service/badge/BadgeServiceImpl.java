@@ -10,6 +10,7 @@ import com.guardians.domain.wargame.entity.Difficulty;
 import com.guardians.domain.wargame.repository.SolvedWargameRepository;
 import com.guardians.dto.badge.res.ResUserBadgeDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -132,10 +133,13 @@ public class BadgeServiceImpl implements BadgeService {
         }
 
         // 퍼스트 블러드
-        Long firstSolverId = solvedWargameRepository.findFirstSolverId(user.getId());
+        List<Long> firstSolverList = solvedWargameRepository.findFirstSolverId(user.getId(), PageRequest.of(0, 1));
+        Long firstSolverId = firstSolverList.isEmpty() ? null : firstSolverList.get(0);
+
         if (Objects.equals(firstSolverId, userId) && !owned.contains("퍼스트 블러드")) {
             assignBadgeIfNeeded(userId, "퍼스트 블러드");
         }
+
 
         // 꾸준한 해커: 7일 연속
         boolean solved7Days = solvedWargameRepository.checkSolved7DaysInARow(userId);

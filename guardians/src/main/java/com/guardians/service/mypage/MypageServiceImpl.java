@@ -40,7 +40,7 @@ public class MypageServiceImpl implements MypageService {
     @Override
     public ResSolvedDto getSolvedProblems(Long userId) {
         return ResSolvedDto.fromEntities(
-                solvedWargameRepository.findAllByUserId(userId)
+                solvedWargameRepository.findAllWithWargameByUserId(userId)
         );
     }
 
@@ -48,7 +48,7 @@ public class MypageServiceImpl implements MypageService {
     @Override
     public ResBookmarkDto getBookmarks(Long userId) {
         return ResBookmarkDto.fromEntities(
-                bookmarkRepository.findAllByUserId(userId)
+                bookmarkRepository.findAllWithWargameByUserId(userId)
         );
     }
 
@@ -71,7 +71,7 @@ public class MypageServiceImpl implements MypageService {
     @Transactional(readOnly = true)
     @Override
     public ResRankDto getRank(Long userId) {
-        return userStatsRepository.findById(userId)
+        return userStatsRepository.findWithUserById(userId)
                 .map(stats -> ResRankDto.fromEntity(stats, 0)) // 개별 조회이므로 rank는 임시 0
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }

@@ -5,6 +5,7 @@ import com.guardians.domain.wargame.entity.Difficulty;
 import com.guardians.domain.wargame.entity.SolvedWargame;
 import com.guardians.domain.wargame.entity.SolvedWargameId;
 import com.guardians.domain.wargame.entity.Wargame;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,10 +15,17 @@ import java.util.List;
 import java.util.Set;
 
 public interface SolvedWargameRepository extends JpaRepository<SolvedWargame, SolvedWargameId> {
-    List<SolvedWargame> findAllByUserId(Long userId); // 추가
+    List<SolvedWargame> findAllByUserId(Long userId);
+
+    @Query("SELECT sw FROM SolvedWargame sw JOIN FETCH sw.wargame WHERE sw.user.id = :userId")
+    List<SolvedWargame> findAllWithWargameByUserId(@Param("userId") Long userId);
+
     boolean existsByUserIdAndWargameId(Long userId, Long wargameId);
     boolean existsByUserAndWargame(User user, Wargame wargame);
     Long countByUser(User user);
+
+    @Query("SELECT sw.wargame.id FROM SolvedWargame sw WHERE sw.user.id = :userId")
+    Set<Long> findWargameIdsByUserId(@Param("userId") Long userId);
 
     // 뱃지 관련
     @Query("SELECT DISTINCT w.category.name FROM SolvedWargame sw JOIN sw.wargame w WHERE sw.user.id = :userId")
@@ -25,8 +33,8 @@ public interface SolvedWargameRepository extends JpaRepository<SolvedWargame, So
 
     boolean existsByUserAndWargame_Difficulty(User user, Difficulty difficulty);
 
-    @Query("SELECT s.user.id FROM SolvedWargame s WHERE s.wargame.id = :wargameId ORDER BY s.solvedAt ASC LIMIT 1")
-    Long findFirstSolverId(@Param("wargameId") Long wargameId);
+    @Query("SELECT s.user.id FROM SolvedWargame s WHERE s.wargame.id = :wargameId ORDER BY s.solvedAt ASC")
+    List<Long> findFirstSolverId(@Param("wargameId") Long wargameId, Pageable pageable);
 
     @Query(value = """
     SELECT CASE

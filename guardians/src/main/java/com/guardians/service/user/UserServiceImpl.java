@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(ErrorCode.PERMISSION_DENIED); // ← 권한 없음 에러 따로 만들자
         }
 
-        User user = userRepository.findById(targetUserId)
+        User user = userRepository.findWithStatsById(targetUserId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         user.updateUsername(dto.getUsername());
@@ -108,7 +108,7 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        User user = userRepository.findById(sessionUserId)
+        User user = userRepository.findWithStatsById(sessionUserId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
@@ -122,7 +122,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void verifyResetPassword(Long userId, String code, String newPassword) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findWithStatsById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         boolean verified = emailVerificationService.verifyCode(user.getEmail(), code);
@@ -149,7 +149,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResLoginDto getUserInfo(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findWithStatsById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         return ResLoginDto.builder()
@@ -164,7 +164,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String getEmailByUserId(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findWithStatsById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         return user.getEmail();
     }
@@ -179,7 +179,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateProfileImageUrl(Long userId, String imageUrl) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findWithStatsById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         user.updateProfileImageUrl(imageUrl);

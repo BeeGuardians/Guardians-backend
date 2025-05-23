@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,19 +65,20 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public List<ResAnswerListDto> getAnswerListByQuestion(Long questionId) {
-        // 특정 질문에 대한 답변 목록 조회
-        List<Answer> answers = answerRepository.findAllByQuestionIdOrderByCreatedAtAsc(questionId);
+        // Fetch join으로 N+1 방지
+        List<Answer> answers = answerRepository.findAllWithUserByQuestionId(questionId);
 
-        // DTO 변환
-        return answers.stream()
-                .map(a -> ResAnswerListDto.builder()
-                        .id(a.getId())
-                        .content(a.getContent())
-                        .username(a.getUser().getUsername())
-                        .userId(a.getUser().getId())
-                        .createdAt(a.getCreatedAt())
-                        .build())
-                .collect(Collectors.toList());
+        List<ResAnswerListDto> result = new ArrayList<>();
+        for (Answer a : answers) {
+            result.add(ResAnswerListDto.builder()
+                    .id(a.getId())
+                    .content(a.getContent())
+                    .username(a.getUser().getUsername())
+                    .userId(a.getUser().getId())
+                    .createdAt(a.getCreatedAt())
+                    .build());
+        }
+        return result;
     }
 
     @Override

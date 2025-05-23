@@ -5,18 +5,21 @@ import com.guardians.domain.wargame.entity.BookmarkId;
 import com.guardians.domain.wargame.entity.Wargame;
 import com.guardians.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, BookmarkId> {
-
-    List<Bookmark> findByUser_Id(Long userId);
-
-    List<Bookmark> findAllByUserId(Long userId); // 추가
     Optional<Bookmark> findByUserAndWargame(User user, Wargame wargame);
     boolean existsByUserIdAndWargameId(Long userId, Long wargameId);
 
-    boolean existsByUser_IdAndWargame_Id(Long userId, Long wargameId);
-    void deleteByUser_IdAndWargame_Id(Long userId, Long wargameId);
+    @Query("SELECT b FROM Bookmark b JOIN FETCH b.wargame WHERE b.user.id = :userId")
+    List<Bookmark> findAllWithWargameByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT b.wargame.id FROM Bookmark b WHERE b.user.id = :userId")
+    Set<Long> findWargameIdsByUserId(@Param("userId") Long userId);
+
 }

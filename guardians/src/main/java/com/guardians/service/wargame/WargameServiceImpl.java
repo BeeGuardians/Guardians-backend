@@ -20,10 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,21 +39,40 @@ public class WargameServiceImpl implements WargameService {
     private final BadgeService badgeService;
 
 
-    @Override
     public List<ResWargameListDto> getWargameList(Long userId) {
-        return wargameRepository.findAllWithCategory().stream().map(wargame -> {
-            boolean solved = false;
-            boolean bookmarked = false;
-            boolean liked = false;
+        List<Wargame> wargames = wargameRepository.findAllWithCategory();
+        List<Long> wargameIds = wargames.stream().map(Wargame::getId).toList();
 
-            if (userId != null) {
-                solved = solvedWargameRepository.existsByUserIdAndWargameId(userId, wargame.getId());
-                bookmarked = bookmarkRepository.existsByUserIdAndWargameId(userId, wargame.getId());
-                liked = wargameLikeRepository.existsByUserIdAndWargameId(userId, wargame.getId());
-            }
+        Set<Long> solvedIds;
+        Set<Long> bookmarkedIds;
+        Set<Long> likedIds;
+        Map<Long, String> flagMap = new HashMap<>();
 
-            return ResWargameListDto.fromEntity(wargame, solved, bookmarked, liked);
-        }).collect(Collectors.toList());
+        if (userId != null) {
+            solvedIds = solvedWargameRepository.findWargameIdsByUserId(userId);
+            bookmarkedIds = bookmarkRepository.findWargameIdsByUserId(userId);
+            likedIds = wargameLikeRepository.findWargameIdsByUserId(userId);
+        } else {
+            likedIds = new HashSet<>();
+            bookmarkedIds = new HashSet<>();
+            solvedIds = new HashSet<>();
+        }
+
+        // flag N+1 해결
+        List<WargameFlag> flags = wargameFlagRepository.findAllByWargameIdIn(wargameIds);
+        flagMap = flags.stream()
+                .collect(Collectors.toMap(f -> f.getWargame().getId(), WargameFlag::getFlag));
+
+        return wargames.stream()
+                .map(w -> {
+                    Long id = w.getId();
+                    return ResWargameListDto.fromEntity(
+                            w,
+                            solvedIds.contains(id),
+                            bookmarkedIds.contains(id),
+                            likedIds.contains(id)
+                    );
+                }).toList();
     }
 
     @Override
