@@ -97,6 +97,7 @@ public class User {
                 .score(1000)
                 .totalSolved(0)
                 .lastSolvedAt(null)
+                .tier(Tier.BRONZE)
                 .updatedAt(LocalDateTime.now())
                 .build();
 

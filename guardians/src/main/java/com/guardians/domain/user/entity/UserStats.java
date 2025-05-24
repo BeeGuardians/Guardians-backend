@@ -16,7 +16,7 @@ public class UserStats {
 
     @Id
     @Column(name = "user_id")
-    private Long userId; // users 테이블과 1:1
+    private Long userId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
@@ -34,9 +34,13 @@ public class UserStats {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Tier tier;
+
     public void addScore(int scoreToAdd) {
         this.score += scoreToAdd;
-        this.updatedAt = LocalDateTime.now(); // 마지막 업데이트 타임도 갱신해주면 굿
+        this.updatedAt = LocalDateTime.now();
+        this.tier = Tier.fromScore(this.score);
     }
-
 }

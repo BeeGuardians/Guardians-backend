@@ -115,6 +115,7 @@ public class MypageServiceImpl implements MypageService {
                 .score(myStats.getScore())
                 .rank(rank)
                 .solvedCount(myStats.getTotalSolved())
+                .tier(myStats.getTier().name())
                 .build();
     }
 
