@@ -103,8 +103,6 @@ spec:
                       --destination=${FULL_IMAGE} \
                       --insecure \
                       --skip-tls-verify \
-                      --cache=true \
-                      --cache-repo=${HARBOR_HOST}/guardians/cache \
                       --verbosity=debug \
                       --push-retry=3
                     echo "[SUCCESS] Docker Image pushed to ${FULL_IMAGE}"
