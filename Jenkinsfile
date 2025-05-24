@@ -106,7 +106,7 @@ spec:
                       --cache=true \
                       --cache-repo=${HARBOR_HOST}/guardians/cache \
                       --verbosity=debug \
-                      --retries=3
+                      --push-retry=3
                     echo "[SUCCESS] Docker Image pushed to ${FULL_IMAGE}"
                     """
                 }
