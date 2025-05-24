@@ -17,10 +17,10 @@ spec:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
         - matchExpressions:
-          - key: kubernetes.io/hostname
+          - key: workload
             operator: In
             values:
-            - guardians7
+              - guardians7
   containers:
   - name: git
     image: alpine/git:latest
@@ -104,7 +104,9 @@ spec:
                       --insecure \
                       --skip-tls-verify \
                       --cache=true \
-                      --cache-repo=${HARBOR_HOST}/guardians/cache
+                      --cache-repo=${HARBOR_HOST}/guardians/cache \
+                      --verbosity=debug \
+                      --retries=3
                     echo "[SUCCESS] Docker Image pushed to ${FULL_IMAGE}"
                     """
                 }
