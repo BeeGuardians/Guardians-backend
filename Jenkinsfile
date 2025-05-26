@@ -78,6 +78,14 @@ spec:
     }
 
     stages {
+        stage('Notify Start') {
+            steps {
+                script {
+                    slackSend color: '#439FE0', message: ":rocket: *Build Started* for `${env.JOB_NAME}` <${env.BUILD_URL}|#${env.BUILD_NUMBER}>"
+                }
+            }
+        }
+
         stage('Checkout') {
             steps {
                 container('git') {
@@ -103,7 +111,6 @@ spec:
                       --destination=${FULL_IMAGE} \
                       --insecure \
                       --skip-tls-verify \
-                      --verbosity=debug \
                       --push-retry=3
                     echo "[SUCCESS] Docker Image pushed to ${FULL_IMAGE}"
                     """
@@ -141,6 +148,18 @@ spec:
                     }
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            slackSend color: 'good', message: ":white_check_mark: *Build Success* for `${env.JOB_NAME}` <${env.BUILD_URL}|#${env.BUILD_NUMBER}> :tada:"
+        }
+        failure {
+            slackSend color: 'danger', message: ":x: *Build Failed* for `${env.JOB_NAME}` <${env.BUILD_URL}|#${env.BUILD_NUMBER}>"
+        }
+        unstable {
+            slackSend color: 'warning', message: ":warning: *Build Unstable* for `${env.JOB_NAME}` <${env.BUILD_URL}|#${env.BUILD_NUMBER}>"
         }
     }
 }
