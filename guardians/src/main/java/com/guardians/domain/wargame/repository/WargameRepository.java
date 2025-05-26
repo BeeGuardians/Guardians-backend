@@ -32,4 +32,10 @@ public interface WargameRepository extends JpaRepository<Wargame, Long> {
     @Query("SELECT w FROM Wargame w JOIN FETCH w.category WHERE w.id = :id")
     Optional<Wargame> findByIdWithCategory(@Param("id") Long id);
 
+    @Query("""
+    SELECT w FROM Wargame w
+    JOIN FETCH w.category c
+    WHERE c.name = :categoryName
+""")
+    List<Wargame> findByCategoryName(@Param("categoryName") String categoryName);
 }

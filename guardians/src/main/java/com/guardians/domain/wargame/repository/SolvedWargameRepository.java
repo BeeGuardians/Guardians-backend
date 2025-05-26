@@ -53,4 +53,14 @@ public interface SolvedWargameRepository extends JpaRepository<SolvedWargame, So
 
     long countByUserAndWargame_Difficulty(User user, Difficulty difficulty);
 
+    @Query("""
+    SELECT sw FROM SolvedWargame sw
+    JOIN FETCH sw.wargame w
+    JOIN FETCH w.category c
+    WHERE sw.user.id = :userId AND c.name = :categoryName
+""")
+    List<SolvedWargame> findByUserIdAndCategoryName(
+            @Param("userId") Long userId,
+            @Param("categoryName") String categoryName
+    );
 }
