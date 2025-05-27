@@ -65,7 +65,6 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public List<ResAnswerListDto> getAnswerListByQuestion(Long questionId) {
-        // Fetch join으로 N+1 방지
         List<Answer> answers = answerRepository.findAllWithUserByQuestionId(questionId);
 
         List<ResAnswerListDto> result = new ArrayList<>();
@@ -80,6 +79,7 @@ public class AnswerServiceImpl implements AnswerService {
         }
         return result;
     }
+
 
     @Override
     public ResUpdateAnswerDto updateAnswer(Long userId, Long answerId, ReqUpdateAnswerDto dto) {
