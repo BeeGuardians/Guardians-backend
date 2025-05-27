@@ -7,6 +7,7 @@ import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
 import com.guardians.dto.wargame.res.*;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
+import com.guardians.service.wargame.KubernetesKaliPodServiceImpl;
 import com.guardians.service.wargame.KubernetesPodService;
 import com.guardians.service.wargame.WargameService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +27,7 @@ public class WargameController {
 
     private final WargameService wargameService;
     private final KubernetesPodService kubernetesPodService;
+    private final KubernetesKaliPodServiceImpl kubernetesKaliPodService;
 
     @GetMapping
     public ResponseEntity<ResWrapper<?>> getWargameList(HttpServletRequest request) {
@@ -213,5 +215,47 @@ public class WargameController {
         return ResponseEntity.ok(ResWrapper.resList("현재 워게임 풀고 있는 유저 목록", users, users.size()));
     }
 
+    @PostMapping("/kali/start")
+    public ResponseEntity<ResWrapper<?>> startKaliPod(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+
+        String namespace = "ns-wargame";
+        kubernetesKaliPodService.createKaliPod(userId, namespace);
+
+        String url = String.format("https://kali-%d.wargames.bee-guardians.com", userId);
+        return ResponseEntity.ok(
+                ResWrapper.resSuccess("Kali 인스턴스 시작됨", Map.of(
+                        "url", url
+                ))
+        );
+    }
+
+    @DeleteMapping("/kali/stop")
+    public ResponseEntity<ResWrapper<?>> stopKaliPod(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+
+        String namespace = "ns-wargame";
+        boolean deleted = kubernetesKaliPodService.deleteKaliPod(userId, namespace);
+        return ResponseEntity.ok(
+                ResWrapper.resSuccess(deleted ? "Kali 인스턴스 종료됨" : "Kali 인스턴스 삭제 실패", null)
+        );
+    }
+
+    @GetMapping("/kali/status")
+    public ResponseEntity<ResWrapper<?>> getKaliPodStatus(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+
+        String namespace = "ns-wargame";
+        PodStatusDto status = kubernetesKaliPodService.getKaliPodStatus(userId, namespace);
+        return ResponseEntity.ok(
+                ResWrapper.resSuccess("Kali 상태 조회 성공", Map.of(
+                        "status", status.getStatus(),
+                        "url", status.getUrl()
+                ))
+        );
+    }
 
 }
