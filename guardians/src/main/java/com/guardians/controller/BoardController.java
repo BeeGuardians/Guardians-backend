@@ -83,8 +83,7 @@ public class BoardController {
         ResBoardDetailDto result = boardService.getBoardDetail(boardId, userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 상세 조회 성공", result));
     }
-
-
+    
     // 게시글 수정
     @Operation(summary = "게시글 수정", description = "게시글 작성자만 게시글을 수정할 수 있습니다.")
     @PatchMapping("/{boardId}")

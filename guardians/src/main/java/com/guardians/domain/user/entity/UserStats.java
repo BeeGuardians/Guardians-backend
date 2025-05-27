@@ -35,7 +35,7 @@ public class UserStats {
     private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Tier tier;
 
     public void addScore(int scoreToAdd) {

@@ -46,6 +46,7 @@ public class QuestionServiceImpl implements QuestionService {
                 .wargame(wargame)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .viewCount(0)
                 .build();
 
         Question saved = questionRepository.save(question);
@@ -66,7 +67,10 @@ public class QuestionServiceImpl implements QuestionService {
                         .title(q.getTitle())
                         .content(q.getContent())
                         .username(q.getUser().getUsername())
+                        .wargameTitle(q.getWargame().getTitle())
+                        .wargameId(q.getWargame().getId())
                         .createdAt(q.getCreatedAt())
+                        .viewCount(q.getViewCount())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -82,6 +86,7 @@ public class QuestionServiceImpl implements QuestionService {
                         .content(q.getContent())
                         .username(q.getUser().getUsername())
                         .createdAt(q.getCreatedAt())
+                        .viewCount(q.getViewCount())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -91,8 +96,11 @@ public class QuestionServiceImpl implements QuestionService {
         Question question = questionRepository.findByIdWithUserAndWargame(questionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
 
+        question.increaseViewCount();
+
         return ResQuestionDetailDto.builder()
                 .id(question.getId())
+                .userId(String.valueOf(question.getUser().getId()))
                 .title(question.getTitle())
                 .content(question.getContent())
                 .username(question.getUser().getUsername())
@@ -100,6 +108,7 @@ public class QuestionServiceImpl implements QuestionService {
                 .wargameTitle(question.getWargame().getTitle())
                 .createdAt(question.getCreatedAt())
                 .updatedAt(question.getUpdatedAt())
+                .viewCount(question.getViewCount())
                 .build();
     }
 
@@ -135,4 +144,13 @@ public class QuestionServiceImpl implements QuestionService {
 
         questionRepository.delete(question);
     }
+
+    @Override
+    public void increaseViewCount(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
+        question.increaseViewCount();  // 🔥 엔티티 메서드 호출
+    }
+
+
 }
