@@ -41,7 +41,7 @@ public class JobController {
         Long userId = (Long) session.getAttribute("userId");
         checkAdmin(userId);
         jobService.createJob(dto);
-        return ResponseEntity.ok(ResWrapper.resSuccess("채용공고 등록 완료", null));
+        return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 채용공고 등록 완료", null));
     }
 
     // ✅ 채용공고 수정
@@ -55,7 +55,7 @@ public class JobController {
         Long userId = (Long) session.getAttribute("userId");
         checkAdmin(userId);
         jobService.updateJob(jobId, dto);
-        return ResponseEntity.ok(ResWrapper.resSuccess("채용공고 수정 완료", null));
+        return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 채용공고 수정 완료", null));
     }
     // ✅ 채용공고 삭제
     @Operation(summary = "채용공고 삭제", description = "관리자만 채용공고를 삭제할 수 있습니다.")
@@ -67,7 +67,7 @@ public class JobController {
         Long userId = (Long) session.getAttribute("userId");
         checkAdmin(userId);
         jobService.deleteJob(jobId);
-        return ResponseEntity.ok(ResWrapper.resSuccess("채용공고 삭제 완료", null));
+        return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 채용공고 삭제 완료", null));
     }
 
     // ✅ 채용공고 목록 조회 (전체 공개)

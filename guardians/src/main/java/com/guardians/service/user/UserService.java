@@ -7,6 +7,8 @@ import com.guardians.dto.user.req.ReqUpdateUserDto;
 import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
 
+import java.util.List;
+
 public interface UserService {
     ResCreateUserDto createUser(ReqCreateUserDto dto);
     ResLoginDto login(ReqLoginDto dto);
@@ -14,6 +16,9 @@ public interface UserService {
     void changePassword(Long sessionUserId, Long targetUserId, ReqChangePasswordDto dto);
     void verifyResetPassword(Long userId, String code, String newPassword);
     void deleteUser(Long sessionUserId, Long targetUserId);
+    void adminDeleteUser(Long userId);
+    List<ResLoginDto> getAllUsers();
+
     Long findUserIdByEmail(String email);
     String getEmailByUserId(Long userId);
     ResLoginDto getUserInfo(Long userId);

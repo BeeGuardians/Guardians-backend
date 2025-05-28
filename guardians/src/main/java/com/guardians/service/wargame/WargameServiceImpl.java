@@ -1,5 +1,6 @@
 package com.guardians.service.wargame;
 
+import com.guardians.domain.badge.repository.BadgeRepository;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.entity.UserStats;
 import com.guardians.domain.user.repository.UserRepository;
@@ -7,6 +8,7 @@ import com.guardians.domain.user.repository.UserStatsRepository;
 import com.guardians.domain.wargame.entity.*;
 import com.guardians.domain.wargame.repository.*;
 import com.guardians.dto.wargame.req.ReqCreateReviewDto;
+import com.guardians.dto.wargame.req.ReqCreateWargameDto;
 import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
 import com.guardians.dto.wargame.res.*;
 import com.guardians.exception.CustomException;
@@ -37,7 +39,54 @@ public class WargameServiceImpl implements WargameService {
     private final ReviewRepository reviewRepository;
     private final KubernetesPodService kubernetesPodService;
     private final BadgeService badgeService;
+    private final CategoryRepository categoryRepository;
 
+
+    @Transactional
+    @Override
+    public ResWargameListDto createWargame(ReqCreateWargameDto dto, Long adminId) {
+        // 관리자 유저 유효성 확인
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!"ADMIN".equals(admin.getRole())) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
+        Category category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_VALID_ARGUMENT));
+
+        Wargame wargame = Wargame.builder()
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .difficulty(dto.getDifficulty())
+                .score(dto.getScore())
+                .dockerImageUrl(dto.getDockerImageUrl())
+                .fileUrl(dto.getFileUrl())
+                .category(category)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        wargameRepository.save(wargame);
+
+        WargameFlag flag = WargameFlag.builder()
+                .wargame(wargame)
+                .flag(dto.getFlag())
+                .build();
+
+        wargameFlagRepository.save(flag);
+
+        return ResWargameListDto.fromEntity(wargame, false, false, false);
+    }
+
+    @Override
+    @Transactional
+    public void deleteWargame(Long wargameId) {
+        Wargame wargame = wargameRepository.findById(wargameId)
+                .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
+        wargameRepository.delete(wargame);
+    }
 
     public List<ResWargameListDto> getWargameList(Long userId) {
         List<Wargame> wargames = wargameRepository.findAllWithCategory();

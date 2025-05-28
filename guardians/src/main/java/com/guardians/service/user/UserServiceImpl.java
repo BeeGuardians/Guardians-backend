@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -133,6 +134,14 @@ public class UserServiceImpl implements UserService {
         user.updatePassword(passwordEncoder.encode(newPassword));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ResLoginDto> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(ResLoginDto::fromEntity)
+                .toList();
+    }
+    
     @Transactional
     @Override
     public void deleteUser(Long sessionUserId, Long targetUserId) {
@@ -146,6 +155,14 @@ public class UserServiceImpl implements UserService {
 
         userRepository.deleteById(targetUserId);
     }
+
+    @Override
+    public void adminDeleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        userRepository.delete(user);
+    }
+
 
     @Override
     public ResLoginDto getUserInfo(Long userId) {

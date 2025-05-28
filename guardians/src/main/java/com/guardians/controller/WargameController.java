@@ -2,6 +2,7 @@ package com.guardians.controller;
 
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.wargame.req.ReqCreateReviewDto;
+import com.guardians.dto.wargame.req.ReqCreateWargameDto;
 import com.guardians.dto.wargame.req.ReqSubmitFlagDto;
 import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
 import com.guardians.dto.wargame.res.*;
@@ -28,6 +29,39 @@ public class WargameController {
     private final WargameService wargameService;
     private final KubernetesPodService kubernetesPodService;
     private final KubernetesKaliPodServiceImpl kubernetesKaliPodService;
+
+    @PostMapping("/admin")
+    public ResponseEntity<ResWrapper<?>> createWargame(
+            @RequestBody ReqCreateWargameDto request,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
+
+        if (userId == null || !"ADMIN".equals(role)) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
+        ResWargameListDto created = wargameService.createWargame(request, userId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 워게임 생성 성공", created));
+    }
+
+    @DeleteMapping("/admin/{wargameId}")
+    public ResponseEntity<ResWrapper<?>> deleteWargame(
+            @PathVariable Long wargameId,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
+
+        if (userId == null || !"ADMIN".equals(role)) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
+        wargameService.deleteWargame(wargameId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("워게임 삭제 완료", null));
+    }
+
 
     @GetMapping
     public ResponseEntity<ResWrapper<?>> getWargameList(HttpServletRequest request) {
