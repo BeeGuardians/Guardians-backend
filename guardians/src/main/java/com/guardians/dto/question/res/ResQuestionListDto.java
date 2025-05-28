@@ -18,6 +18,7 @@ public class ResQuestionListDto {
     private String username;
     private Long wargameId;
     private String wargameTitle;
+    private String profileImageUrl;
     private LocalDateTime createdAt;
     private int viewCount;
 }

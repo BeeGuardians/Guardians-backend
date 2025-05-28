@@ -14,5 +14,7 @@ public class ResAnswerListDto {
     private String content;
     private Long userId;
     private String username;
+    private String profileImageUrl;
+    private String tier;
     private LocalDateTime createdAt;
 }

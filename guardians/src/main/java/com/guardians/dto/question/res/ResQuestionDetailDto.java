@@ -20,6 +20,7 @@ public class ResQuestionDetailDto {
     private String userId;
     private Long wargameId;
     private String wargameTitle;
+    private String profileImageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private int viewCount;

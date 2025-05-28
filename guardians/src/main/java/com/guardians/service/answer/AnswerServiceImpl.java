@@ -8,7 +8,6 @@ import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.dto.answer.req.ReqCreateAnswerDto;
 import com.guardians.dto.answer.req.ReqUpdateAnswerDto;
-import com.guardians.dto.answer.res.ResAnswerDetailDto;
 import com.guardians.dto.answer.res.ResAnswerListDto;
 import com.guardians.dto.answer.res.ResCreateAnswerDto;
 import com.guardians.dto.answer.res.ResUpdateAnswerDto;
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -74,6 +72,8 @@ public class AnswerServiceImpl implements AnswerService {
                     .content(a.getContent())
                     .username(a.getUser().getUsername())
                     .userId(a.getUser().getId())
+                    .profileImageUrl(a.getUser().getProfileImageUrl())
+                    .tier(a.getUser().getUserStats().getTier().name())
                     .createdAt(a.getCreatedAt())
                     .build());
         }

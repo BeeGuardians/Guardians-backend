@@ -11,6 +11,7 @@ public class ResCommentListDto {
     private Long commentId;
     private String content;
     private String username;
+    private String profileImageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long userId;

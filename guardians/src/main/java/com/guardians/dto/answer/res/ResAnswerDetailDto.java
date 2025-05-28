@@ -15,6 +15,7 @@ public class ResAnswerDetailDto {
     private Long id;
     private String content;
     private String username;
+    private String profileImageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
