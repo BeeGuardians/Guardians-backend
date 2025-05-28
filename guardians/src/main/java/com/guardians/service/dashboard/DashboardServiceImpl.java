@@ -5,6 +5,7 @@ import com.guardians.domain.wargame.entity.SolvedWargame;
 import com.guardians.domain.wargame.entity.Wargame;
 import com.guardians.domain.wargame.repository.SolvedWargameRepository;
 import com.guardians.domain.wargame.repository.WargameRepository;
+import com.guardians.dto.dashboard.ResSolvedTimelineDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,5 +48,12 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         return scores;
+    }
+
+    @Override
+    public List<ResSolvedTimelineDto> getSolvedTimeline(Long userId) {
+        return solvedRepo.findByUserIdWithWargameAndCategory(userId).stream()
+                .map(ResSolvedTimelineDto::fromEntity)
+                .toList();
     }
 }
