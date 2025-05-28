@@ -44,6 +44,8 @@ public class JobController {
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 채용공고 등록 완료", null));
     }
 
+    // 관리자용 채용공고 리스트 가져오기
+
     // ✅ 채용공고 수정
     @Operation(summary = "채용공고 수정", description = "관리자만 채용공고를 수정할 수 있습니다.")
     @PatchMapping("/{jobId}")
@@ -75,7 +77,7 @@ public class JobController {
     @GetMapping
     public ResponseEntity<ResWrapper<?>> getJobList() {
         List<ResJobListDto> result = jobService.getJobList();
-        return ResponseEntity.ok(ResWrapper.resSuccess("채용공고 목록 조회 성공", result));
+        return ResponseEntity.ok(ResWrapper.resList("채용공고 목록 조회 성공", result, result.size()));
     }
 
     // ✅ 채용공고 상세 조회 (전체 공개)

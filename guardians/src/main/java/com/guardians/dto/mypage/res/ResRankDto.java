@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ResRankDto {
+    private Long userId;
     private String username;
     private int score;
     private int totalSolved;
@@ -15,6 +16,7 @@ public class ResRankDto {
 
     public static ResRankDto fromEntity(UserStats stats, int rank) {
         return ResRankDto.builder()
+                .userId(stats.getUserId())
                 .username(stats.getUser().getUsername())
                 .score(stats.getScore())
                 .totalSolved(stats.getTotalSolved())
