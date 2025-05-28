@@ -63,4 +63,10 @@ public interface SolvedWargameRepository extends JpaRepository<SolvedWargame, So
             @Param("userId") Long userId,
             @Param("categoryName") String categoryName
     );
+
+    @Query("SELECT s FROM SolvedWargame s " +
+            "JOIN FETCH s.wargame w " +
+            "JOIN FETCH w.category " +
+            "WHERE s.user.id = :userId")
+    List<SolvedWargame> findByUserIdWithWargameAndCategory(@Param("userId") Long userId);
 }

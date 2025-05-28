@@ -2,6 +2,7 @@ package com.guardians.controller;
 
 import com.guardians.dto.dashboard.ResRadarChartDto;
 import com.guardians.dto.common.ResWrapper;
+import com.guardians.dto.dashboard.ResSolvedTimelineDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
 import com.guardians.service.dashboard.DashboardService;
@@ -35,5 +36,20 @@ public class DashboardController {
 
         List<ResRadarChartDto.CategoryScore> result = dashboardService.calculateRadarChart(userId);
         return ResponseEntity.ok(ResWrapper.resList("카테고리별 실력 점수 조회 성공", result, result.size()));
+    }
+
+    @Operation(summary = "사용자의 문제 풀이 타임라인 조회")
+    @GetMapping("/timeline")
+    public ResponseEntity<ResWrapper<?>> getSolvedTimeline(
+            @PathVariable Long userId,
+            HttpSession session
+    ) {
+        Long sessionUserId = (Long) session.getAttribute("userId");
+        if (!userId.equals(sessionUserId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        List<ResSolvedTimelineDto> result = dashboardService.getSolvedTimeline(userId);
+        return ResponseEntity.ok(ResWrapper.resList("풀이 타임라인 조회 성공", result, result.size()));
     }
 }
