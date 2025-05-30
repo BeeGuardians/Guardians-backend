@@ -82,6 +82,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void updateUserRole(Long userId, String newRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!newRole.equals("USER") && !newRole.equals("ADMIN")) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
+        user.updateRole(newRole);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public boolean isEmailExists(String email) {
         return userRepository.existsByEmail(email);
@@ -141,7 +154,7 @@ public class UserServiceImpl implements UserService {
                 .map(ResLoginDto::fromEntity)
                 .toList();
     }
-    
+
     @Transactional
     @Override
     public void deleteUser(Long sessionUserId, Long targetUserId) {

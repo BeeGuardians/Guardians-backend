@@ -18,6 +18,8 @@ public interface UserService {
     void deleteUser(Long sessionUserId, Long targetUserId);
     void adminDeleteUser(Long userId);
     List<ResLoginDto> getAllUsers();
+    void updateUserRole(Long userId, String newRole);
+
 
     Long findUserIdByEmail(String email);
     String getEmailByUserId(Long userId);

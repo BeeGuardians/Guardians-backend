@@ -110,6 +110,10 @@ public class User {
         this.userStats = userStats;
     }
 
+    public void updateRole(String role) {
+        this.role = role;
+    }
+
     public void updateLastLoginAt() {
         this.lastLoginAt = LocalDateTime.now();
     }

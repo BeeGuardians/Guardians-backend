@@ -2,10 +2,7 @@ package com.guardians.controller;
 
 import com.guardians.domain.user.entity.User;
 import com.guardians.dto.common.ResWrapper;
-import com.guardians.dto.user.req.ReqChangePasswordDto;
-import com.guardians.dto.user.req.ReqCreateUserDto;
-import com.guardians.dto.user.req.ReqLoginDto;
-import com.guardians.dto.user.req.ReqUpdateUserDto;
+import com.guardians.dto.user.req.*;
 import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
@@ -89,6 +86,8 @@ public class UserController {
     ) {
         ResLoginDto loginUser = userService.login(loginDto);
         session.setAttribute("userId", loginUser.getId());
+        session.setAttribute("role", loginUser.getRole());
+
         return ResponseEntity.ok(ResWrapper.resSuccess("로그인 성공", loginUser));
     }
 
@@ -108,6 +107,16 @@ public class UserController {
         session.setAttribute("role", loginUser.getRole());
 
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 로그인 성공", loginUser));
+    }
+
+
+    @PutMapping("/admin/update-role/{userId}")
+    public ResponseEntity<String> updateUserRole(
+            @PathVariable Long userId,
+            @RequestBody ReqUpdateUserRoleDto request
+    ) {
+        userService.updateUserRole(userId, request.getRole());
+        return ResponseEntity.ok("권한이 성공적으로 변경되었습니다.");
     }
 
     // 모든 유저 조회
@@ -191,7 +200,6 @@ public class UserController {
 
         return ResponseEntity.ok(ResWrapper.resSuccess("프로필 이미지 기본으로 변경 완료", defaultUrl));
     }
-
 
     // 비밀번호 변경
     @PatchMapping("/{userId}/reset-password")

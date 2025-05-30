@@ -43,13 +43,11 @@ public class HealthCheckService {
         logger.info("Checking {} health at URL: {}", serviceName, argocdHealthUrl);
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(argocdHealthUrl, String.class);
-            String responseBody = response.getBody(); // 응답 본문을 변수에 저장
+            String responseBody = response.getBody();
 
-            // responseBody가 null이 아니고, trim() 한 결과가 "ok"와 대소문자 무시하고 일치하는지 확인
             if (response.getStatusCode() == HttpStatus.OK && responseBody != null && "OK".equalsIgnoreCase(responseBody.trim())) {
                 return new HealthCheckResponse(serviceName, "HEALTHY", "Service is operational.", responseBody); // rawDetails 추가
             } else {
-                // 200 OK이지만 본문이 "ok"가 아니거나, 다른 상태 코드인 경우
                 logger.warn("{} status check returned: Status Code = {}, Body = '{}'",
                         serviceName, response.getStatusCode(), responseBody != null ? responseBody.trim() : "null");
                 return new HealthCheckResponse(serviceName, "UNHEALTHY",
@@ -63,8 +61,6 @@ public class HealthCheckService {
                     e.getResponseBodyAsString());
         } catch (ResourceAccessException e) {
             logger.error("{} Network error: {}", serviceName, e.getMessage(), e);
-            // 이전 로그에서 SSL 관련 상세 메시지를 뽑아내던 로직이 유용할 수 있습니다.
-            // String detailedErrorMessage = extractRelevantErrorMessage(e); // (이전 답변의 헬퍼 메소드 참고)
             return new HealthCheckResponse(serviceName, "ERROR_FETCHING", "Network error, could not connect: " + e.getMessage());
         } catch (Exception e) {
             logger.error("{} Unexpected error: {}", serviceName, e.getMessage(), e);
@@ -153,11 +149,8 @@ public class HealthCheckService {
         }
     }
 
-    // jenkins
     public HealthCheckResponse checkJenkinsHealth() {
         String serviceName = "Jenkins";
-        // Jenkins 기본 URL 또는 가벼운 로그인 페이지 URL을 사용할 수 있습니다.
-        // APP_SERVICE_JENKINS_HEALTH_URL 환경 변수에 http://192.168.0.11:30501/ 와 같은 기본 URL을 넣어주세요.
         logger.info("Checking {} basic availability at URL: {}", serviceName, jenkinsHealthUrl);
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(jenkinsHealthUrl, String.class);
