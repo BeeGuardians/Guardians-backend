@@ -51,7 +51,6 @@ nb-cache/
 .env.*
 *.key
 *.pem
-*.crt
 secrets/
 private/
 config/*.yml
