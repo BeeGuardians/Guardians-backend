@@ -23,10 +23,13 @@ FROM openjdk:17-jdk-slim
 # 인증서 복사 (Dockerfile과 동일 경로에 harbor-ca.crt가 있어야 함)
 COPY src/main/resources/certs/harbor-ca.crt /usr/local/share/ca-certificates/harbor-ca.crt
 
-
-# 시스템 CA store에 추가
+# 시스템 및 Java에 인증서 등록
 RUN apt-get update && apt-get install -y ca-certificates && \
     update-ca-certificates && \
+    keytool -import -alias harbor-cert \
+      -keystore /usr/local/openjdk-17/lib/security/cacerts \
+      -storepass changeit -noprompt \
+      -file /usr/local/share/ca-certificates/harbor-ca.crt && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -35,4 +38,4 @@ WORKDIR /app
 COPY --from=build /app/build/libs/guardians-0.0.1-SNAPSHOT.jar /app/app.jar
 
 # 실행 명령어 설정
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-Djavax.net.ssl.trustStore=/usr/local/openjdk-17/lib/security/cacerts", "-Djavax.net.ssl.trustStorePassword=changeit", "-jar", "/app/app.jar"]
