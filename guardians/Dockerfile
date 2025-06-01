@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y ca-certificates && \
     update-ca-certificates && \
     keytool -import -alias harbor-cert \
       -keystore /usr/local/openjdk-17/lib/security/cacerts \
-      -storepass changeit -noprompt \
+      -storepass changeit -noprompt -trustcacerts \
       -file /usr/local/share/ca-certificates/harbor-ca.crt && \
     rm -rf /var/lib/apt/lists/*
 
