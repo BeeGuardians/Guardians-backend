@@ -21,7 +21,8 @@ RUN ./gradlew build -x test --no-daemon --parallel --quiet
 FROM openjdk:17-jdk-slim
 
 # 인증서 복사 (Dockerfile과 동일 경로에 harbor-ca.crt가 있어야 함)
-COPY guardians/src/main/resources/certs/harbor-ca.crt /usr/local/share/ca-certificates/harbor-ca.crt
+COPY src/main/resources/certs/harbor-ca.crt /usr/local/share/ca-certificates/harbor-ca.crt
+
 
 # 시스템 CA store에 추가
 RUN apt-get update && apt-get install -y ca-certificates && \
