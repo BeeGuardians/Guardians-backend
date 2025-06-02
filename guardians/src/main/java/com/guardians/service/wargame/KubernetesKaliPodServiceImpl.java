@@ -104,8 +104,6 @@ public class KubernetesKaliPodServiceImpl implements KubernetesKaliPodService {
                             .build()
             ).create();
 
-            createNetworkPolicyForKaliPod(client, userId, namespace);
-
             Thread.sleep(3000);
         } catch (Exception e) {
             throw new RuntimeException("칼리 리눅스 인스턴스 생성 실패: " + e.getMessage(), e);
@@ -119,7 +117,6 @@ public class KubernetesKaliPodServiceImpl implements KubernetesKaliPodService {
             client.pods().inNamespace(namespace).withName(podName).delete();
             client.services().inNamespace(namespace).withName("svc-kali-" + userId).delete();
             client.network().v1().ingresses().inNamespace(namespace).withName("ing-kali-" + userId).delete();
-            client.network().v1().networkPolicies().inNamespace(namespace).withName("np-kali-" + userId).delete(); // ← 추가된 부분
 
             int retry = 0;
             while (retry < 10) {
@@ -164,46 +161,5 @@ public class KubernetesKaliPodServiceImpl implements KubernetesKaliPodService {
 
     private String getKaliIngressUrl(Long userId) {
         return String.format("https://kali-%d.wargames.bee-guardians.com", userId);
-    }
-
-    private void createNetworkPolicyForKaliPod(KubernetesClient client, Long userId, String namespace) {
-        String policyName = "np-kali-" + userId;
-        String podLabel = "kali-" + userId;
-
-        String albIp1 = System.getenv().getOrDefault("ALB_CIDR_1", "0.0.0.0/0");
-        String albIp2 = System.getenv().getOrDefault("ALB_CIDR_2", null);
-
-        NetworkPolicy policy = new NetworkPolicyBuilder()
-                .withNewMetadata()
-                .withName(policyName)
-                .withNamespace(namespace)
-                .endMetadata()
-                .withNewSpec()
-                .withPodSelector(new LabelSelectorBuilder()
-                        .withMatchLabels(Map.of("app", podLabel))
-                        .build())
-                .withPolicyTypes("Egress")
-                .addNewEgress()
-                .addNewTo()
-                .withIpBlock(new IPBlockBuilder().withCidr("52.79.121.176/32").build())
-                .endTo()
-                .addNewPort()
-                .withProtocol("TCP")
-                .withPort(new IntOrString(443))
-                .endPort()
-                .endEgress()
-                .addNewEgress()
-                .addNewTo()
-                .withIpBlock(new IPBlockBuilder().withCidr("3.37.75.65/32").build())
-                .endTo()
-                .addNewPort()
-                .withProtocol("TCP")
-                .withPort(new IntOrString(443))
-                .endPort()
-                .endEgress()
-                .endSpec()
-                .build();
-
-        client.network().v1().networkPolicies().inNamespace(namespace).resource(policy).createOrReplace();
     }
 }
