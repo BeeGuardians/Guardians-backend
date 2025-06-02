@@ -62,6 +62,7 @@ public class WargameServiceImpl implements WargameService {
                 .difficulty(dto.getDifficulty())
                 .score(dto.getScore())
                 .dockerImageUrl(dto.getDockerImageUrl())
+                .withImagePullPolicy("Always")
                 .fileUrl(dto.getFileUrl())
                 .category(category)
                 .createdAt(LocalDateTime.now())
