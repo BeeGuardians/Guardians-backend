@@ -10,6 +10,9 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressBackendBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressBuilder;
+import io.fabric8.kubernetes.api.model.networking.v1.IPBlockBuilder;
+import io.fabric8.kubernetes.api.model.networking.v1.NetworkPolicy;
+import io.fabric8.kubernetes.api.model.networking.v1.NetworkPolicyBuilder;
 import io.fabric8.kubernetes.client.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -169,9 +172,6 @@ public class KubernetesKaliPodServiceImpl implements KubernetesKaliPodService {
     private void createNetworkPolicyForKaliPod(KubernetesClient client, Long userId, String namespace) {
         String policyName = "np-kali-" + userId;
         String podLabel = "kali-" + userId;
-
-        String albIp1 = System.getenv().getOrDefault("ALB_CIDR_1", "0.0.0.0/0");
-        String albIp2 = System.getenv().getOrDefault("ALB_CIDR_2", null);
 
         NetworkPolicy policy = new NetworkPolicyBuilder()
                 .withNewMetadata()
