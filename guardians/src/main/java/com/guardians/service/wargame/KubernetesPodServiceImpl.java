@@ -69,6 +69,7 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
                     .addNewContainer()
                     .withName("main")
                     .withImage(imageName)
+                    .withImagePullPolicy("Always")
                     .addNewPort().withContainerPort(8000).endPort()
                     .endContainer()
                     .endSpec()
