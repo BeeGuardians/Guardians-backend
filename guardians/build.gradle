@@ -96,9 +96,6 @@ dependencies {
     // Vault
     implementation("org.springframework.cloud:spring-cloud-starter-vault-config")
 
-    // http client
-    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
-
 
     // OTel
 //    implementation 'io.opentelemetry:opentelemetry-api'
