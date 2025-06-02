@@ -98,7 +98,6 @@ dependencies {
 
     // http client
     implementation 'org.apache.httpcomponents:httpclient:4.5.14'
-    implementation 'org.apache.httpcomponents:httpcore:4.4.16'
 
 
     // OTel
