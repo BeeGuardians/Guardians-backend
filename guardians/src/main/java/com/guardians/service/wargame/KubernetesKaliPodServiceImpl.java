@@ -10,6 +10,12 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressBackendBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressBuilder;
+import io.fabric8.kubernetes.api.model.IntOrString;
+import io.fabric8.kubernetes.api.model.networking.v1.IPBlockBuilder;
+import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
+import io.fabric8.kubernetes.api.model.networking.v1.NetworkPolicy;
+import io.fabric8.kubernetes.api.model.networking.v1.NetworkPolicyBuilder;
+
 import io.fabric8.kubernetes.client.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -104,6 +110,8 @@ public class KubernetesKaliPodServiceImpl implements KubernetesKaliPodService {
                             .build()
             ).create();
 
+            createNetworkPolicyForKaliPod(client, userId, namespace);
+
             Thread.sleep(3000);
         } catch (Exception e) {
             throw new RuntimeException("칼리 리눅스 인스턴스 생성 실패: " + e.getMessage(), e);
@@ -117,12 +125,14 @@ public class KubernetesKaliPodServiceImpl implements KubernetesKaliPodService {
             client.pods().inNamespace(namespace).withName(podName).delete();
             client.services().inNamespace(namespace).withName("svc-kali-" + userId).delete();
             client.network().v1().ingresses().inNamespace(namespace).withName("ing-kali-" + userId).delete();
+            client.network().v1().networkPolicies().inNamespace(namespace).withName("np-kali-" + userId).delete();
 
             int retry = 0;
             while (retry < 10) {
                 boolean podDeleted = client.pods().inNamespace(namespace).withName(podName).get() == null;
                 boolean svcDeleted = client.services().inNamespace(namespace).withName("svc-kali-" + userId).get() == null;
                 boolean ingDeleted = client.network().v1().ingresses().inNamespace(namespace).withName("ing-kali-" + userId).get() == null;
+                boolean npDeleted = client.network().v1().networkPolicies().inNamespace(namespace).withName("np-kali-" + userId).get() == null;
 
                 if (podDeleted && svcDeleted && ingDeleted) return true;
                 Thread.sleep(1000);
@@ -162,4 +172,68 @@ public class KubernetesKaliPodServiceImpl implements KubernetesKaliPodService {
     private String getKaliIngressUrl(Long userId) {
         return String.format("https://kali-%d.wargames.bee-guardians.com", userId);
     }
+
+    private void createNetworkPolicyForKaliPod(KubernetesClient client, Long userId, String namespace) {
+        String policyName = "np-kali-" + userId;
+        String podLabel = "kali-" + userId;
+
+        String albIp1 = System.getenv("ALB_CIDR_1");
+        String albIp2 = System.getenv("ALB_CIDR_2");
+
+        NetworkPolicy policy = new NetworkPolicyBuilder()
+                .withNewMetadata()
+                .withName(policyName)
+                .withNamespace(namespace)
+                .endMetadata()
+                .withNewSpec()
+                .withPodSelector(new LabelSelectorBuilder()
+                        .withMatchLabels(Map.of("app", podLabel))
+                        .build())
+                .withPolicyTypes("Egress")
+
+                // 1. CoreDNS 접근 허용
+                .addNewEgress()
+                .addNewTo()
+                .withNamespaceSelector(new LabelSelectorBuilder()
+                        .withMatchLabels(Map.of("kube-system", "true"))
+                        .build())
+                .endTo()
+                .addNewPort()
+                .withProtocol("UDP")
+                .withPort(new IntOrString(53))
+                .endPort()
+                .addNewPort()
+                .withProtocol("TCP")
+                .withPort(new IntOrString(53))
+                .endPort()
+                .endEgress()
+
+                // 2. ALB 1 접근 허용
+                .addNewEgress()
+                .addNewTo()
+                .withIpBlock(new IPBlockBuilder().withCidr(albIp1).build())
+                .endTo()
+                .addNewPort()
+                .withProtocol("TCP")
+                .withPort(new IntOrString(443))
+                .endPort()
+                .endEgress()
+
+                // 3. ALB 2 접근 허용
+                .addNewEgress()
+                .addNewTo()
+                .withIpBlock(new IPBlockBuilder().withCidr(albIp2).build())
+                .endTo()
+                .addNewPort()
+                .withProtocol("TCP")
+                .withPort(new IntOrString(443))
+                .endPort()
+                .endEgress()
+
+                .endSpec()
+                .build();
+
+        client.network().v1().networkPolicies().inNamespace(namespace).resource(policy).createOrReplace();
+    }
+
 }
