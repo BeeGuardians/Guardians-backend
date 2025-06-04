@@ -22,6 +22,7 @@ public class ResWargameListDto {
 
     // 분류 및 난이도
     private Long category;
+    private String categoryName;
     private Difficulty difficulty;
 
     // 시간 정보
@@ -43,6 +44,7 @@ public class ResWargameListDto {
                 .likeCount(wargame.getLikeCount())
                 .score(wargame.getScore())
                 .category(wargame.getCategory().getId())
+                .categoryName(wargame.getCategory().getName())
                 .difficulty(wargame.getDifficulty())
                 .createdAt(wargame.getCreatedAt())
                 .updatedAt(wargame.getUpdatedAt())

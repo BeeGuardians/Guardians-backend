@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -81,6 +82,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void updateUserRole(Long userId, String newRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!newRole.equals("USER") && !newRole.equals("ADMIN")) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
+        user.updateRole(newRole);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public boolean isEmailExists(String email) {
         return userRepository.existsByEmail(email);
@@ -93,7 +107,7 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(ErrorCode.PERMISSION_DENIED); // ← 권한 없음 에러 따로 만들자
         }
 
-        User user = userRepository.findById(targetUserId)
+        User user = userRepository.findWithStatsById(targetUserId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         user.updateUsername(dto.getUsername());
@@ -108,7 +122,7 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        User user = userRepository.findById(sessionUserId)
+        User user = userRepository.findWithStatsById(sessionUserId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
@@ -122,7 +136,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void verifyResetPassword(Long userId, String code, String newPassword) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findWithStatsById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         boolean verified = emailVerificationService.verifyCode(user.getEmail(), code);
@@ -131,6 +145,14 @@ public class UserServiceImpl implements UserService {
         }
 
         user.updatePassword(passwordEncoder.encode(newPassword));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ResLoginDto> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(ResLoginDto::fromEntity)
+                .toList();
     }
 
     @Transactional
@@ -148,8 +170,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResLoginDto getUserInfo(Long userId) {
+    public void adminDeleteUser(Long userId) {
         User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        userRepository.delete(user);
+    }
+
+
+    @Override
+    public ResLoginDto getUserInfo(Long userId) {
+        User user = userRepository.findWithStatsById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         return ResLoginDto.builder()
@@ -164,7 +194,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String getEmailByUserId(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findWithStatsById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         return user.getEmail();
     }
@@ -179,7 +209,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateProfileImageUrl(Long userId, String imageUrl) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findWithStatsById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         user.updateProfileImageUrl(imageUrl);

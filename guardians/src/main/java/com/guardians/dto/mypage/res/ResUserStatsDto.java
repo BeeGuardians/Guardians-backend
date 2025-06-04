@@ -9,5 +9,6 @@ import lombok.*;
 public class ResUserStatsDto {
     private int score;
     private int rank;
+    private String tier;
     private int solvedCount;
 }

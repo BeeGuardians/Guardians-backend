@@ -2,6 +2,7 @@ package com.guardians.service.wargame;
 
 import com.guardians.dto.mypage.res.ResReviewDto;
 import com.guardians.dto.wargame.req.ReqCreateReviewDto;
+import com.guardians.dto.wargame.req.ReqCreateWargameDto;
 import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
 import com.guardians.dto.wargame.res.*;
 
@@ -13,6 +14,8 @@ public interface WargameService {
     ResSubmitFlagDto submitFlag(Long userId, Long wargameId, String flag);
     List<ResHotWargameDto> getHotWargames();
     List<ResUserStatusDto> getActiveUsersByWargame(Long wargameId);
+    ResWargameListDto createWargame(ReqCreateWargameDto dto, Long adminId);
+    void deleteWargame(Long wargameId);
 
     List<ResReviewListDto> getWargameReviews(Long wargameId);
     ResReviewListDto createReview(Long userId, Long wargameId, ReqCreateReviewDto request);

@@ -5,6 +5,7 @@ package com.guardians.dto.question.res;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.time.LocalDateTime;
 
@@ -16,8 +17,11 @@ public class ResQuestionDetailDto {
     private String title;
     private String content;
     private String username;
+    private String userId;
     private Long wargameId;
     private String wargameTitle;
+    private String profileImageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private int viewCount;
 }

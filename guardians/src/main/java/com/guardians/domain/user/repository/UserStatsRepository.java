@@ -17,7 +17,10 @@ public interface UserStatsRepository extends JpaRepository<UserStats, Long> {
     // find all with user -> order by score desc
     @Query("SELECT us FROM UserStats us JOIN FETCH us.user ORDER BY us.score DESC")
     List<UserStats> findAllWithUserOrderByScoreDesc();
-    Optional<UserStats> findByUserId(Long userId);
+
+
+    @Query("SELECT us FROM UserStats us JOIN FETCH us.user WHERE us.user.id = :id")
+    Optional<UserStats> findWithUserById(@Param("id") Long id);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE UserStats us SET us.totalSolved = :count WHERE us.user.id = :userId")

@@ -97,6 +97,7 @@ public class User {
                 .score(1000)
                 .totalSolved(0)
                 .lastSolvedAt(null)
+                .tier(Tier.BRONZE)
                 .updatedAt(LocalDateTime.now())
                 .build();
 
@@ -107,6 +108,10 @@ public class User {
 
     public void setUserStats(UserStats userStats) {
         this.userStats = userStats;
+    }
+
+    public void updateRole(String role) {
+        this.role = role;
     }
 
     public void updateLastLoginAt() {

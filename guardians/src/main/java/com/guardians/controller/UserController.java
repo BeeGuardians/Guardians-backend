@@ -1,10 +1,8 @@
 package com.guardians.controller;
 
+import com.guardians.domain.user.entity.User;
 import com.guardians.dto.common.ResWrapper;
-import com.guardians.dto.user.req.ReqChangePasswordDto;
-import com.guardians.dto.user.req.ReqCreateUserDto;
-import com.guardians.dto.user.req.ReqLoginDto;
-import com.guardians.dto.user.req.ReqUpdateUserDto;
+import com.guardians.dto.user.req.*;
 import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
@@ -25,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -32,7 +31,7 @@ import java.io.IOException;
 @Tag(name = "User API", description = "회원가입 및 로그인 관련 API")
 public class UserController {
 
-    private final UserService   userService;
+    private final UserService userService;
     private final EmailVerificationService emailVerificationService;
     private final S3Service s3Service;
 
@@ -87,9 +86,53 @@ public class UserController {
     ) {
         ResLoginDto loginUser = userService.login(loginDto);
         session.setAttribute("userId", loginUser.getId());
+        session.setAttribute("role", loginUser.getRole());
+
         return ResponseEntity.ok(ResWrapper.resSuccess("로그인 성공", loginUser));
     }
 
+    // ADMIN login
+    @PostMapping("/admin/login")
+    public ResponseEntity<ResWrapper<?>> adminLogin(
+            @RequestBody @Valid ReqLoginDto loginDto,
+            HttpSession session
+    ) {
+        ResLoginDto loginUser = userService.login(loginDto);
+
+        if (!"ADMIN".equals(loginUser.getRole())) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED); // 예외는 네가 만든 코드 쓰면 됨
+        }
+
+        session.setAttribute("userId", loginUser.getId());
+        session.setAttribute("role", loginUser.getRole());
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 로그인 성공", loginUser));
+    }
+
+
+    @PutMapping("/admin/update-role/{userId}")
+    public ResponseEntity<String> updateUserRole(
+            @PathVariable Long userId,
+            @RequestBody ReqUpdateUserRoleDto request
+    ) {
+        userService.updateUserRole(userId, request.getRole());
+        return ResponseEntity.ok("권한이 성공적으로 변경되었습니다.");
+    }
+
+    // 모든 유저 조회
+    @Operation(summary = "전체 유저 목록 조회", description = "관리자만 전체 유저 목록을 확인할 수 있습니다.")
+    @GetMapping("/admin/list")
+    public ResponseEntity<ResWrapper<?>> getAllUsers(HttpSession session) {
+        Long sessionUserId = (Long) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
+
+        if (sessionUserId == null || role == null || !"ADMIN".equals(role)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        List<ResLoginDto> users = userService.getAllUsers();
+        return ResponseEntity.ok(ResWrapper.resList("[관리자] 전체 유저 목록 반환", users, users.size()));
+    }
 
     @PostMapping("/logout")
     public ResponseEntity<ResWrapper<?>> logout(HttpServletRequest request, HttpServletResponse response) {
@@ -158,7 +201,6 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("프로필 이미지 기본으로 변경 완료", defaultUrl));
     }
 
-
     // 비밀번호 변경
     @PatchMapping("/{userId}/reset-password")
     public ResponseEntity<ResWrapper<?>> changePassword(
@@ -221,6 +263,25 @@ public class UserController {
 
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 탈퇴 완료", null));
     }
+
+    // 관리자 회원 삭제
+    @Operation(summary = "관리자 전용 회원 삭제", description = "관리자가 특정 회원을 강제 탈퇴시킵니다.")
+    @DeleteMapping("/admin/delete/{userId}")
+    public ResponseEntity<ResWrapper<?>> adminDeleteUser(
+            @PathVariable Long userId,
+            HttpSession session
+    ) {
+        Long sessionUserId = (Long) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
+
+        if (sessionUserId == null || role == null || !"ADMIN".equals(role)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        userService.adminDeleteUser(userId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 회원 삭제 완료", null));
+    }
+
 
     // UserId 정보 반환
     @GetMapping("/me")

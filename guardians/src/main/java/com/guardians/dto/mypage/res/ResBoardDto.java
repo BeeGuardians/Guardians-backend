@@ -20,6 +20,8 @@ public class ResBoardDto {
         private String title;
         private String content;
         private String boardType;
+        private String createdAt;
+        private int likeCount;
     }
 
     public static ResBoardDto fromEntities(List<Board> boardList) {
@@ -31,6 +33,8 @@ public class ResBoardDto {
                                         .title(board.getTitle())
                                         .content(board.getContent())
                                         .boardType(board.getBoardType().toString())
+                                        .createdAt(board.getCreatedAt().toString())
+                                        .likeCount(board.getLikeCount())
                                         .build())
                                 .collect(Collectors.toList())
                 )

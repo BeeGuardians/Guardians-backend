@@ -14,4 +14,6 @@ public class ResJobListDto {
     private String location;
     private String employmentType;
     private LocalDate deadline;
+    private String careerLevel;
+    private String sourceUrl;
 }

@@ -24,15 +24,18 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
     private final WargameRepository wargameRepository;
 
     private KubernetesClient getK8sClient() {
-        Config config = new ConfigBuilder()
-                .withMasterUrl(System.getenv("K8S_SERVER"))
-                .withClientCertData(System.getenv("K8S_CLIENT_CERT"))
-                .withClientKeyData(System.getenv("K8S_CLIENT_KEY"))
-                .withNamespace(System.getenv("K8S_NAMESPACE"))
-                .withTrustCerts(true)
-                .build();
-
-        return new DefaultKubernetesClient(config);
+        if ("true".equalsIgnoreCase(System.getenv("IN_CLUSTER"))) {
+            return new DefaultKubernetesClient(Config.autoConfigure(null));
+        } else {
+            Config config = new ConfigBuilder()
+                    .withMasterUrl(System.getenv("K8S_SERVER"))
+                    .withClientCertData(System.getenv("K8S_CLIENT_CERT"))
+                    .withClientKeyData(System.getenv("K8S_CLIENT_KEY"))
+                    .withNamespace(System.getenv("K8S_NAMESPACE"))
+                    .withTrustCerts(true)
+                    .build();
+            return new DefaultKubernetesClient(config);
+        }
     }
 
     @Override
@@ -66,6 +69,7 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
                     .addNewContainer()
                     .withName("main")
                     .withImage(imageName)
+                    .withImagePullPolicy("Always")
                     .addNewPort().withContainerPort(8000).endPort()
                     .endContainer()
                     .endSpec()
@@ -89,17 +93,15 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
                     .withNewMetadata()
                     .withName("ing-" + userId + "-" + wargameId)
                     .withNamespace(namespace)
-                    .addToAnnotations("nginx.ingress.kubernetes.io/rewrite-target", "/$2")
-                    .addToAnnotations("nginx.ingress.kubernetes.io/use-regex", "true")
                     .endMetadata()
                     .withNewSpec()
                     .withIngressClassName("nginx")
                     .addNewRule()
-                    .withHost("wargames.bee-guardians.com")
+                    .withHost(String.format("%d-%d.wargames.bee-guardians.com", wargameId, userId))
                     .withNewHttp()
                     .addNewPath()
-                    .withPath("/wargame/" + wargameId + "/" + userId + "(/|$)(.*)")
-                    .withPathType("ImplementationSpecific")
+                    .withPath("/") // 루트로 노출
+                    .withPathType("Prefix")
                     .withBackend(new IngressBackendBuilder()
                             .withNewService()
                             .withName("svc-" + userId + "-" + wargameId)
@@ -187,14 +189,17 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
         }
     }
 
+    @Override
     public String generateIngressUrl(String podName) {
         try {
             String[] parts = podName.split("-");
             Long userId = Long.parseLong(parts[1]);
             Long wargameId = Long.parseLong(parts[2]);
-            return String.format("http://wargames.bee-guardians.com/wargame/%d/%d/", wargameId, userId);
+
+            return String.format("https://%d-%d.wargames.bee-guardians.com", wargameId, userId);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid pod name format: " + podName);
         }
     }
+
 }

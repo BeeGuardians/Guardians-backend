@@ -9,10 +9,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResBadgeDto {
+public class ResUserBadgeDto {
     private Long id;
     private String name;
     private String description;
-    private String iconUrl;
+    private String trueIconUrl;
+    private String falseIconUrl;
     private boolean earned;
 }

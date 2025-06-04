@@ -46,4 +46,21 @@ public class Question {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Builder.Default
+    @Column(nullable = true, name = "view_count")
+    private Integer viewCount = 0;
+
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (viewCount == null) {
+            viewCount = 0;
+        }
+    }
+
+
+
 }

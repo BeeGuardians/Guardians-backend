@@ -2,11 +2,13 @@ package com.guardians.controller;
 
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.wargame.req.ReqCreateReviewDto;
+import com.guardians.dto.wargame.req.ReqCreateWargameDto;
 import com.guardians.dto.wargame.req.ReqSubmitFlagDto;
 import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
 import com.guardians.dto.wargame.res.*;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
+import com.guardians.service.wargame.KubernetesKaliPodServiceImpl;
 import com.guardians.service.wargame.KubernetesPodService;
 import com.guardians.service.wargame.WargameService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +28,40 @@ public class WargameController {
 
     private final WargameService wargameService;
     private final KubernetesPodService kubernetesPodService;
+    private final KubernetesKaliPodServiceImpl kubernetesKaliPodService;
+
+    @PostMapping("/admin")
+    public ResponseEntity<ResWrapper<?>> createWargame(
+            @RequestBody ReqCreateWargameDto request,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
+
+        if (userId == null || !"ADMIN".equals(role)) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
+        ResWargameListDto created = wargameService.createWargame(request, userId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 워게임 생성 성공", created));
+    }
+
+    @DeleteMapping("/admin/{wargameId}")
+    public ResponseEntity<ResWrapper<?>> deleteWargame(
+            @PathVariable Long wargameId,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
+
+        if (userId == null || !"ADMIN".equals(role)) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
+        wargameService.deleteWargame(wargameId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("워게임 삭제 완료", null));
+    }
+
 
     @GetMapping
     public ResponseEntity<ResWrapper<?>> getWargameList(HttpServletRequest request) {
@@ -131,11 +167,11 @@ public class WargameController {
         }
 
         String podName = "wargame-" + userId + "-" + wargameId;
-        String namespace = "default";
+        String namespace = "ns-wargame";
 
         kubernetesPodService.createWargamePod(podName, wargameId, userId, namespace);
 
-        String url = "http://wargames.bee-guardians.com/wargame/" + wargameId + "/" + userId + "/";
+        String url = String.format("https://%d-%d.wargames.bee-guardians.com", wargameId, userId);
 
         return ResponseEntity.ok(
                 ResWrapper.resSuccess("워게임 인스턴스 시작됨", Map.of(
@@ -157,17 +193,18 @@ public class WargameController {
         }
 
         String podName = "wargame-" + userId + "-" + wargameId;
-        String namespace = "default";
+        String namespace = "ns-wargame";
 
         boolean deleted = kubernetesPodService.deleteWargamePod(podName, namespace);
         if (deleted) {
             return ResponseEntity.ok(
                     ResWrapper.resSuccess("워게임 인스턴스 종료됨", Map.of(
                             "podName", podName,
-                            "url", "http://wargames.bee-guardians.com/wargame/" + wargameId + "/" + userId + "/"
+                            "url", kubernetesPodService.generateIngressUrl(podName)
                     ))
             );
-        } else {
+        }
+        else {
             return ResponseEntity.ok(
                     ResWrapper.resSuccess("종료할 워게임 인스턴스를 찾을 수 없음", Map.of(
                             "podName", podName
@@ -187,7 +224,7 @@ public class WargameController {
         }
 
         String podName = "wargame-" + userId + "-" + wargameId;
-        String namespace = "default";
+        String namespace = "ns-wargame";
 
         PodStatusDto podStatus = kubernetesPodService.getPodStatus(podName, namespace);
 
@@ -212,5 +249,47 @@ public class WargameController {
         return ResponseEntity.ok(ResWrapper.resList("현재 워게임 풀고 있는 유저 목록", users, users.size()));
     }
 
+    @PostMapping("/kali/start")
+    public ResponseEntity<ResWrapper<?>> startKaliPod(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+
+        String namespace = "ns-wargame";
+        kubernetesKaliPodService.createKaliPod(userId, namespace);
+
+        String url = String.format("https://kali-%d.wargames.bee-guardians.com", userId);
+        return ResponseEntity.ok(
+                ResWrapper.resSuccess("Kali 인스턴스 시작됨", Map.of(
+                        "url", url
+                ))
+        );
+    }
+
+    @DeleteMapping("/kali/stop")
+    public ResponseEntity<ResWrapper<?>> stopKaliPod(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+
+        String namespace = "ns-wargame";
+        boolean deleted = kubernetesKaliPodService.deleteKaliPod(userId, namespace);
+        return ResponseEntity.ok(
+                ResWrapper.resSuccess(deleted ? "Kali 인스턴스 종료됨" : "Kali 인스턴스 삭제 실패", null)
+        );
+    }
+
+    @GetMapping("/kali/status")
+    public ResponseEntity<ResWrapper<?>> getKaliPodStatus(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+
+        String namespace = "ns-wargame";
+        PodStatusDto status = kubernetesKaliPodService.getKaliPodStatus(userId, namespace);
+        return ResponseEntity.ok(
+                ResWrapper.resSuccess("Kali 상태 조회 성공", Map.of(
+                        "status", status.getStatus(),
+                        "url", status.getUrl()
+                ))
+        );
+    }
 
 }

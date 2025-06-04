@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 @RestController
 @RequestMapping("/api/qna")
 @RequiredArgsConstructor
@@ -64,9 +66,10 @@ public class QnaController {
     // 질문 수정
     @PatchMapping("/questions/{questionId}")
     public ResponseEntity<ResWrapper<?>> updateQuestion(
-            @RequestParam Long userId,
+            HttpSession session,
             @PathVariable Long questionId,
             @RequestBody ReqUpdateQuestionDto dto) {
+        Long userId = (Long) session.getAttribute("userId");
         questionService.updateQuestion(userId, questionId, dto);
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 수정 완료", null));
     }
@@ -74,8 +77,9 @@ public class QnaController {
     // 질문 삭제
     @DeleteMapping("/questions/{questionId}")
     public ResponseEntity<ResWrapper<?>> deleteQuestion(
-            @RequestParam Long userId,
+            HttpSession session,
             @PathVariable Long questionId) {
+        Long userId = (Long) session.getAttribute("userId");
         questionService.deleteQuestion(userId, questionId);
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 삭제 완료", null));
     }
@@ -83,8 +87,9 @@ public class QnaController {
     // 답변 작성
     @PostMapping("/answers")
     public ResponseEntity<ResWrapper<?>> createAnswer(
-            @RequestParam Long userId,
+            HttpSession session,
             @RequestBody ReqCreateAnswerDto dto) {
+        Long userId = (Long) session.getAttribute("userId");
         answerService.createAnswer(userId, dto);
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 등록 완료", null));
     }
@@ -99,9 +104,10 @@ public class QnaController {
     // 답변 수정
     @PatchMapping("/answers/{answerId}")
     public ResponseEntity<ResWrapper<?>> updateAnswer(
-            @RequestParam Long userId,
+            HttpSession session,
             @PathVariable Long answerId,
             @RequestBody ReqUpdateAnswerDto dto) {
+        Long userId = (Long) session.getAttribute("userId");
         answerService.updateAnswer(userId, answerId, dto);
 
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 수정 완료", null));
@@ -110,8 +116,9 @@ public class QnaController {
     // 답변 삭제
     @DeleteMapping("/answers/{answerId}")
     public ResponseEntity<ResWrapper<?>> deleteAnswer(
-            @RequestParam Long userId,
+            HttpSession session,
             @PathVariable Long answerId) {
+        Long userId = (Long) session.getAttribute("userId");
         answerService.deleteAnswer(userId, answerId);
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 삭제 완료", null));
     }

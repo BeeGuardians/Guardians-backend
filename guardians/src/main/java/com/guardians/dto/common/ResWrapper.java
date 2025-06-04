@@ -55,4 +55,16 @@ public class ResWrapper<T> {
                         .build())
                 .build();
     }
+
+    public static ResWrapper<ErrorResult> resError(String message) {
+        return ResWrapper.<ErrorResult>builder()
+                .result(ErrorResult.builder()
+                        .status(400)
+                        .errorCode(1001)
+                        .message(message)
+                        .build())
+                .build();
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package com.guardians.service.wargame;
 
+import com.guardians.domain.badge.repository.BadgeRepository;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.entity.UserStats;
 import com.guardians.domain.user.repository.UserRepository;
@@ -7,10 +8,12 @@ import com.guardians.domain.user.repository.UserStatsRepository;
 import com.guardians.domain.wargame.entity.*;
 import com.guardians.domain.wargame.repository.*;
 import com.guardians.dto.wargame.req.ReqCreateReviewDto;
+import com.guardians.dto.wargame.req.ReqCreateWargameDto;
 import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
 import com.guardians.dto.wargame.res.*;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
+import com.guardians.service.badge.BadgeService;
 import io.fabric8.kubernetes.api.model.Pod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -19,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,28 +38,95 @@ public class WargameServiceImpl implements WargameService {
     private final UserStatsRepository userStatsRepository;
     private final ReviewRepository reviewRepository;
     private final KubernetesPodService kubernetesPodService;
+    private final BadgeService badgeService;
+    private final CategoryRepository categoryRepository;
 
+
+    @Transactional
+    @Override
+    public ResWargameListDto createWargame(ReqCreateWargameDto dto, Long adminId) {
+        // 관리자 유저 유효성 확인
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!"ADMIN".equals(admin.getRole())) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
+        Category category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_VALID_ARGUMENT));
+
+        Wargame wargame = Wargame.builder()
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .difficulty(dto.getDifficulty())
+                .score(dto.getScore())
+                .dockerImageUrl(dto.getDockerImageUrl())
+                .fileUrl(dto.getFileUrl())
+                .category(category)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        wargameRepository.save(wargame);
+
+        WargameFlag flag = WargameFlag.builder()
+                .wargame(wargame)
+                .flag(dto.getFlag())
+                .build();
+
+        wargameFlagRepository.save(flag);
+
+        return ResWargameListDto.fromEntity(wargame, false, false, false);
+    }
 
     @Override
+    @Transactional
+    public void deleteWargame(Long wargameId) {
+        Wargame wargame = wargameRepository.findById(wargameId)
+                .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
+        wargameRepository.delete(wargame);
+    }
+
     public List<ResWargameListDto> getWargameList(Long userId) {
-        return wargameRepository.findAll().stream().map(wargame -> {
-            boolean solved = false;
-            boolean bookmarked = false;
-            boolean liked = false;
+        List<Wargame> wargames = wargameRepository.findAllWithCategory();
+        List<Long> wargameIds = wargames.stream().map(Wargame::getId).toList();
 
-            if (userId != null) {
-                solved = solvedWargameRepository.existsByUserIdAndWargameId(userId, wargame.getId());
-                bookmarked = bookmarkRepository.existsByUserIdAndWargameId(userId, wargame.getId());
-                liked = wargameLikeRepository.existsByUserIdAndWargameId(userId, wargame.getId());
-            }
+        Set<Long> solvedIds;
+        Set<Long> bookmarkedIds;
+        Set<Long> likedIds;
+        Map<Long, String> flagMap = new HashMap<>();
 
-            return ResWargameListDto.fromEntity(wargame, solved, bookmarked, liked);
-        }).collect(Collectors.toList());
+        if (userId != null) {
+            solvedIds = solvedWargameRepository.findWargameIdsByUserId(userId);
+            bookmarkedIds = bookmarkRepository.findWargameIdsByUserId(userId);
+            likedIds = wargameLikeRepository.findWargameIdsByUserId(userId);
+        } else {
+            likedIds = new HashSet<>();
+            bookmarkedIds = new HashSet<>();
+            solvedIds = new HashSet<>();
+        }
+
+        // flag N+1 해결
+        List<WargameFlag> flags = wargameFlagRepository.findAllByWargameIdIn(wargameIds);
+        flagMap = flags.stream()
+                .collect(Collectors.toMap(f -> f.getWargame().getId(), WargameFlag::getFlag));
+
+        return wargames.stream()
+                .map(w -> {
+                    Long id = w.getId();
+                    return ResWargameListDto.fromEntity(
+                            w,
+                            solvedIds.contains(id),
+                            bookmarkedIds.contains(id),
+                            likedIds.contains(id)
+                    );
+                }).toList();
     }
 
     @Override
     public ResWargameListDto getWargameById(Long userId, Long wargameId) {
-        Wargame wargame = wargameRepository.findById(wargameId)
+        Wargame wargame = wargameRepository.findByIdWithCategory(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
 
         boolean solved = false;
@@ -85,7 +152,7 @@ public class WargameServiceImpl implements WargameService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         Wargame wargame = wargameRepository.findById(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
-        WargameFlag wargameFlag = wargameFlagRepository.findById(wargameId)
+        WargameFlag wargameFlag = wargameFlagRepository.findByWargame_Id(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_VALID_ARGUMENT));
 
         boolean isCorrect = wargameFlag.getFlag().equals(flag);
@@ -103,6 +170,8 @@ public class WargameServiceImpl implements WargameService {
             UserStats stats = userStatsRepository.findById(user.getId())
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
             stats.addScore(score);
+
+            badgeService.checkAndAssignBadges(user);
         }
 
         return ResSubmitFlagDto.builder()
@@ -233,23 +302,30 @@ public class WargameServiceImpl implements WargameService {
 
     @Override
     public List<ResUserStatusDto> getActiveUsersByWargame(Long wargameId) {
-        String namespace = "default";
+        String namespace = "ns-wargame";
         List<Pod> pods = kubernetesPodService.getRunningPodsByWargameId(wargameId, namespace);
 
         return pods.stream().map(pod -> {
             String podName = pod.getMetadata().getName();
             String[] parts = podName.split("-");
-            Long userId = Long.parseLong(parts[1]);
+
+            Long userId;
+            try {
+                userId = Long.parseLong(parts[1]);
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                return null;
+            }
 
             User user = userRepository.findById(userId).orElse(null);
             if (user == null) return null;
 
             return new ResUserStatusDto(
                     user.getUsername(),
-                    pod.getMetadata().getCreationTimestamp(), // 접속 시간
+                    pod.getMetadata().getCreationTimestamp(),
                     false
             );
         }).filter(Objects::nonNull).toList();
+
     }
 
 }

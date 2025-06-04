@@ -6,7 +6,10 @@ import com.guardians.dto.question.res.ResCreateQuestionDto;
 import com.guardians.dto.question.res.ResQuestionDetailDto;
 import com.guardians.dto.question.res.ResQuestionListDto;
 import com.guardians.dto.question.res.ResUpdateQuestionDto;
+import jakarta.persistence.metamodel.SingularAttribute;
+import org.springframework.data.jpa.domain.AbstractPersistable;
 
+import java.io.Serializable;
 import java.util.List;
 
 public interface QuestionService {
@@ -22,4 +25,7 @@ public interface QuestionService {
     ResUpdateQuestionDto updateQuestion(Long userId, Long questionId, ReqUpdateQuestionDto dto);
 
     void deleteQuestion(Long userId, Long questionId);
+
+    void increaseViewCount(Long questionId);
+
 }
