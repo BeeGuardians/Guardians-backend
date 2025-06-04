@@ -96,6 +96,10 @@ dependencies {
     // Vault
     implementation("org.springframework.cloud:spring-cloud-starter-vault-config")
 
+    // promethus
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
 
     // OTel
 //    implementation 'io.opentelemetry:opentelemetry-api'

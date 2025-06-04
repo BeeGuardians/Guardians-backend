@@ -97,3 +97,12 @@ logging:
   level:
     org.springframework.vault: DEBUG
     org.springframework.boot.context.config: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  endpoint:
+    prometheus:
+      enabled: true
