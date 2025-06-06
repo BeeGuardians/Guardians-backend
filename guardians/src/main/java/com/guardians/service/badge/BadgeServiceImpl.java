@@ -86,7 +86,6 @@ public class BadgeServiceImpl implements BadgeService {
 
         long totalSolved = solvedWargameRepository.countByUser(user);
 
-        // 입문자: 첫 문제 성공
         if (totalSolved >= 1 && !owned.contains("입문자")) {
             assignBadgeIfNeeded(userId, "입문자");
         }
