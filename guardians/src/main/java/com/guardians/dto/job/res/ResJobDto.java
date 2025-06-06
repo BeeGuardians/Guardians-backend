@@ -1,11 +1,16 @@
 package com.guardians.dto.job.res;
 
 import com.guardians.domain.job.entity.Job;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Getter
+@Builder
+@AllArgsConstructor
 public class ResJobDto {
     private final Long id;
     private final String companyName;
