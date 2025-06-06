@@ -126,7 +126,7 @@ public class UserController {
         Long sessionUserId = (Long) session.getAttribute("userId");
         String role = (String) session.getAttribute("role");
 
-        if (sessionUserId == null || role == null || !"ADMIN".equals(role)) {
+        if (sessionUserId == null || !"ADMIN".equals(role)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
@@ -274,7 +274,7 @@ public class UserController {
         Long sessionUserId = (Long) session.getAttribute("userId");
         String role = (String) session.getAttribute("role");
 
-        if (sessionUserId == null || role == null || !"ADMIN".equals(role)) {
+        if (sessionUserId == null || !"ADMIN".equals(role)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 

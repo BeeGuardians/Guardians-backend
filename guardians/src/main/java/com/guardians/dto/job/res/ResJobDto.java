@@ -7,15 +7,15 @@ import java.time.LocalDate;
 
 @Getter
 public class ResJobDto {
-    private Long id;
-    private String companyName;
-    private String title;
-    private String description;
-    private String location;
-    private String employmentType;
-    private String careerLevel;
-    private String salary;
-    private LocalDate deadline;
+    private final Long id;
+    private final String companyName;
+    private final String title;
+    private final String description;
+    private final String location;
+    private final String employmentType;
+    private final String careerLevel;
+    private final String salary;
+    private final LocalDate deadline;
 
     public ResJobDto(Job job) {
         this.id = job.getId();

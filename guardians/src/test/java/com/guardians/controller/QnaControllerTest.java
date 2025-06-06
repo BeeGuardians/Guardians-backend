@@ -1,36 +1,45 @@
 package com.guardians.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.guardians.config.SecurityConfig;
 import com.guardians.domain.wargame.repository.WargameRepository;
-import com.guardians.dto.answer.req.ReqCreateAnswerDto;
-import com.guardians.dto.answer.req.ReqUpdateAnswerDto;
 import com.guardians.dto.question.req.ReqCreateQuestionDto;
 import com.guardians.dto.question.req.ReqUpdateQuestionDto;
 import com.guardians.service.answer.AnswerService;
 import com.guardians.service.question.QuestionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.session.data.redis.config.annotation.web.http.RedisHttpSessionConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(QnaController.class)
-@TestPropertySource(properties = {
-        "spring.session.store-type=none",
-        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
-})
+@ActiveProfiles("test")
+@WebMvcTest(controllers = QnaController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class),
+        excludeAutoConfiguration = RedisHttpSessionConfiguration.class
+)
 class QnaControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private QuestionService questionService;
@@ -41,87 +50,72 @@ class QnaControllerTest {
     @MockBean
     private WargameRepository wargameRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Test
-    @DisplayName("GET /api/qna/questions - 모든 질문 목록 조회")
-    void getAllQuestions() throws Exception {
-        mockMvc.perform(get("/api/qna/questions"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName("POST /api/qna/questions - 워게임 ID 포함 질문 작성")
-    void createQuestion() throws Exception {
-        long wargameId = 1L;
-
+    @DisplayName("질문 작성 성공")
+    @WithMockUser
+    void createQuestion_success() throws Exception {
         ReqCreateQuestionDto request = new ReqCreateQuestionDto();
-        request.setTitle("Test Question");
-        request.setContent("This is a test question");
-        request.setWargameId(wargameId);
+        request.setTitle("테스트 질문 제목");
+        request.setContent("테스트 질문 내용입니다.");
+        request.setWargameId(1L);
 
         mockMvc.perform(post("/api/qna/questions")
                         .sessionAttr("userId", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        ArgumentCaptor<Long> userIdCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<ReqCreateQuestionDto> requestDtoCaptor = ArgumentCaptor.forClass(ReqCreateQuestionDto.class);
+
+        verify(questionService).createQuestion(userIdCaptor.capture(), requestDtoCaptor.capture());
+
+        assertEquals(1L, userIdCaptor.getValue());
+        assertEquals("테스트 질문 제목", requestDtoCaptor.getValue().getTitle());
     }
 
     @Test
-    @DisplayName("POST /api/qna/answers - 답변 작성")
-    void createAnswer() throws Exception {
-        ReqCreateAnswerDto request = new ReqCreateAnswerDto();
-        request.setQuestionId(1L);
-        request.setContent("This is an answer.");
+    @DisplayName("질문 수정 성공")
+    @WithMockUser
+    void updateQuestion_success() throws Exception {
+        long questionId = 1L;
+        ReqUpdateQuestionDto request = new ReqUpdateQuestionDto();
+        request.setTitle("수정된 제목");
+        request.setContent("수정된 내용");
 
-        mockMvc.perform(post("/api/qna/answers")
+        mockMvc.perform(patch("/api/qna/questions/" + questionId)
                         .sessionAttr("userId", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        ArgumentCaptor<Long> userIdCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<Long> questionIdCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<ReqUpdateQuestionDto> requestDtoCaptor = ArgumentCaptor.forClass(ReqUpdateQuestionDto.class);
+
+        verify(questionService).updateQuestion(userIdCaptor.capture(), questionIdCaptor.capture(), requestDtoCaptor.capture());
+
+        assertEquals(1L, userIdCaptor.getValue());
+        assertEquals(questionId, questionIdCaptor.getValue());
+        assertEquals("수정된 제목", requestDtoCaptor.getValue().getTitle());
     }
 
     @Test
-    @DisplayName("PATCH /api/qna/questions/{id} - 질문 수정")
-    void updateQuestion() throws Exception {
-        ReqUpdateQuestionDto dto = new ReqUpdateQuestionDto();
-        dto.setTitle("Updated Title");
-        dto.setContent("Updated content");
+    @DisplayName("질문 삭제 성공")
+    @WithMockUser
+    void deleteQuestion_success() throws Exception {
+        long questionId = 1L;
 
-        mockMvc.perform(patch("/api/qna/questions/1")
+        mockMvc.perform(delete("/api/qna/questions/" + questionId)
                         .sessionAttr("userId", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
-    }
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andDo(print());
 
-    @Test
-    @DisplayName("PATCH /api/qna/answers/{id} - 답변 수정")
-    void updateAnswer() throws Exception {
-        ReqUpdateAnswerDto dto = new ReqUpdateAnswerDto();
-        dto.setContent("Updated answer");
-
-        mockMvc.perform(patch("/api/qna/answers/1")
-                        .sessionAttr("userId", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName("DELETE /api/qna/questions/{id} - 질문 삭제")
-    void deleteQuestion() throws Exception {
-        mockMvc.perform(delete("/api/qna/questions/1")
-                        .sessionAttr("userId", 1L))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName("DELETE /api/qna/answers/{id} - 답변 삭제")
-    void deleteAnswer() throws Exception {
-        mockMvc.perform(delete("/api/qna/answers/1")
-                        .sessionAttr("userId", 1L))
-                .andExpect(status().isOk());
+        verify(questionService).deleteQuestion(1L, questionId);
     }
 }

@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  session:
+    store-type: none
+
+  mail:
+    host: localhost
+    port: 25
+
+cloud:
+  aws:
+    credentials:
+      access-key: dummy-access-key
+      secret-key: dummy-secret-key
+
+aws:
+  s3:
+    access-key: dummy-access-key
+    secret-key: dummy-secret-key
+    region: ap-northeast-2
+    bucket: dummy-bucket
+    default-profile-url: http://localhost/dummy.png
+
+logging:
+  level:
+    org.springframework: INFO
+    org.hibernate: INFO
