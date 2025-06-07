@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 
 //@EnableRedisHttpSession
-//@EnableJpaAuditing
+@EnableJpaAuditing
 @SpringBootApplication
 public class GuardiansApplication {
 
