@@ -12,15 +12,6 @@ metadata:
   labels:
     app: jenkins-kaniko
 spec:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: workload
-            operator: In
-            values:
-              - guardians7
   containers:
   - name: git
     image: alpine/git:latest
