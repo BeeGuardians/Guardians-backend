@@ -14,7 +14,7 @@ spring:
         secret-id: ${VAULT_SECRET_ID}
       kv:
         enabled: true
-        backend: secret
+        backend: guardians
         default-context: guardians
         profile-separator: '/'
       fail-fast: true
