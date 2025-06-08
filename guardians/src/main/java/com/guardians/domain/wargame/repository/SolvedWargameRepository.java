@@ -34,7 +34,7 @@ public interface SolvedWargameRepository extends JpaRepository<SolvedWargame, So
     boolean existsByUserAndWargame_Difficulty(User user, Difficulty difficulty);
 
     @Query("SELECT s.user.id FROM SolvedWargame s WHERE s.wargame.id = :wargameId ORDER BY s.solvedAt ASC")
-    List<Long> findFirstSolverId(@Param("wargameId") Long wargameId, Pageable pageable);
+    List<Long> findFirstSolverByWargameId(@Param("wargameId") Long wargameId, Pageable pageable);
 
     @Query(value = """
     SELECT CASE

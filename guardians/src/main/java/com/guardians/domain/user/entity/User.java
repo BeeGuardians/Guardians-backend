@@ -1,12 +1,11 @@
 package com.guardians.domain.user.entity;
 
+import com.fasterxml.jackson.core.JsonToken;
 import com.guardians.domain.badge.entity.UserBadge;
 import com.guardians.domain.board.entity.*;
 import com.guardians.domain.wargame.entity.*;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -18,6 +17,8 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 @Getter
+@AllArgsConstructor
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class User {

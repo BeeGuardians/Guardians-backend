@@ -1,0 +1,56 @@
+@startuml
+' 패키지 다이어그램
+left to right direction
+skinparam linetype ortho
+
+
+
+package "com.guardians" {
+    package config {
+
+    }
+
+    package controller {
+
+
+    }
+
+    package domain {
+        package entity
+        package repository
+
+        repository --> entity
+
+
+    }
+
+    package service {
+        service --> repository
+    }
+
+
+    package dto {
+
+    }
+
+    package exception {
+
+    }
+
+        controller --> dto
+        controller --> service
+        controller --> exception
+
+        service --> dto
+
+        service --> exception
+
+
+
+}
+
+
+
+
+
+@enduml

@@ -40,13 +40,13 @@ public class UserController {
     @PostMapping
     public ResponseEntity<ResWrapper<?>> createUser(@RequestBody @Valid ReqCreateUserDto requestDto) {
         ResCreateUserDto createdUser = userService.createUser(requestDto);
-        return ResponseEntity.ok(ResWrapper.resSuccess("회원가입 성공",createdUser));
+        return ResponseEntity.ok(ResWrapper.resSuccess("회원가입 성공", createdUser));
     }
 
     // 이메일 인증 코드 전송
     @Operation(summary = "이메일 인증코드 전송", description = "입력한 이메일로 인증코드 발송")
     @GetMapping("/send-code")
-    public ResponseEntity<ResWrapper<?>> sendSignupCode(@RequestParam String email) {
+    public ResponseEntity<ResWrapper<?>> sendSignupCode(@RequestParam("email") String email) {
         emailVerificationService.sendVerificationCode(email, "mail/signup-verification.html");
         return ResponseEntity.ok(ResWrapper.resSuccess("회원가입 인증 메일 전송 완료", null));
     }
@@ -54,7 +54,7 @@ public class UserController {
     // 이메일 중복 체크
     @Operation(summary = "이메일 중복 확인", description = "이미 가입된 이메일인지 확인")
     @GetMapping("/check-email")
-    public ResponseEntity<ResWrapper<?>> checkEmailExists(@RequestParam String email) {
+    public ResponseEntity<ResWrapper<?>> checkEmailExists(@RequestParam("email") String email) {
         boolean exists = userService.isEmailExists(email);
         return ResponseEntity.ok(ResWrapper.resSuccess("이메일 존재 여부", exists));
     }
@@ -63,8 +63,8 @@ public class UserController {
     @Operation(summary = "이메일 인증코드 검증", description = "입력한 코드가 유효한지 확인")
     @PostMapping("/verify-code")
     public ResponseEntity<ResWrapper<?>> verifyCode(
-            @RequestParam String email,
-            @RequestParam String code
+            @RequestParam("email") String email,
+            @RequestParam("code") String code
     ) {
         boolean isValid = emailVerificationService.verifyCode(email, code);
         return ResponseEntity.ok(ResWrapper.resSuccess("인증 결과", isValid));
@@ -126,7 +126,7 @@ public class UserController {
         Long sessionUserId = (Long) session.getAttribute("userId");
         String role = (String) session.getAttribute("role");
 
-        if (sessionUserId == null || role == null || !"ADMIN".equals(role)) {
+        if (sessionUserId == null || !"ADMIN".equals(role)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
@@ -153,7 +153,7 @@ public class UserController {
     // 유저정보 - 닉네임 수정
     @PatchMapping("/{userId}/update")
     public ResponseEntity<ResWrapper<?>> updateUserInfo(
-            @PathVariable Long userId,
+            @PathVariable("userId") Long userId,
             @RequestBody @Valid ReqUpdateUserDto updateDto,
             HttpSession session
     ) {
@@ -168,7 +168,7 @@ public class UserController {
     @Operation(summary = "프로필 이미지 업로드", description = "S3에 프로필 이미지를 업로드하고 URL을 저장")
     @PostMapping("/{userId}/profile-image")
     public ResponseEntity<ResWrapper<?>> uploadProfileImage(
-            @PathVariable Long userId,
+            @PathVariable("userId") Long userId,
             @RequestParam("file") MultipartFile file,
             HttpSession session
     ) throws IOException {
@@ -187,7 +187,7 @@ public class UserController {
     @Operation(summary = "프로필 이미지 삭제", description = "프로필 이미지를 기본 이미지로 롤백")
     @DeleteMapping("/{userId}/profile-image")
     public ResponseEntity<ResWrapper<?>> deleteProfileImage(
-            @PathVariable Long userId,
+            @PathVariable("userId") Long userId,
             HttpSession session
     ) {
         Long sessionUserId = (Long) session.getAttribute("userId");
@@ -204,7 +204,7 @@ public class UserController {
     // 비밀번호 변경
     @PatchMapping("/{userId}/reset-password")
     public ResponseEntity<ResWrapper<?>> changePassword(
-            @PathVariable Long userId,
+            @PathVariable("userId") Long userId,
             @RequestBody @Valid ReqChangePasswordDto dto,
             HttpSession session
     ) {
@@ -228,7 +228,7 @@ public class UserController {
     @Operation(summary = "비밀번호 찾기 - 비밀번호 재설정", description = "인증 코드 검증 후 새로운 비밀번호 설정")
     @PostMapping("/{userId}/reset-password/verify-code")
     public ResponseEntity<ResWrapper<?>> verifyResetPassword(
-            @PathVariable Long userId,
+            @PathVariable("userId") Long userId,
             @RequestParam String code,
             @RequestParam String newPassword
     ) {
@@ -274,7 +274,7 @@ public class UserController {
         Long sessionUserId = (Long) session.getAttribute("userId");
         String role = (String) session.getAttribute("role");
 
-        if (sessionUserId == null || role == null || !"ADMIN".equals(role)) {
+        if (sessionUserId == null || !"ADMIN".equals(role)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
@@ -292,7 +292,7 @@ public class UserController {
                 throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
             }
             ResLoginDto user = userService.getUserInfo(userId);
-            return ResponseEntity.ok(ResWrapper.resSuccess("유저 정보", user));
+            return ResponseEntity.ok(ResWrapper.resSuccess("유저 정보 조회 성공", user));
         } catch (Exception e) {
             return ResponseEntity.ok(ResWrapper.resException(e));
         }

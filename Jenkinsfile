@@ -12,15 +12,6 @@ metadata:
   labels:
     app: jenkins-kaniko
 spec:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: workload
-            operator: In
-            values:
-              - guardians7
   containers:
   - name: git
     image: alpine/git:latest
@@ -31,8 +22,8 @@ spec:
         cpu: "100m"
         memory: "128Mi"
       limits:
-        cpu: "200m"
-        memory: "256Mi"
+        cpu: "500m"
+        memory: "1024Mi"
     volumeMounts:
     - mountPath: "/home/jenkins/agent"
       name: workspace-volume
@@ -47,7 +38,7 @@ spec:
         memory: "512Mi"
       limits:
         cpu: "4000m"
-        memory: "3072Mi"
+        memory: "4096Mi"
     volumeMounts:
     - mountPath: "/kaniko/.docker"
       name: docker-config
@@ -73,7 +64,7 @@ spec:
     }
 
     environment {
-        HARBOR_HOST = "harbor.example.com:30443"
+        HARBOR_HOST = "harbor.example.com:31443"
         HARBOR_IMAGE = "${HARBOR_HOST}/guardians/backend"
     }
 
@@ -132,7 +123,7 @@ spec:
 
                             sh """
                             echo "[CLONE] Guardians-Infra"
-                            git clone --single-branch --branch dev https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git infra
+                            git clone --single-branch --branch dev-v2 https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git infra
 
                             echo "[PATCH] Updating ${deploymentFile}"
                             sed -i "s|image: .*|image: ${FULL_IMAGE}|" infra/${deploymentFile}
@@ -142,7 +133,7 @@ spec:
                             git config user.name "CI Bot"
                             git add ${deploymentFile}
                             git commit -m "release : update backend image to guardians/backend:${IMAGE_TAG}" || echo "No changes to commit"
-                            git push https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git dev
+                            git push https://${GIT_USER}:${GIT_TOKEN}@github.com/BeeGuardians/Guardians-Infra.git dev-v2
                             """
                         }
                     }

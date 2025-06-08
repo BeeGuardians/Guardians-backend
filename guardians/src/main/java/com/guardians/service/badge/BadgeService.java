@@ -9,4 +9,6 @@ public interface BadgeService {
     List<ResUserBadgeDto> getAllBadgesWithUserStatus(Long userId);
     List<ResUserBadgeDto> getEarnedBadges(Long userId);
     void checkAndAssignBadges(User user);
+    void checkAndAssignFirstBloodBadge(Long userId, Long wargameId);
+
 }

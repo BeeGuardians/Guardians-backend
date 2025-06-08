@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -286,8 +288,8 @@ public class WargameController {
         PodStatusDto status = kubernetesKaliPodService.getKaliPodStatus(userId, namespace);
         return ResponseEntity.ok(
                 ResWrapper.resSuccess("Kali 상태 조회 성공", Map.of(
-                        "status", status.getStatus(),
-                        "url", status.getUrl()
+                        "status", Optional.ofNullable(status.getStatus()).orElse("UNKNOWN"),
+                        "url", Optional.ofNullable(status.getUrl()).orElse("")
                 ))
         );
     }

@@ -93,7 +93,7 @@ public class HealthCheckService {
                         }
                     }
                     String message = "Overall status: " + overallStatus +
-                            (componentDetails.length() > 0 ? " Unhealthy components: " + componentDetails.toString() : "");
+                            (componentDetails.length() > 0 ? " Unhealthy components: " + componentDetails : "");
                     logger.warn("{} unhealthy. {}", serviceName, message);
                     return new HealthCheckResponse(serviceName, "UNHEALTHY", message, responseBody);
                 }

@@ -1,8 +1,8 @@
 package com.guardians.dto.wargame.req;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class ReqSubmitFlagDto {
     private String flag;
 }

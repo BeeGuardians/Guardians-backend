@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -128,24 +129,20 @@ public class KubernetesPodServiceImpl implements KubernetesPodService {
             String userId = parts[1];
             String wargameId = parts[2];
 
+            // 삭제 요청
             client.pods().inNamespace(namespace).withName(podName).delete();
             client.services().inNamespace(namespace).withName("svc-" + userId + "-" + wargameId).delete();
             client.network().v1().ingresses().inNamespace(namespace).withName("ing-" + userId + "-" + wargameId).delete();
 
-            int retry = 0;
-            while (retry < 10) {
-                boolean podDeleted = client.pods().inNamespace(namespace).withName(podName).get() == null;
-                boolean svcDeleted = client.services().inNamespace(namespace).withName("svc-" + userId + "-" + wargameId).get() == null;
-                boolean ingDeleted = client.network().v1().ingresses().inNamespace(namespace).withName("ing-" + userId + "-" + wargameId).get() == null;
+            // 안정적인 대기 로직으로 변경 (예: 30초 타임아웃)
+            client.pods().inNamespace(namespace).withName(podName).waitUntilCondition(p -> p == null, 30, TimeUnit.SECONDS);
+            client.services().inNamespace(namespace).withName("svc-" + userId + "-" + wargameId).waitUntilCondition(s -> s == null, 30, TimeUnit.SECONDS);
+            client.network().v1().ingresses().inNamespace(namespace).withName("ing-" + userId + "-" + wargameId).waitUntilCondition(i -> i == null, 30, TimeUnit.SECONDS);
 
-                if (podDeleted && svcDeleted && ingDeleted) return true;
-                Thread.sleep(1000);
-                retry++;
-            }
-
-            return false;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            return true; // waitUntilCondition이 예외 없이 통과하면 삭제 성공
+        } catch (Exception e) {
+            // 타임아웃 등의 예외 발생 시 삭제 실패 처리
+            // Thread.currentThread().interrupt()는 InterruptedException에서만 필요
             return false;
         }
     }
