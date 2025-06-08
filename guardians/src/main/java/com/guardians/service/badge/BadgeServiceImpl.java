@@ -131,19 +131,39 @@ public class BadgeServiceImpl implements BadgeService {
             assignBadgeIfNeeded(userId, "탐험가");
         }
 
-        // 퍼스트 블러드
-        List<Long> firstSolverList = solvedWargameRepository.findFirstSolverId(user.getId(), PageRequest.of(0, 1));
-        Long firstSolverId = firstSolverList.isEmpty() ? null : firstSolverList.get(0);
-
-        if (Objects.equals(firstSolverId, userId) && !owned.contains("퍼스트 블러드")) {
-            assignBadgeIfNeeded(userId, "퍼스트 블러드");
-        }
-
-
         // 꾸준한 해커: 7일 연속
         boolean solved7Days = solvedWargameRepository.checkSolved7DaysInARow(userId);
         if (solved7Days && !owned.contains("꾸준한 해커")) {
             assignBadgeIfNeeded(userId, "꾸준한 해커");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void checkAndAssignFirstBloodBadge(Long userId, Long wargameId) {
+        // 첫 해결자인지 확인하기 전에, 해당 유저가 '퍼스트 블러드' 뱃지를 이미 가지고 있는지 먼저 확인합니다.
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        boolean hasFirstBlood = userBadgeRepository.existsByUserAndBadge_Name(user, "퍼스트 블러드");
+
+        // 이미 뱃지가 있다면 더 이상 진행하지 않습니다.
+        // (참고: 문제마다 퍼스트블러드를 주고 싶다면 이 로직은 변경되어야 합니다.)
+        if (hasFirstBlood) {
+            return;
+        }
+
+        // wargameId를 이용해 해당 문제를 가장 먼저 푼 유저의 ID를 조회합니다.
+        List<Long> firstSolverList = solvedWargameRepository.findFirstSolverByWargameId(wargameId, PageRequest.of(0, 1));
+
+        // 조회 결과가 없으면 종료 (정상적인 경우, 방금 푼 사용자가 있으므로 비어있지 않아야 함)
+        if (firstSolverList.isEmpty()) {
+            return;
+        }
+        Long firstSolverId = firstSolverList.get(0);
+
+        // 첫 해결자와 현재 유저가 동일하다면 뱃지를 부여합니다.
+        if (Objects.equals(firstSolverId, userId)) {
+            assignBadgeIfNeeded(userId, "퍼스트 블러드");
         }
     }
 

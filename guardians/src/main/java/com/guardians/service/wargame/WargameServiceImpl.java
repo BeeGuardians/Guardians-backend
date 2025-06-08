@@ -171,6 +171,8 @@ public class WargameServiceImpl implements WargameService {
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
             stats.addScore(score);
 
+            badgeService.checkAndAssignFirstBloodBadge(user.getId(), wargame.getId());
+
             badgeService.checkAndAssignBadges(user);
         }
 
