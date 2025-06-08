@@ -1,9 +1,11 @@
 package com.guardians.domain.user.entity;
 
-import com.fasterxml.jackson.core.JsonToken;
 import com.guardians.domain.badge.entity.UserBadge;
 import com.guardians.domain.board.entity.*;
-import com.guardians.domain.wargame.entity.*;
+import com.guardians.domain.wargame.entity.Bookmark;
+import com.guardians.domain.wargame.entity.Review;
+import com.guardians.domain.wargame.entity.SolvedWargame;
+import com.guardians.domain.wargame.entity.WargameLike;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;

@@ -1,6 +1,5 @@
 package com.guardians.domain.job.entity;
 
-import com.guardians.dto.job.req.ReqUpdateJobDto;
 import jakarta.persistence.*;
 import lombok.*;
 

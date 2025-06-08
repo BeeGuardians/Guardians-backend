@@ -1,6 +1,5 @@
 package com.guardians.service.wargame;
 
-import com.guardians.domain.badge.repository.BadgeRepository;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.entity.UserStats;
 import com.guardians.domain.user.repository.UserRepository;

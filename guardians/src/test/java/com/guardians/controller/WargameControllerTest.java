@@ -1,14 +1,12 @@
 package com.guardians.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.guardians.dto.common.ResWrapper;
-import com.guardians.dto.wargame.req.ReqCreateWargameDto;
 import com.guardians.dto.wargame.req.ReqSubmitFlagDto;
-import com.guardians.dto.wargame.res.*;
+import com.guardians.dto.wargame.res.ResSubmitFlagDto;
+import com.guardians.dto.wargame.res.ResWargameListDto;
 import com.guardians.service.wargame.KubernetesKaliPodServiceImpl;
 import com.guardians.service.wargame.KubernetesPodService;
 import com.guardians.service.wargame.WargameService;
-import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,13 +20,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
-import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class WargameControllerTest {

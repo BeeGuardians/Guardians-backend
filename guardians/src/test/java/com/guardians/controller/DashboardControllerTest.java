@@ -1,9 +1,7 @@
 package com.guardians.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.dashboard.ResRadarChartDto;
-import com.guardians.dto.dashboard.ResSolvedTimelineDto;
 import com.guardians.exception.GlobalExceptionHandler;
 import com.guardians.service.dashboard.DashboardService;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -23,9 +20,9 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @ExtendWith(MockitoExtension.class)
 class DashboardControllerTest {

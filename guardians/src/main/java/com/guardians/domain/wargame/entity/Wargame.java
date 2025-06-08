@@ -4,7 +4,6 @@ import com.guardians.domain.board.entity.Question;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.nio.file.FileStore;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

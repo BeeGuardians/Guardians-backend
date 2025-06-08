@@ -1,10 +1,7 @@
 package com.guardians.service.s3;
 
 import com.guardians.config.AwsS3Properties;
-import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
-import com.guardians.exception.CustomException;
-import com.guardians.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

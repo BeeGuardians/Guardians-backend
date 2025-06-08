@@ -1,6 +1,5 @@
 package com.guardians.controller;
 
-import com.guardians.domain.user.entity.User;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.user.req.*;
 import com.guardians.dto.user.res.ResCreateUserDto;

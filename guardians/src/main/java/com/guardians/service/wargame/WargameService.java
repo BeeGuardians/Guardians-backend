@@ -1,6 +1,5 @@
 package com.guardians.service.wargame;
 
-import com.guardians.dto.mypage.res.ResReviewDto;
 import com.guardians.dto.wargame.req.ReqCreateReviewDto;
 import com.guardians.dto.wargame.req.ReqCreateWargameDto;
 import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
