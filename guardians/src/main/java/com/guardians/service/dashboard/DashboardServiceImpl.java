@@ -5,12 +5,14 @@ import com.guardians.domain.wargame.entity.Wargame;
 import com.guardians.domain.wargame.repository.SolvedWargameRepository;
 import com.guardians.domain.wargame.repository.WargameRepository;
 import com.guardians.dto.dashboard.ResRadarChartDto;
+import com.guardians.dto.dashboard.ResScoreTrendDto;
 import com.guardians.dto.dashboard.ResSolvedTimelineDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -55,5 +57,20 @@ public class DashboardServiceImpl implements DashboardService {
         return solvedRepo.findByUserIdWithWargameAndCategory(userId).stream()
                 .map(ResSolvedTimelineDto::fromEntity)
                 .toList();
+    }
+
+    @Override
+    public List<ResScoreTrendDto> getScoreTrend(Long userId) {
+        List<SolvedWargame> solvedList = solvedRepo.findAllWithWargameByUserId(userId);
+
+        Map<LocalDate, Integer> scoreByDate = solvedList.stream()
+                .collect(Collectors.groupingBy(
+                        s -> s.getSolvedAt().toLocalDate(),
+                        Collectors.summingInt(s -> s.getWargame().getScore())
+                ));
+
+        return scoreByDate.entrySet().stream()
+                .map(entry -> new ResScoreTrendDto(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList()); // 정렬 생략 가능
     }
 }
