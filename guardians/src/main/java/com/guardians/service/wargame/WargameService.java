@@ -15,6 +15,7 @@ public interface WargameService {
     List<ResUserStatusDto> getActiveUsersByWargame(Long wargameId);
     ResWargameListDto createWargame(ReqCreateWargameDto dto, Long adminId);
     void deleteWargame(Long wargameId);
+    String getWargameFlag(Long wargameId);
 
     List<ResReviewListDto> getWargameReviews(Long wargameId);
     ResReviewListDto createReview(Long userId, Long wargameId, ReqCreateReviewDto request);

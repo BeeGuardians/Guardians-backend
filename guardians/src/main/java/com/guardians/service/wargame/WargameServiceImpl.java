@@ -329,4 +329,12 @@ public class WargameServiceImpl implements WargameService {
 
     }
 
+    @Override
+    public String getWargameFlag(Long wargameId) {
+        WargameFlag wargameFlag = wargameFlagRepository.findByWargame_Id(wargameId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_PASSWORD)); // 플래그가 없을 경우 예외 처리
+
+        return wargameFlag.getFlag();
+    }
+
 }

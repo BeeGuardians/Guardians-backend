@@ -294,4 +294,19 @@ public class WargameController {
         );
     }
 
+    @GetMapping("/admin/{wargameId}/flag")
+    public ResponseEntity<ResWrapper<?>> getWargameFlagForAdmin(
+            @PathVariable Long wargameId,
+            HttpSession session
+    ) {
+        String role = (String) session.getAttribute("role");
+        if (!"ADMIN".equals(role)) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
+        String flag = wargameService.getWargameFlag(wargameId);
+
+        return ResponseEntity.ok(ResWrapper.resSuccess("워게임 플래그 조회 성공", Map.of("flag", flag)));
+    }
+
 }
