@@ -55,4 +55,19 @@ public class DashboardController {
         List<ResSolvedTimelineDto> result = dashboardService.getSolvedTimeline(userId);
         return ResponseEntity.ok(ResWrapper.resList("풀이 타임라인 조회 성공", result, result.size()));
     }
+
+    @Operation(summary = "사용자의 날짜별 점수 획득 추이 조회", description = "문제 풀이 기록을 기반으로 날짜별 획득 점수를 반환합니다.")
+    @GetMapping("/score-trend")
+    public ResponseEntity<ResWrapper<?>> getScoreTrend(
+            @PathVariable Long userId,
+            HttpSession session
+    ) {
+        Long sessionUserId = (Long) session.getAttribute("userId");
+        if (!userId.equals(sessionUserId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        var result = dashboardService.getScoreTrend(userId);
+        return ResponseEntity.ok(ResWrapper.resList("점수 추이 조회 성공", result, result.size()));
+    }
 }
