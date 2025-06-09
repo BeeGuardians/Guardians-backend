@@ -2,7 +2,10 @@ package com.guardians.domain.board.entity;
 
 import com.guardians.domain.user.entity.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(

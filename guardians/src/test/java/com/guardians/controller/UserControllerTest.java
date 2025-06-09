@@ -1,13 +1,15 @@
 package com.guardians.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.guardians.dto.user.req.*;
-import com.guardians.dto.user.res.*;
+import com.guardians.dto.user.req.ReqCreateUserDto;
+import com.guardians.dto.user.req.ReqLoginDto;
+import com.guardians.dto.user.req.ReqUpdateUserDto;
+import com.guardians.dto.user.res.ResCreateUserDto;
+import com.guardians.dto.user.res.ResLoginDto;
+import com.guardians.exception.GlobalExceptionHandler;
 import com.guardians.service.auth.EmailVerificationService;
 import com.guardians.service.s3.S3Service;
 import com.guardians.service.user.UserService;
-import com.guardians.exception.GlobalExceptionHandler;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,19 +24,17 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections; // getAllUsers 테스트를 위해 추가
-import java.util.List;     // getAllUsers 테스트를 위해 추가
+import java.util.Collections;
+import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {

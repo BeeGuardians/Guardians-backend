@@ -1,9 +1,9 @@
 package com.guardians.domain.wargame.repository;
 
+import com.guardians.domain.user.entity.User;
 import com.guardians.domain.wargame.entity.Bookmark;
 import com.guardians.domain.wargame.entity.BookmarkId;
 import com.guardians.domain.wargame.entity.Wargame;
-import com.guardians.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

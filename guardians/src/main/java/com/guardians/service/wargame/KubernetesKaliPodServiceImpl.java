@@ -1,22 +1,12 @@
 package com.guardians.service.wargame;
 
 import com.guardians.dto.wargame.res.PodStatusDto;
-import com.guardians.service.wargame.KubernetesKaliPodService;
 import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.networking.v1.*;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
-import io.fabric8.kubernetes.api.model.networking.v1.IngressBackendBuilder;
-import io.fabric8.kubernetes.api.model.networking.v1.IngressBuilder;
-import io.fabric8.kubernetes.api.model.IntOrString;
-import io.fabric8.kubernetes.api.model.networking.v1.IPBlockBuilder;
-import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
-import io.fabric8.kubernetes.api.model.networking.v1.NetworkPolicy;
-import io.fabric8.kubernetes.api.model.networking.v1.NetworkPolicyBuilder;
-
-import io.fabric8.kubernetes.client.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

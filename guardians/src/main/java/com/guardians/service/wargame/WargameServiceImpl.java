@@ -1,6 +1,5 @@
 package com.guardians.service.wargame;
 
-import com.guardians.domain.badge.repository.BadgeRepository;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.entity.UserStats;
 import com.guardians.domain.user.repository.UserRepository;
@@ -328,6 +327,14 @@ public class WargameServiceImpl implements WargameService {
             );
         }).filter(Objects::nonNull).toList();
 
+    }
+
+    @Override
+    public String getWargameFlag(Long wargameId) {
+        WargameFlag wargameFlag = wargameFlagRepository.findByWargame_Id(wargameId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_PASSWORD)); // 플래그가 없을 경우 예외 처리
+
+        return wargameFlag.getFlag();
     }
 
 }

@@ -2,7 +2,6 @@ package com.guardians.service.user;
 
 import com.guardians.config.AwsS3Properties;
 import com.guardians.domain.user.entity.User;
-import com.guardians.domain.user.entity.UserStats;
 import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.domain.user.repository.UserStatsRepository;
 import com.guardians.dto.user.req.ReqChangePasswordDto;
@@ -20,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service

@@ -5,7 +5,6 @@ package com.guardians.dto.question.res;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.time.LocalDateTime;
 
