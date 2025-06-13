@@ -15,10 +15,10 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (POST 요청 허용)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll() // 회원가입은 인증 없이 접근 허용
-                        .anyRequest().authenticated() // 나머지는 인증 필요
+                        .requestMatchers("/api/*").permitAll()
+                        .anyRequest().authenticated()
                 )
-                .httpBasic(Customizer.withDefaults()) // 기본 로그인 설정
+                .httpBasic(Customizer.withDefaults())
                 .build();
     }
 }
