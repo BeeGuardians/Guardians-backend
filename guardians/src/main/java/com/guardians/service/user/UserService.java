@@ -17,14 +17,14 @@ public interface UserService {
     void verifyResetPassword(Long userId, String code, String newPassword);
     void deleteUser(Long sessionUserId, Long targetUserId);
     void adminDeleteUser(Long userId);
-    List<ResLoginDto> getAllUsers();
     void updateUserRole(Long userId, String newRole);
+    void updateProfileImageUrl(Long userId, String imageUrl);
 
-
+    // READ는 그대로 서비스계층에
+    List<ResLoginDto> getAllUsers();
+    ResLoginDto getUserInfo(Long userId);
     Long findUserIdByEmail(String email);
     String getEmailByUserId(Long userId);
-    ResLoginDto getUserInfo(Long userId);
     boolean isEmailExists(String email);
-    void updateProfileImageUrl(Long userId, String imageUrl);
 
 }

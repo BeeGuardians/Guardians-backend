@@ -1,9 +1,8 @@
-package com.guardians.service.user;
+package com.guardians.service.user.impl;
 
 import com.guardians.config.AwsS3Properties;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
-import com.guardians.domain.user.repository.UserStatsRepository;
 import com.guardians.dto.user.req.ReqChangePasswordDto;
 import com.guardians.dto.user.req.ReqCreateUserDto;
 import com.guardians.dto.user.req.ReqLoginDto;
@@ -13,6 +12,7 @@ import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
 import com.guardians.service.auth.EmailVerificationService;
+import com.guardians.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,7 +30,6 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
     private final AwsS3Properties awsS3Properties;
-    private final UserStatsRepository userStatsRepository;
 
     // 중복 검사
     private void validateDuplicate(ReqCreateUserDto dto) {
