@@ -91,25 +91,15 @@ public class MypageServiceImpl implements MypageService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResUserStatsDto getUserStats(Long userId) {
-        List<UserStats> statsList = userStatsRepository.findAllWithUserOrderByScoreDesc();
+        // DB에서 직접 사용자 통계 조회 (N+1 해결)
+        UserStats myStats = userStatsRepository.findWithUserById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        int rank = -1;
-        int idx = 1;
-
-        for (UserStats stats : statsList) {
-            if (stats.getUser().getId().equals(userId)) {
-                rank = idx;
-                break;
-            }
-            idx++;
-        }
-
-        if (rank == -1) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND); // 또는 "통계 없음"
-        }
-
-        UserStats myStats = statsList.get(rank - 1);
+        // DB에서 직접 랭크 계산 (N+1 해결)
+        int rank = userStatsRepository.findUserRankByUserId(userId)
+                .orElse(0);
 
         return ResUserStatsDto.builder()
                 .score(myStats.getScore())

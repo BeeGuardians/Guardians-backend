@@ -3,9 +3,8 @@ package com.guardians.controller;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.dashboard.ResRadarChartDto;
 import com.guardians.dto.dashboard.ResSolvedTimelineDto;
-import com.guardians.exception.CustomException;
-import com.guardians.exception.ErrorCode;
 import com.guardians.service.dashboard.DashboardService;
+import com.guardians.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
@@ -32,10 +31,7 @@ public class DashboardController {
             @PathVariable Long userId,
             HttpSession session
     ) {
-        Long sessionUserId = (Long) session.getAttribute("userId");
-        if (!userId.equals(sessionUserId)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
+        SessionUtil.requireSameUser(session, userId);
 
         List<ResRadarChartDto.CategoryScore> result = dashboardService.calculateRadarChart(userId);
         return ResponseEntity.ok(ResWrapper.resList("카테고리별 실력 점수 조회 성공", result, result.size()));
@@ -47,10 +43,7 @@ public class DashboardController {
             @PathVariable Long userId,
             HttpSession session
     ) {
-        Long sessionUserId = (Long) session.getAttribute("userId");
-        if (!userId.equals(sessionUserId)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
+        SessionUtil.requireSameUser(session, userId);
 
         List<ResSolvedTimelineDto> result = dashboardService.getSolvedTimeline(userId);
         return ResponseEntity.ok(ResWrapper.resList("풀이 타임라인 조회 성공", result, result.size()));
@@ -62,10 +55,7 @@ public class DashboardController {
             @PathVariable Long userId,
             HttpSession session
     ) {
-        Long sessionUserId = (Long) session.getAttribute("userId");
-        if (!userId.equals(sessionUserId)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
+        SessionUtil.requireSameUser(session, userId);
 
         var result = dashboardService.getScoreTrend(userId);
         return ResponseEntity.ok(ResWrapper.resList("점수 추이 조회 성공", result, result.size()));

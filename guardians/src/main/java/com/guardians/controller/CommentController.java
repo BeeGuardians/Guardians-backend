@@ -7,6 +7,7 @@ import com.guardians.dto.board.res.ResCreateCommentDto;
 import com.guardians.dto.board.res.ResUpdateCommentDto;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.service.board.CommentService;
+import com.guardians.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
@@ -32,7 +33,7 @@ public class CommentController {
             HttpSession session,
             @RequestBody @Valid ReqCreateCommentDto dto
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         ResCreateCommentDto result = commentService.createComment(userId, boardId, dto);
 
         return ResponseEntity.ok(ResWrapper.resSuccess("댓글 작성 완료", result));
@@ -57,7 +58,7 @@ public class CommentController {
             HttpSession session,
             @RequestBody @Valid ReqUpdateCommentDto dto
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         ResUpdateCommentDto result = commentService.updateComment(userId, commentId, dto);
         return ResponseEntity.ok(ResWrapper.resSuccess("댓글 수정 완료", result));
 
@@ -71,7 +72,7 @@ public class CommentController {
             @PathVariable Long boardId,
             @PathVariable Long commentId
     ){
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         commentService.deleteComment(userId,commentId);
         return ResponseEntity.ok(ResWrapper.resSuccess("댓글 삭제 완료", null));
     }

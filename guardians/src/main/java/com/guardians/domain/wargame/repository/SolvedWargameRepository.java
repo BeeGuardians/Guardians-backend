@@ -68,4 +68,9 @@ public interface SolvedWargameRepository extends JpaRepository<SolvedWargame, So
             "JOIN FETCH w.category " +
             "WHERE s.user.id = :userId")
     List<SolvedWargame> findByUserIdWithWargameAndCategory(@Param("userId") Long userId);
+
+    // 카테고리별 풀이 수를 한 번에 조회 (N+1 해결)
+    @Query("SELECT w.category.name, COUNT(sw) FROM SolvedWargame sw " +
+            "JOIN sw.wargame w WHERE sw.user.id = :userId GROUP BY w.category.name")
+    List<Object[]> countSolvedByCategory(@Param("userId") Long userId);
 }

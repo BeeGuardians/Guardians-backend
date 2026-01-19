@@ -195,25 +195,20 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ResHotBoardDto> getHotBoards() {
-        List<Board> allBoards = boardRepository.findAll();
+        // DB에서 점수 계산 후 상위 10개만 조회 (N+1 해결)
+        List<Board> hotBoards = boardRepository.findTop10ByHotScore();
 
-        return allBoards.stream()
-                .map(board -> new AbstractMap.SimpleEntry<>(board, board.getLikeCount() * 2 + board.getViewCount()))
-                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
-                .limit(10)
-                .map(entry -> {
-                    Board board = entry.getKey();
-                    int score = entry.getValue();
-                    return ResHotBoardDto.builder()
-                            .id(board.getId())
-                            .title(board.getTitle())
-                            .boardType(board.getBoardType())
-                            .likeCount(board.getLikeCount())
-                            .viewCount(board.getViewCount())
-                            .score(score)
-                            .build();
-                })
+        return hotBoards.stream()
+                .map(board -> ResHotBoardDto.builder()
+                        .id(board.getId())
+                        .title(board.getTitle())
+                        .boardType(board.getBoardType())
+                        .likeCount(board.getLikeCount())
+                        .viewCount(board.getViewCount())
+                        .score(board.getLikeCount() * 2 + board.getViewCount())
+                        .build())
                 .collect(Collectors.toList());
     }
 }

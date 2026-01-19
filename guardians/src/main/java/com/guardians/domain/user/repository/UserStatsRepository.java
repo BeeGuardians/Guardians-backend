@@ -24,4 +24,23 @@ public interface UserStatsRepository extends JpaRepository<UserStats, Long> {
     @Query("UPDATE UserStats us SET us.totalSolved = :count WHERE us.user.id = :userId")
     void updateSolvedCount(@Param("userId") Long userId, @Param("count") Long count);
 
+    // 특정 사용자의 랭크를 DB에서 직접 계산 (N+1 해결)
+    @Query(value = """
+        SELECT ranked.user_rank FROM (
+            SELECT us.user_id, RANK() OVER (ORDER BY us.score DESC) as user_rank
+            FROM user_stats us
+        ) ranked WHERE ranked.user_id = :userId
+        """, nativeQuery = true)
+    Optional<Integer> findUserRankByUserId(@Param("userId") Long userId);
+
+    // 특정 사용자의 통계와 랭크를 함께 조회 (N+1 해결)
+    @Query(value = """
+        SELECT us.*, u.username, u.email,
+               RANK() OVER (ORDER BY us.score DESC) as user_rank
+        FROM user_stats us
+        JOIN users u ON us.user_id = u.id
+        WHERE us.user_id = :userId
+        """, nativeQuery = true)
+    Optional<Object[]> findUserStatsWithRankByUserId(@Param("userId") Long userId);
+
 }

@@ -6,13 +6,13 @@ import com.guardians.dto.wargame.req.ReqCreateWargameDto;
 import com.guardians.dto.wargame.req.ReqSubmitFlagDto;
 import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
 import com.guardians.dto.wargame.res.*;
-import com.guardians.exception.CustomException;
-import com.guardians.exception.ErrorCode;
 import com.guardians.service.wargame.KubernetesKaliPodServiceImpl;
 import com.guardians.service.wargame.KubernetesPodService;
 import com.guardians.service.wargame.WargameService;
+import com.guardians.util.SessionUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,16 +34,10 @@ public class WargameController {
 
     @PostMapping("/admin")
     public ResponseEntity<ResWrapper<?>> createWargame(
-            @RequestBody ReqCreateWargameDto request,
+            @RequestBody @Valid ReqCreateWargameDto request,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
-        String role = (String) session.getAttribute("role");
-
-        if (userId == null || !"ADMIN".equals(role)) {
-            throw new CustomException(ErrorCode.PERMISSION_DENIED);
-        }
-
+        Long userId = SessionUtil.requireAdmin(session);
         ResWargameListDto created = wargameService.createWargame(request, userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 워게임 생성 성공", created));
     }
@@ -53,13 +47,7 @@ public class WargameController {
             @PathVariable Long wargameId,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
-        String role = (String) session.getAttribute("role");
-
-        if (userId == null || !"ADMIN".equals(role)) {
-            throw new CustomException(ErrorCode.PERMISSION_DENIED);
-        }
-
+        SessionUtil.requireAdmin(session);
         wargameService.deleteWargame(wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 삭제 완료", null));
     }
@@ -68,7 +56,7 @@ public class WargameController {
     @GetMapping
     public ResponseEntity<ResWrapper<?>> getWargameList(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        Long userId = (session != null) ? (Long) session.getAttribute("userId") : null;
+        Long userId = SessionUtil.getUserIdOrNull(session);
 
         List<ResWargameListDto> result = wargameService.getWargameList(userId);
         return ResponseEntity.ok(ResWrapper.resList("워게임 목록 조회 성공", result, result.size()));
@@ -79,7 +67,7 @@ public class WargameController {
             @PathVariable Long wargameId,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getUserIdOrNull(session);
         ResWargameListDto result = wargameService.getWargameById(userId, wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 상세 조회 성공", result));
     }
@@ -88,10 +76,10 @@ public class WargameController {
     @PostMapping("/{wargameId}/submit")
     public ResponseEntity<ResWrapper<?>> submitFlag(
             @PathVariable Long wargameId,
-            @RequestBody ReqSubmitFlagDto request,
+            @RequestBody @Valid ReqSubmitFlagDto request,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         ResSubmitFlagDto result = wargameService.submitFlag(userId, wargameId, request.getFlag());
         return ResponseEntity.ok(ResWrapper.resSuccess("채점 완료", result));
     }
@@ -101,7 +89,7 @@ public class WargameController {
             @PathVariable Long wargameId,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         boolean bookmarked = wargameService.toggleBookmark(userId, wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("북마크 토글 완료", Map.of("bookmarked", bookmarked)));
     }
@@ -111,7 +99,7 @@ public class WargameController {
             @PathVariable Long wargameId,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         boolean liked = wargameService.toggleLike(userId, wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("좋아요 토글 완료", Map.of("liked", liked)));
     }
@@ -127,10 +115,10 @@ public class WargameController {
     @PostMapping("/{wargameId}/reviews")
     public ResponseEntity<ResWrapper<?>> createReview(
             @PathVariable Long wargameId,
-            @RequestBody ReqCreateReviewDto request,
+            @RequestBody @Valid ReqCreateReviewDto request,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         ResReviewListDto result = wargameService.createReview(userId, wargameId, request);
         return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 작성 성공", result));
     }
@@ -138,10 +126,10 @@ public class WargameController {
     @PatchMapping("/reviews/{reviewId}")
     public ResponseEntity<ResWrapper<?>> updateReview(
             @PathVariable Long reviewId,
-            @RequestBody ReqUpdateReviewDto request,
+            @RequestBody @Valid ReqUpdateReviewDto request,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         ResReviewListDto result = wargameService.updateReview(userId, reviewId, request);
         return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 수정 성공", result));
     }
@@ -151,7 +139,7 @@ public class WargameController {
             @PathVariable Long reviewId,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         wargameService.deleteReview(userId, reviewId);
         return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 삭제 성공", null));
     }
@@ -162,11 +150,7 @@ public class WargameController {
             @PathVariable Long wargameId,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(401)
-                    .body(ResWrapper.resException(new Exception("로그인이 필요합니다.")));
-        }
+        Long userId = SessionUtil.getRequiredUserId(session);
 
         String podName = "wargame-" + userId + "-" + wargameId;
         String namespace = "ns-wargame";
@@ -188,11 +172,7 @@ public class WargameController {
             @PathVariable Long wargameId,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(401)
-                    .body(ResWrapper.resException(new Exception("로그인이 필요합니다.")));
-        }
+        Long userId = SessionUtil.getRequiredUserId(session);
 
         String podName = "wargame-" + userId + "-" + wargameId;
         String namespace = "ns-wargame";
@@ -220,10 +200,7 @@ public class WargameController {
             @PathVariable Long wargameId,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            throw new CustomException(ErrorCode.NOT_LOGGED_IN);
-        }
+        Long userId = SessionUtil.getRequiredUserId(session);
 
         String podName = "wargame-" + userId + "-" + wargameId;
         String namespace = "ns-wargame";
@@ -253,8 +230,7 @@ public class WargameController {
 
     @PostMapping("/kali/start")
     public ResponseEntity<ResWrapper<?>> startKaliPod(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+        Long userId = SessionUtil.getRequiredUserId(session);
 
         String namespace = "ns-wargame";
         kubernetesKaliPodService.createKaliPod(userId, namespace);
@@ -269,8 +245,7 @@ public class WargameController {
 
     @DeleteMapping("/kali/stop")
     public ResponseEntity<ResWrapper<?>> stopKaliPod(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+        Long userId = SessionUtil.getRequiredUserId(session);
 
         String namespace = "ns-wargame";
         boolean deleted = kubernetesKaliPodService.deleteKaliPod(userId, namespace);
@@ -281,8 +256,7 @@ public class WargameController {
 
     @GetMapping("/kali/status")
     public ResponseEntity<ResWrapper<?>> getKaliPodStatus(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) throw new CustomException(ErrorCode.NOT_LOGGED_IN);
+        Long userId = SessionUtil.getRequiredUserId(session);
 
         String namespace = "ns-wargame";
         PodStatusDto status = kubernetesKaliPodService.getKaliPodStatus(userId, namespace);
@@ -299,10 +273,7 @@ public class WargameController {
             @PathVariable Long wargameId,
             HttpSession session
     ) {
-        String role = (String) session.getAttribute("role");
-        if (!"ADMIN".equals(role)) {
-            throw new CustomException(ErrorCode.PERMISSION_DENIED);
-        }
+        SessionUtil.requireAdmin(session);
 
         String flag = wargameService.getWargameFlag(wargameId);
 

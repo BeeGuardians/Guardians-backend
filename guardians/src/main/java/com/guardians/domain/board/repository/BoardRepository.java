@@ -29,5 +29,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<Board> findByBoardTypeAndKeyword(@Param("boardType") BoardType boardType,
                                           @Param("keyword") String keyword);
 
+    // Hot boards: DB에서 점수 계산 후 상위 10개만 조회 (N+1 해결)
+    @Query("SELECT b FROM Board b ORDER BY (b.likeCount * 2 + b.viewCount) DESC LIMIT 10")
+    List<Board> findTop10ByHotScore();
 
 }

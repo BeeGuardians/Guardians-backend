@@ -9,6 +9,7 @@ import com.guardians.exception.ErrorCode;
 import com.guardians.service.auth.EmailVerificationService;
 import com.guardians.service.s3.S3Service;
 import com.guardians.service.user.UserService;
+import com.guardians.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
@@ -73,7 +74,7 @@ public class UserController {
     @Operation(summary = "로그인 여부 확인", description = "현재 세션에 유저 정보가 존재하는지 확인합니다.")
     @GetMapping("/check")
     public ResponseEntity<?> checkLogin(HttpServletRequest request) {
-        HttpSession session = request.getSession(false); // 🔥 세션 강제 생성 방지
+        HttpSession session = request.getSession(false);
         boolean isLoggedIn = (session != null && session.getAttribute("userId") != null);
         return ResponseEntity.ok(ResWrapper.resSuccess("로그인 여부 확인", isLoggedIn));
     }
@@ -99,7 +100,7 @@ public class UserController {
         ResLoginDto loginUser = userService.login(loginDto);
 
         if (!"ADMIN".equals(loginUser.getRole())) {
-            throw new CustomException(ErrorCode.PERMISSION_DENIED); // 예외는 네가 만든 코드 쓰면 됨
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
         }
 
         session.setAttribute("userId", loginUser.getId());
@@ -122,12 +123,7 @@ public class UserController {
     @Operation(summary = "전체 유저 목록 조회", description = "관리자만 전체 유저 목록을 확인할 수 있습니다.")
     @GetMapping("/admin/list")
     public ResponseEntity<ResWrapper<?>> getAllUsers(HttpSession session) {
-        Long sessionUserId = (Long) session.getAttribute("userId");
-        String role = (String) session.getAttribute("role");
-
-        if (sessionUserId == null || !"ADMIN".equals(role)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
+        SessionUtil.requireAdmin(session);
 
         List<ResLoginDto> users = userService.getAllUsers();
         return ResponseEntity.ok(ResWrapper.resList("[관리자] 전체 유저 목록 반환", users, users.size()));
@@ -135,7 +131,7 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<ResWrapper<?>> logout(HttpServletRequest request, HttpServletResponse response) {
-        HttpSession session = request.getSession(false); // 세션이 없으면 null
+        HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
@@ -156,7 +152,7 @@ public class UserController {
             @RequestBody @Valid ReqUpdateUserDto updateDto,
             HttpSession session
     ) {
-        Long sessionUserId = (Long) session.getAttribute("userId");
+        Long sessionUserId = SessionUtil.getRequiredUserId(session);
 
         ResLoginDto updatedUser = userService.updateUserInfo(sessionUserId, userId, updateDto);
 
@@ -171,10 +167,7 @@ public class UserController {
             @RequestParam("file") MultipartFile file,
             HttpSession session
     ) throws IOException {
-        Long sessionUserId = (Long) session.getAttribute("userId");
-        if (!sessionUserId.equals(userId)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
+        SessionUtil.requireSameUser(session, userId);
 
         String imageUrl = s3Service.uploadProfileImage(file);
         userService.updateProfileImageUrl(userId, imageUrl);
@@ -189,10 +182,7 @@ public class UserController {
             @PathVariable("userId") Long userId,
             HttpSession session
     ) {
-        Long sessionUserId = (Long) session.getAttribute("userId");
-        if (!sessionUserId.equals(userId)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
+        SessionUtil.requireSameUser(session, userId);
 
         String defaultUrl = s3Service.getDefaultProfileUrl();
         userService.updateProfileImageUrl(userId, defaultUrl);
@@ -207,7 +197,7 @@ public class UserController {
             @RequestBody @Valid ReqChangePasswordDto dto,
             HttpSession session
     ) {
-        Long sessionUserId = (Long) session.getAttribute("userId");
+        Long sessionUserId = SessionUtil.getRequiredUserId(session);
 
         userService.changePassword(sessionUserId, userId, dto);
 
@@ -251,14 +241,10 @@ public class UserController {
             @PathVariable Long userId,
             HttpSession session
     ) {
-        Long sessionUserId = (Long) session.getAttribute("userId");
-
-        if (sessionUserId == null) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS); // 세션 없음
-        }
+        Long sessionUserId = SessionUtil.getRequiredUserId(session);
 
         userService.deleteUser(sessionUserId, userId);
-        session.invalidate(); // 탈퇴했으면 세션도 깨줘야지
+        session.invalidate();
 
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 탈퇴 완료", null));
     }
@@ -270,12 +256,7 @@ public class UserController {
             @PathVariable Long userId,
             HttpSession session
     ) {
-        Long sessionUserId = (Long) session.getAttribute("userId");
-        String role = (String) session.getAttribute("role");
-
-        if (sessionUserId == null || !"ADMIN".equals(role)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
+        SessionUtil.requireAdmin(session);
 
         userService.adminDeleteUser(userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 회원 삭제 완료", null));
@@ -285,16 +266,9 @@ public class UserController {
     // UserId 정보 반환
     @GetMapping("/me")
     public ResponseEntity<ResWrapper<?>> getCurrentUser(HttpSession session) {
-        try {
-            Long userId = (Long) session.getAttribute("userId");
-            if (userId == null) {
-                throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-            }
-            ResLoginDto user = userService.getUserInfo(userId);
-            return ResponseEntity.ok(ResWrapper.resSuccess("유저 정보 조회 성공", user));
-        } catch (Exception e) {
-            return ResponseEntity.ok(ResWrapper.resException(e));
-        }
+        Long userId = SessionUtil.getRequiredUserId(session);
+        ResLoginDto user = userService.getUserInfo(userId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("유저 정보 조회 성공", user));
     }
 
 }
