@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -102,32 +102,36 @@ public class BadgeServiceImpl implements BadgeService {
             assignBadgeIfNeeded(user.getId(), "지옥을 맛본 자");
         }
 
-        // 카테고리별 체크
-        Set<String> categories = solvedWargameRepository.findDistinctCategoryNamesByUserId(userId);
+        // 카테고리별 풀이 수를 한 번의 쿼리로 조회 (N+1 해결)
+        Map<String, Long> categoryCountMap = solvedWargameRepository.countSolvedByCategory(userId).stream()
+                .collect(Collectors.toMap(
+                        row -> (String) row[0],
+                        row -> (Long) row[1]
+                ));
 
-        if (Collections.frequency(categories, "Web") >= 3 && !owned.contains("웹 해커")) {
+        if (categoryCountMap.getOrDefault("Web", 0L) >= 3 && !owned.contains("웹 해커")) {
             assignBadgeIfNeeded(userId, "웹 해커");
         }
 
-        if (Collections.frequency(categories, "Forensic") >= 3 && !owned.contains("디지털 추적자")) {
+        if (categoryCountMap.getOrDefault("Forensic", 0L) >= 3 && !owned.contains("디지털 추적자")) {
             assignBadgeIfNeeded(userId, "디지털 추적자");
         }
 
-        if (Collections.frequency(categories, "Crypto") >= 3 && !owned.contains("암호 해독자")) {
+        if (categoryCountMap.getOrDefault("Crypto", 0L) >= 3 && !owned.contains("암호 해독자")) {
             assignBadgeIfNeeded(userId, "암호 해독자");
         }
 
-        if (Collections.frequency(categories, "BruteForce") >= 3 && !owned.contains("무차별 해커")) {
+        if (categoryCountMap.getOrDefault("BruteForce", 0L) >= 3 && !owned.contains("무차별 해커")) {
             assignBadgeIfNeeded(userId, "무차별 해커");
         }
 
-        if (Collections.frequency(categories, "SourceLeak") >= 3 && !owned.contains("정보 침투자")) {
+        if (categoryCountMap.getOrDefault("SourceLeak", 0L) >= 3 && !owned.contains("정보 침투자")) {
             assignBadgeIfNeeded(userId, "정보 침투자");
         }
 
-        // 탐험가: 모든 카테고리 하나씩
-        if (categories.containsAll(List.of("Web", "Forensic", "Crypto", "BruteForce", "SourceLeak"))
-                && !owned.contains("탐험가")) {
+        // 탐험가: 모든 카테고리 하나씩 (keySet으로 확인)
+        Set<String> allCategories = Set.of("Web", "Forensic", "Crypto", "BruteForce", "SourceLeak");
+        if (categoryCountMap.keySet().containsAll(allCategories) && !owned.contains("탐험가")) {
             assignBadgeIfNeeded(userId, "탐험가");
         }
 
