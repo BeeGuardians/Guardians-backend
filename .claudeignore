@@ -1,0 +1,41 @@
+# --- Build and Output ---
+build/
+target/
+out/
+bin/
+*.class
+*.jar
+*.war
+*.ear
+
+# --- Dependency Managers ---
+.gradle/
+.mvn/
+node_modules/
+
+# --- IDEs and Editors ---
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.settings/
+.classpath
+.project
+.nbconst
+
+# --- Logs and Temps ---
+*.log
+logs/
+temp/
+tmp/
+
+# --- Version Control ---
+.git/
+.gitignore
+
+# --- OS and Misc ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.env
