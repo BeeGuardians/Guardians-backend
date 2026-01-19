@@ -12,6 +12,7 @@ import com.guardians.dto.question.res.ResQuestionDetailDto;
 import com.guardians.dto.question.res.ResQuestionListDto;
 import com.guardians.service.answer.AnswerService;
 import com.guardians.service.question.QuestionService;
+import com.guardians.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class QnaController {
     public ResponseEntity<ResWrapper<?>> createQuestion(
             HttpSession session,
             @RequestBody @Valid ReqCreateQuestionDto dto) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         questionService.createQuestion(userId, dto);
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 등록 완료", null));
     }
@@ -66,8 +67,8 @@ public class QnaController {
     public ResponseEntity<ResWrapper<?>> updateQuestion(
             HttpSession session,
             @PathVariable Long questionId,
-            @RequestBody ReqUpdateQuestionDto dto) {
-        Long userId = (Long) session.getAttribute("userId");
+            @RequestBody @Valid ReqUpdateQuestionDto dto) {
+        Long userId = SessionUtil.getRequiredUserId(session);
         questionService.updateQuestion(userId, questionId, dto);
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 수정 완료", null));
     }
@@ -77,7 +78,7 @@ public class QnaController {
     public ResponseEntity<ResWrapper<?>> deleteQuestion(
             HttpSession session,
             @PathVariable Long questionId) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         questionService.deleteQuestion(userId, questionId);
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 삭제 완료", null));
     }
@@ -86,8 +87,8 @@ public class QnaController {
     @PostMapping("/answers")
     public ResponseEntity<ResWrapper<?>> createAnswer(
             HttpSession session,
-            @RequestBody ReqCreateAnswerDto dto) {
-        Long userId = (Long) session.getAttribute("userId");
+            @RequestBody @Valid ReqCreateAnswerDto dto) {
+        Long userId = SessionUtil.getRequiredUserId(session);
         answerService.createAnswer(userId, dto);
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 등록 완료", null));
     }
@@ -104,8 +105,8 @@ public class QnaController {
     public ResponseEntity<ResWrapper<?>> updateAnswer(
             HttpSession session,
             @PathVariable Long answerId,
-            @RequestBody ReqUpdateAnswerDto dto) {
-        Long userId = (Long) session.getAttribute("userId");
+            @RequestBody @Valid ReqUpdateAnswerDto dto) {
+        Long userId = SessionUtil.getRequiredUserId(session);
         answerService.updateAnswer(userId, answerId, dto);
 
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 수정 완료", null));
@@ -116,7 +117,7 @@ public class QnaController {
     public ResponseEntity<ResWrapper<?>> deleteAnswer(
             HttpSession session,
             @PathVariable Long answerId) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         answerService.deleteAnswer(userId, answerId);
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 삭제 완료", null));
     }
@@ -130,4 +131,3 @@ public class QnaController {
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 목록 조회 성공", titles));
     }
 }
-
