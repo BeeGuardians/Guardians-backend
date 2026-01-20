@@ -1,5 +1,4 @@
-# 📌 PR 제목
-`refactor: N+1 쿼리 성능 최적화 및 Spring Security 보안 설정 강화`
+# 📌 `refactor: N+1 쿼리 성능 최적화 및 Spring Security 보안 설정 강화`
 
 ---
 
