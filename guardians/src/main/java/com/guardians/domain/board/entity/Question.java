@@ -61,6 +61,9 @@ public class Question {
         }
     }
 
-
-
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

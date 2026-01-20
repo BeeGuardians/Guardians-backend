@@ -63,4 +63,11 @@ public class Job {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void update(String title, String description, String salary, LocalDate deadline, Boolean isActive) {
+        this.title = title;
+        this.description = description;
+        this.salary = salary;
+        this.deadline = deadline;
+        this.isActive = isActive;
+    }
 }

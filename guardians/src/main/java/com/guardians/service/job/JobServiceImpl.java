@@ -76,12 +76,7 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_NOT_FOUND));
 
-        job.setTitle(dto.getTitle());
-        job.setDescription(dto.getDescription());
-        job.setSalary(dto.getSalary());
-        job.setDeadline(dto.getDeadline());
-        job.setIsActive(dto.getIsActive());
-        job.setUpdatedAt(LocalDateTime.now());
+        job.update(dto.getTitle(), dto.getDescription(), dto.getSalary(), dto.getDeadline(), dto.getIsActive());
     }
 
     @Override

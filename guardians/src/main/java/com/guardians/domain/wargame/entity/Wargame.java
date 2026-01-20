@@ -69,4 +69,11 @@ public class Wargame {
     @OneToMany(mappedBy = "wargame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Question> questions = new ArrayList<>();
 
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        this.likeCount = Math.max(0, this.likeCount - 1);
+    }
 }

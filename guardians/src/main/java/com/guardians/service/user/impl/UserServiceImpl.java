@@ -42,6 +42,11 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    private User getUserWithStats(Long userId) {
+        return userRepository.findWithStatsById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
     @Transactional
     @Override
     public ResCreateUserDto createUser(ReqCreateUserDto dto) {
@@ -104,9 +109,7 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(ErrorCode.PERMISSION_DENIED); // ← 권한 없음 에러 따로 만들자
         }
 
-        User user = userRepository.findWithStatsById(targetUserId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
+        User user = getUserWithStats(targetUserId);
         user.updateUsername(dto.getUsername());
 
         return ResLoginDto.fromEntity(user);
@@ -119,8 +122,7 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        User user = userRepository.findWithStatsById(sessionUserId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = getUserWithStats(sessionUserId);
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
@@ -133,8 +135,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void verifyResetPassword(Long userId, String code, String newPassword) {
-        User user = userRepository.findWithStatsById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = getUserWithStats(userId);
 
         boolean verified = emailVerificationService.verifyCode(user.getEmail(), code);
         if (!verified) {
@@ -176,8 +177,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResLoginDto getUserInfo(Long userId) {
-        User user = userRepository.findWithStatsById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = getUserWithStats(userId);
 
         return ResLoginDto.builder()
                 .id(user.getId())
@@ -191,9 +191,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String getEmailByUserId(Long userId) {
-        User user = userRepository.findWithStatsById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        return user.getEmail();
+        return getUserWithStats(userId).getEmail();
     }
 
 
@@ -206,11 +204,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateProfileImageUrl(Long userId, String imageUrl) {
-        User user = userRepository.findWithStatsById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        user.updateProfileImageUrl(imageUrl);
-        // 변경 감지를 위해 save 호출 불필요 (JPA 엔티티 상태 유지 중)
+        getUserWithStats(userId).updateProfileImageUrl(imageUrl);
     }
 
 }

@@ -87,6 +87,7 @@ public class WargameServiceImpl implements WargameService {
         wargameRepository.delete(wargame);
     }
 
+    @Transactional
     public List<ResWargameListDto> getWargameList(Long userId) {
         List<Wargame> wargames = wargameRepository.findAllWithCategory();
         List<Long> wargameIds = wargames.stream().map(Wargame::getId).toList();
@@ -220,8 +221,7 @@ public class WargameServiceImpl implements WargameService {
 
         if (likeOpt.isPresent()) {
             wargameLikeRepository.delete(likeOpt.get());
-            wargame.setLikeCount(Math.max(0, wargame.getLikeCount() - 1));
-            wargameRepository.save(wargame);
+            wargame.decreaseLikeCount();
             return false;
         } else {
             wargameLikeRepository.save(WargameLike.builder()
@@ -229,8 +229,7 @@ public class WargameServiceImpl implements WargameService {
                     .wargame(wargame)
                     .createdAt(LocalDateTime.now())
                     .build());
-            wargame.setLikeCount(wargame.getLikeCount() + 1);
-            wargameRepository.save(wargame);
+            wargame.increaseLikeCount();
             return true;
         }
     }
@@ -276,8 +275,7 @@ public class WargameServiceImpl implements WargameService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        review.setContent(request.getContent());
-        review.setUpdatedAt(LocalDateTime.now());
+        review.updateContent(request.getContent());
 
         return ResReviewListDto.fromEntity(review);
     }

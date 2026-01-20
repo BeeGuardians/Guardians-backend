@@ -123,9 +123,7 @@ public class QuestionServiceImpl implements QuestionService {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        question.setTitle(dto.getTitle());
-        question.setContent(dto.getContent());
-        question.setUpdatedAt(LocalDateTime.now());
+        question.update(dto.getTitle(), dto.getContent());
 
         Question updated = questionRepository.save(question);
 
