@@ -93,8 +93,7 @@ public class AnswerServiceImpl implements AnswerService {
         }
 
         // 수정
-        answer.setContent(dto.getContent());
-        answer.setUpdatedAt(LocalDateTime.now());
+        answer.updateContent(dto.getContent());
 
         // 저장
         Answer updated = answerRepository.save(answer);

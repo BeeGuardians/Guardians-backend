@@ -36,6 +36,7 @@ public class BoardServiceImpl implements BoardService {
     private final CommentRepository commentRepository;
 
 
+    @Transactional
     @Override
     public ResCreateBoardDto createBoard(Long userId, ReqCreateBoardDto dto, BoardType boardType) {
         User user = userRepository.findById(userId)
@@ -60,38 +61,30 @@ public class BoardServiceImpl implements BoardService {
                 .build();
     }
 
+    @Transactional
     @Override
     public List<ResBoardListDto> getBoardList(BoardType boardType) {
-        List<Board> boards = boardRepository.findByBoardType(boardType);
-
-        Map<Long, Long> commentCountMap = commentRepository.countCommentsByBoard().stream()
-                .collect(Collectors.toMap(
-                        projection -> projection.getBoardId(),
-                        projection -> projection.getCommentCount()
-                ));
-        return boards.stream()
-                .map(board -> ResBoardListDto.fromEntity(board)
-                        .toBuilder()
-                        .commentCount(commentCountMap.getOrDefault(board.getId(), 0L))
-                        .build())
-                .collect(Collectors.toList());
+        return getBoardList(boardType, null);
     }
 
+    @Transactional
     @Override
     public List<ResBoardListDto> getBoardList(BoardType boardType, String keyword) {
-        List<Board> boards;
+        List<Board> boards = (keyword != null && !keyword.trim().isEmpty())
+                ? boardRepository.findByBoardTypeAndKeyword(boardType, keyword.trim())
+                : boardRepository.findByBoardType(boardType);
 
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            boards = boardRepository.findByBoardTypeAndKeyword(boardType, keyword.trim());
-        } else {
-            boards = boardRepository.findByBoardType(boardType);
-        }
+        return toBoardListDtos(boards);
+    }
 
+    @Transactional
+    private List<ResBoardListDto> toBoardListDtos(List<Board> boards) {
         Map<Long, Long> commentCountMap = commentRepository.countCommentsByBoard().stream()
                 .collect(Collectors.toMap(
                         CommentCountRepository::getBoardId,
                         CommentCountRepository::getCommentCount
                 ));
+
         return boards.stream()
                 .map(board -> ResBoardListDto.fromEntity(board)
                         .toBuilder()
@@ -134,9 +127,7 @@ public class BoardServiceImpl implements BoardService {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        board.setTitle(dto.getTitle());
-        board.setContent(dto.getContent());
-        board.setUpdatedAt(LocalDateTime.now());
+	board.update(dto.getTitle(), dto.getContent());
 
         Board updatedBoard = boardRepository.save(board);
 
@@ -150,6 +141,7 @@ public class BoardServiceImpl implements BoardService {
                 .build();
     }
 
+    @Transactional
     @Override
     public void deleteBoard(Long userId, Long boardId) {
         Board board = boardRepository.findByIdWithUser(boardId)
@@ -175,13 +167,13 @@ public class BoardServiceImpl implements BoardService {
 
         if (existing.isPresent()) {
             boardLikeRepository.delete(existing.get());
-            board.setLikeCount(board.getLikeCount() - 1);
+            board.decreaseLikeCount();
             boardRepository.save(board);
             return false; // 좋아요 취소
         } else {
             BoardLike like = BoardLike.of(user, board);
             boardLikeRepository.save(like);
-            board.setLikeCount(board.getLikeCount() + 1);
+            board.increaseLikeCount();
             boardRepository.save(board);
             return true; // 좋아요 등록
         }

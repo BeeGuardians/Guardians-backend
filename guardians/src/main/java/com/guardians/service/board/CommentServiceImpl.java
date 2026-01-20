@@ -77,7 +77,7 @@ public class CommentServiceImpl implements CommentService {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        comment.setContent(dto.getContent());
+        comment.updateContent(dto.getContent());
         commentRepository.save(comment);
 
         // 저장한 뒤 다시 조회 (user를 fetch join해서 username 접근 가능하게)
