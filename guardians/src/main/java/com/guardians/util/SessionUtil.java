@@ -1,5 +1,6 @@
 package com.guardians.util;
 
+import com.guardians.domain.user.entity.Role;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
 import jakarta.servlet.http.HttpSession;
@@ -71,7 +72,7 @@ public class SessionUtil {
         Long userId = getRequiredUserId(session);
         String role = getRoleOrNull(session);
 
-        if (!"ADMIN".equals(role)) {
+        if (!Role.ADMIN.name().equals(role)) {
             throw new CustomException(ErrorCode.PERMISSION_DENIED);
         }
         return userId;
@@ -107,7 +108,7 @@ public class SessionUtil {
         Long sessionUserId = getRequiredUserId(session);
         String role = getRoleOrNull(session);
 
-        if (!sessionUserId.equals(targetUserId) && !"ADMIN".equals(role)) {
+        if (!sessionUserId.equals(targetUserId) && !Role.ADMIN.name().equals(role)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         return sessionUserId;

@@ -93,7 +93,7 @@ public class JobController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        if (!"ADMIN".equals(user.getRole())) {
+        if (!user.isAdmin()) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
     }

@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BadgeServiceImpl implements BadgeService {
 
     private final BadgeRepository badgeRepository;
@@ -31,6 +32,7 @@ public class BadgeServiceImpl implements BadgeService {
     private final SolvedWargameRepository solvedWargameRepository;
 
     @Override
+    @Transactional
     public List<ResUserBadgeDto> getAllBadgesWithUserStatus(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));

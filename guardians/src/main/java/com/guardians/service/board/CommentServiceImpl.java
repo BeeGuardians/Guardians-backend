@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
@@ -29,6 +30,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public ResCreateCommentDto createComment(Long userId, Long boardId, ReqCreateCommentDto dto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -52,7 +54,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-    @Transactional
     @Override
     public List<ResCommentListDto> getCommentsByBoard(Long boardId) {
         List<Comment> comments = commentRepository.findByBoardIdOrderByCreatedAtAsc(boardId);
@@ -69,6 +70,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public ResUpdateCommentDto updateComment(Long userId, Long commentId, ReqUpdateCommentDto dto) {
         Comment comment = commentRepository.findByIdWithUser(commentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
@@ -94,6 +96,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void deleteComment(Long userId, Long commentId) {
         Comment comment = commentRepository.findByIdWithUser(commentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));

@@ -1,5 +1,6 @@
 package com.guardians.controller;
 
+import com.guardians.domain.user.entity.Role;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.user.req.*;
 import com.guardians.dto.user.res.ResCreateUserDto;
@@ -99,7 +100,7 @@ public class UserController {
     ) {
         ResLoginDto loginUser = userService.login(loginDto);
 
-        if (!"ADMIN".equals(loginUser.getRole())) {
+        if (!Role.ADMIN.name().equals(loginUser.getRole())) {
             throw new CustomException(ErrorCode.PERMISSION_DENIED);
         }
 
@@ -115,7 +116,8 @@ public class UserController {
             @PathVariable Long userId,
             @RequestBody ReqUpdateUserRoleDto request
     ) {
-        userService.updateUserRole(userId, request.getRole());
+        Role role = Role.valueOf(request.getRole());
+        userService.updateUserRole(userId, role);
         return ResponseEntity.ok("권한이 성공적으로 변경되었습니다.");
     }
 
