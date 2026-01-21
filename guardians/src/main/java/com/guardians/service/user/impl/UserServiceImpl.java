@@ -1,6 +1,7 @@
 package com.guardians.service.user.impl;
 
 import com.guardians.config.AwsS3Properties;
+import com.guardians.domain.user.entity.Role;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.dto.user.req.ReqChangePasswordDto;
@@ -24,6 +25,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -58,7 +60,7 @@ public class UserServiceImpl implements UserService {
                 dto.getUsername(),
                 dto.getEmail(),
                 encodedPw,
-                "USER",
+                Role.USER,
                 awsS3Properties.getDefaultProfileUrl()
         );
 
@@ -85,13 +87,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserRole(Long userId, String newRole) {
+    public void updateUserRole(Long userId, Role newRole) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        if (!newRole.equals("USER") && !newRole.equals("ADMIN")) {
-            throw new CustomException(ErrorCode.PERMISSION_DENIED);
-        }
 
         user.updateRole(newRole);
     }
@@ -183,7 +181,7 @@ public class UserServiceImpl implements UserService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .role(user.getRole())
+                .role(user.getRole().name())
                 .lastLoginAt(user.getLastLoginAt())
                 .profileImageUrl(user.getProfileImageUrl())
                 .build();

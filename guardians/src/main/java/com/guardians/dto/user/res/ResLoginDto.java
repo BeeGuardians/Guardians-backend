@@ -37,7 +37,8 @@ public class ResLoginDto {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .lastLoginAt(user.getLastLoginAt())
-                .role(user.getRole())
+                .role(user.getRole().name())
+                .profileImageUrl(user.getProfileImageUrl())
                 .build();
     }
 }
