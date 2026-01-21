@@ -80,16 +80,11 @@ public class CommentServiceImpl implements CommentService {
         }
 
         comment.updateContent(dto.getContent());
-        commentRepository.save(comment);
-
-        // 저장한 뒤 다시 조회 (user를 fetch join해서 username 접근 가능하게)
-        Comment updated = commentRepository.findByIdWithUser(commentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 
         return ResUpdateCommentDto.builder()
-                .commentId(updated.getId())
-                .content(updated.getContent())
-                .username(updated.getUser().getUsername())
+                .commentId(comment.getId())
+                .content(comment.getContent())
+                .username(comment.getUser().getUsername())
                 .createdAt(comment.getCreatedAt())
                 .userId(comment.getUser().getId())
                 .build();

@@ -95,14 +95,11 @@ public class AnswerServiceImpl implements AnswerService {
         // 수정
         answer.updateContent(dto.getContent());
 
-        // 저장
-        Answer updated = answerRepository.save(answer);
-
         // 결과 반환
         return ResUpdateAnswerDto.builder()
-                .id(updated.getId())
-                .userId(updated.getUser().getId())
-                .content(updated.getContent())
+                .id(answer.getId())
+                .userId(answer.getUser().getId())
+                .content(answer.getContent())
                 .build();
     }
 
