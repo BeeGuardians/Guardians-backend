@@ -6,6 +6,7 @@ import com.guardians.dto.board.req.ReqUpdateBoardDto;
 import com.guardians.dto.board.res.*;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.service.board.BoardService;
+import com.guardians.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
@@ -44,7 +45,7 @@ public class BoardController {
             return ResponseEntity.badRequest().body(ResWrapper.resError("유효성 검사 실패: " + errorMsg));
         }
 
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         ResCreateBoardDto result = boardService.createBoard(userId, dto, boardType);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글이 성공적으로 등록되었습니다.", result));
     }
@@ -76,7 +77,7 @@ public class BoardController {
     @Operation(summary = "게시글 상세 조회", description = "특정 게시글 ID로 상세 정보를 조회합니다.")
     @GetMapping("/{boardId}")
     public ResponseEntity<ResWrapper<?>> getBoardDetail(@PathVariable Long boardId, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
 
         ResBoardDetailDto result = boardService.getBoardDetail(boardId, userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 상세 조회 성공", result));
@@ -90,7 +91,7 @@ public class BoardController {
             @PathVariable Long boardId,
             @RequestBody @Valid ReqUpdateBoardDto dto
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
 
         ResUpdateBoardDto result = boardService.updateBoard(userId, boardId, dto);
 
@@ -102,7 +103,7 @@ public class BoardController {
             HttpSession session,
             @PathVariable Long boardId
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
 
         boardService.deleteBoard(userId, boardId);
 
@@ -115,7 +116,7 @@ public class BoardController {
             @PathVariable Long boardId,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getRequiredUserId(session);
         boolean liked = boardService.toggleLike(userId, boardId);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 좋아요 토글 완료",
                 Map.of("liked", liked)
