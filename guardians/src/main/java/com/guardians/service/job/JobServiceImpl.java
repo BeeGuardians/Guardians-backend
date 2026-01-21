@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class JobServiceImpl implements JobService {
 
     private final JobRepository jobRepository;

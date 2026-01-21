@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class WargameServiceImpl implements WargameService {
 
     private final WargameRepository wargameRepository;
@@ -48,7 +49,7 @@ public class WargameServiceImpl implements WargameService {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        if (!"ADMIN".equals(admin.getRole())) {
+        if (!admin.isAdmin()) {
             throw new CustomException(ErrorCode.PERMISSION_DENIED);
         }
 

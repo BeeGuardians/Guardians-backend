@@ -41,8 +41,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private Role role;
 
     private LocalDateTime lastLoginAt;
 
@@ -87,7 +88,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<WargameLike> wargameLikes = new ArrayList<>();
 
-    public static User create(String username, String email, String password, String role, String profileImageUrl) {
+    public static User create(String username, String email, String password, Role role, String profileImageUrl) {
         User user = new User();
         user.username = username;
         user.email = email;
@@ -113,8 +114,16 @@ public class User {
         this.userStats = userStats;
     }
 
-    public void updateRole(String role) {
+    public void updateRole(Role role) {
         this.role = role;
+    }
+
+    public boolean hasRole(Role role) {
+        return this.role == role;
+    }
+
+    public boolean isAdmin() {
+        return this.role == Role.ADMIN;
     }
 
     public void updateLastLoginAt() {

@@ -11,7 +11,6 @@ import java.util.List;
 @Entity
 @Table(name = "wargames")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
