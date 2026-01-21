@@ -112,13 +112,16 @@ public class UserController {
 
 
     @PutMapping("/admin/update-role/{userId}")
-    public ResponseEntity<String> updateUserRole(
+    public ResponseEntity<ResWrapper<?>> updateUserRole(
             @PathVariable Long userId,
-            @RequestBody ReqUpdateUserRoleDto request
+            @RequestBody ReqUpdateUserRoleDto request,
+            HttpSession session
     ) {
+        SessionUtil.requireAdmin(session);
+
         Role role = Role.valueOf(request.getRole());
         userService.updateUserRole(userId, role);
-        return ResponseEntity.ok("권한이 성공적으로 변경되었습니다.");
+        return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 권한 변경 완료", null));
     }
 
     // 모든 유저 조회
