@@ -125,11 +125,9 @@ public class QuestionServiceImpl implements QuestionService {
 
         question.update(dto.getTitle(), dto.getContent());
 
-        Question updated = questionRepository.save(question);
-
         return ResUpdateQuestionDto.builder()
-                .id(updated.getId())
-                .title(updated.getTitle())
+                .id(question.getId())
+                .title(question.getTitle())
                 .build();
     }
 

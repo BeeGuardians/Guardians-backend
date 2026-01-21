@@ -130,14 +130,12 @@ public class BoardServiceImpl implements BoardService {
 
 	board.update(dto.getTitle(), dto.getContent());
 
-        Board updatedBoard = boardRepository.save(board);
-
         return ResUpdateBoardDto.builder()
-                .boardId(updatedBoard.getId())
-                .title(updatedBoard.getTitle())
-                .content(updatedBoard.getContent())
-                .username(updatedBoard.getUser().getUsername())
-                .updatedAt(updatedBoard.getUpdatedAt())
+                .boardId(board.getId())
+                .title(board.getTitle())
+                .content(board.getContent())
+                .username(board.getUser().getUsername())
+                .updatedAt(board.getUpdatedAt())
                 .boardType(board.getBoardType().name())
                 .build();
     }
@@ -169,13 +167,11 @@ public class BoardServiceImpl implements BoardService {
         if (existing.isPresent()) {
             boardLikeRepository.delete(existing.get());
             board.decreaseLikeCount();
-            boardRepository.save(board);
             return false; // 좋아요 취소
         } else {
             BoardLike like = BoardLike.of(user, board);
             boardLikeRepository.save(like);
             board.increaseLikeCount();
-            boardRepository.save(board);
             return true; // 좋아요 등록
         }
     }
