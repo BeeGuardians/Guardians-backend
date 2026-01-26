@@ -14,7 +14,7 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     Optional<Answer> findByIdWithUser(@Param("id") Long id);
     int countByQuestionId(Long questionId);
 
-    @Query("SELECT a FROM Answer a JOIN FETCH a.user WHERE a.question.id = :questionId ORDER BY a.createdAt ASC")
+    @Query("SELECT a FROM Answer a JOIN FETCH a.user u JOIN FETCH u.userStats WHERE a.question.id = :questionId ORDER BY a.createdAt ASC")
     List<Answer> findAllWithUserByQuestionId(@Param("questionId") Long questionId);
 
     List<Answer> findAllByQuestionIdOrderByCreatedAtAsc(Long questionId);

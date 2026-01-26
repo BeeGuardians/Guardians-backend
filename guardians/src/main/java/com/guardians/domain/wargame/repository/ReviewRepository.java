@@ -8,9 +8,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    List<Review> findAllByUserId(Long userId);
-    List<Review> findAllByWargameId(Long wargameId);
-    List<Review> findAllByWargameIdOrderByCreatedAtAsc(Long wargameId);
+    @Query("SELECT r FROM Review r JOIN FETCH r.user WHERE r.wargame.id = :wargameId ORDER BY r.createdAt ASC")
+    List<Review> findAllByWargameIdOrderByCreatedAtAsc(@Param("wargameId") Long wargameId);
 
     @Query("SELECT r FROM Review r JOIN FETCH r.wargame WHERE r.user.id = :userId")
     List<Review> findAllWithWargameByUserId(@Param("userId") Long userId);

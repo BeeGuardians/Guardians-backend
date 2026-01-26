@@ -56,7 +56,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<ResCommentListDto> getCommentsByBoard(Long boardId) {
-        List<Comment> comments = commentRepository.findByBoardIdOrderByCreatedAtAsc(boardId);
+        List<Comment> comments = commentRepository.findByBoardIdWithUser(boardId);
 
         return comments.stream().map(comment -> ResCommentListDto.builder()
                         .commentId(comment.getId())
