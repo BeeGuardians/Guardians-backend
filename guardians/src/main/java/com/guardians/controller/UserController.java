@@ -100,7 +100,7 @@ public class UserController {
     ) {
         ResLoginDto loginUser = userService.login(loginDto);
 
-        if (!Role.ADMIN.name().equals(loginUser.getRole())) {
+        if (Role.valueOf(loginUser.getRole()) != Role.ADMIN) {
             throw new CustomException(ErrorCode.PERMISSION_DENIED);
         }
 
