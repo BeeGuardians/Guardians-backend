@@ -60,6 +60,20 @@ public class SessionUtil {
     }
 
     /**
+     * 세션에서 role을 Enum으로 추출합니다.
+     *
+     * @param session HttpSession
+     * @return Role enum 또는 null
+     */
+    public static Role getRoleEnumOrNull(HttpSession session) {
+        String roleStr = getRoleOrNull(session);
+        if (roleStr == null) {
+            return null;
+        }
+        return Role.valueOf(roleStr);
+    }
+
+    /**
      * 관리자 권한을 확인합니다.
      * userId가 null이면 NOT_LOGGED_IN 예외,
      * role이 ADMIN이 아니면 PERMISSION_DENIED 예외를 발생시킵니다.
@@ -70,9 +84,9 @@ public class SessionUtil {
      */
     public static Long requireAdmin(HttpSession session) {
         Long userId = getRequiredUserId(session);
-        String role = getRoleOrNull(session);
+        Role role = getRoleEnumOrNull(session);
 
-        if (!Role.ADMIN.name().equals(role)) {
+        if (role != Role.ADMIN) {
             throw new CustomException(ErrorCode.PERMISSION_DENIED);
         }
         return userId;
@@ -106,9 +120,9 @@ public class SessionUtil {
      */
     public static Long requireSameUserOrAdmin(HttpSession session, Long targetUserId) {
         Long sessionUserId = getRequiredUserId(session);
-        String role = getRoleOrNull(session);
+        Role role = getRoleEnumOrNull(session);
 
-        if (!sessionUserId.equals(targetUserId) && !Role.ADMIN.name().equals(role)) {
+        if (!sessionUserId.equals(targetUserId) && role != Role.ADMIN) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         return sessionUserId;
