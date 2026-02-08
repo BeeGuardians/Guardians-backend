@@ -80,7 +80,7 @@ class UserControllerTest {
                 .createdAt(null)
                 .build();
 
-        given(userService.createUser(any(ReqCreateUserDto.class))).willReturn(expectedResponse);
+        given(userService.createUser(anyString(), anyString(), anyString())).willReturn(expectedResponse);
 
         // When & Then
         mockMvc.perform(post("/api/users") // POST 요청
@@ -93,7 +93,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.result.data.username").value("tester")) // username 필드 검증 추가
                 .andDo(print()); // 요청/응답 내용 로깅 (디버깅 시 유용)
 
-        verify(userService).createUser(any(ReqCreateUserDto.class));
+        verify(userService).createUser(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -232,7 +232,7 @@ class UserControllerTest {
 
         MockHttpSession mockSession = new MockHttpSession();
 
-        given(userService.login(any(ReqLoginDto.class))).willReturn(expectedResponse);
+        given(userService.login(anyString(), anyString())).willReturn(expectedResponse);
 
         // When & Then
         mockMvc.perform(post("/api/users/login")
@@ -252,7 +252,7 @@ class UserControllerTest {
                 .andExpect(request().sessionAttribute("role", "USER"))
                 .andDo(print());
 
-        verify(userService).login(any(ReqLoginDto.class));
+        verify(userService).login(anyString(), anyString());
     }
 
     @Test
@@ -271,7 +271,7 @@ class UserControllerTest {
                 .build();
         MockHttpSession mockSession = new MockHttpSession();
 
-        given(userService.login(any(ReqLoginDto.class))).willReturn(adminResponse);
+        given(userService.login(anyString(), anyString())).willReturn(adminResponse);
 
         // When & Then
         mockMvc.perform(post("/api/users/admin/login")
@@ -289,7 +289,7 @@ class UserControllerTest {
                 .andExpect(request().sessionAttribute("role", "ADMIN"))
                 .andDo(print());
 
-        verify(userService).login(any(ReqLoginDto.class));
+        verify(userService).login(anyString(), anyString());
     }
 
 
@@ -308,7 +308,7 @@ class UserControllerTest {
                 .build();
         MockHttpSession mockSession = new MockHttpSession();
 
-        given(userService.login(any(ReqLoginDto.class))).willReturn(userResponse);
+        given(userService.login(anyString(), anyString())).willReturn(userResponse);
         // 컨트롤러에서 CustomException(ErrorCode.PERMISSION_DENIED) 발생 예상
 
         // When & Then
@@ -385,7 +385,7 @@ class UserControllerTest {
                 .build();
 
         // userService.updateUserInfo의 반환 타입이 ResLoginDto라고 가정
-        given(userService.updateUserInfo(eq(userId), eq(userId), any(ReqUpdateUserDto.class))).willReturn(updatedUserResponse);
+        given(userService.updateUserInfo(eq(userId), eq(userId), anyString())).willReturn(updatedUserResponse);
 
         // When & Then
         mockMvc.perform(patch("/api/users/{userId}/update", userId)
@@ -402,7 +402,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.result.data.lastLoginAt").value(mockTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))))
                 .andDo(print());
 
-        verify(userService).updateUserInfo(eq(userId), eq(userId), any(ReqUpdateUserDto.class));
+        verify(userService).updateUserInfo(eq(userId), eq(userId), anyString());
     }
 
     // --- 내 정보 조회 테스트 (getCurrentUser) ---

@@ -9,7 +9,6 @@ import com.guardians.service.answer.AnswerService;
 import com.guardians.service.question.QuestionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,7 +20,7 @@ import org.springframework.session.data.redis.config.annotation.web.http.RedisHt
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -67,13 +66,7 @@ class QnaControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        ArgumentCaptor<Long> userIdCaptor = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<ReqCreateQuestionDto> requestDtoCaptor = ArgumentCaptor.forClass(ReqCreateQuestionDto.class);
-
-        verify(questionService).createQuestion(userIdCaptor.capture(), requestDtoCaptor.capture());
-
-        assertEquals(1L, userIdCaptor.getValue());
-        assertEquals("테스트 질문 제목", requestDtoCaptor.getValue().getTitle());
+        verify(questionService).createQuestion(eq(1L), eq("테스트 질문 제목"), eq("테스트 질문 내용입니다."), eq(1L));
     }
 
     @Test
@@ -93,15 +86,7 @@ class QnaControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        ArgumentCaptor<Long> userIdCaptor = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<Long> questionIdCaptor = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<ReqUpdateQuestionDto> requestDtoCaptor = ArgumentCaptor.forClass(ReqUpdateQuestionDto.class);
-
-        verify(questionService).updateQuestion(userIdCaptor.capture(), questionIdCaptor.capture(), requestDtoCaptor.capture());
-
-        assertEquals(1L, userIdCaptor.getValue());
-        assertEquals(questionId, questionIdCaptor.getValue());
-        assertEquals("수정된 제목", requestDtoCaptor.getValue().getTitle());
+        verify(questionService).updateQuestion(eq(1L), eq(questionId), eq("수정된 제목"), eq("수정된 내용"));
     }
 
     @Test
