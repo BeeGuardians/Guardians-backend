@@ -4,10 +4,6 @@ import com.guardians.config.AwsS3Properties;
 import com.guardians.domain.user.entity.Role;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
-import com.guardians.dto.user.req.ReqChangePasswordDto;
-import com.guardians.dto.user.req.ReqCreateUserDto;
-import com.guardians.dto.user.req.ReqLoginDto;
-import com.guardians.dto.user.req.ReqUpdateUserDto;
 import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
@@ -34,12 +30,12 @@ public class UserServiceImpl implements UserService {
     private final AwsS3Properties awsS3Properties;
 
     // 중복 검사
-    private void validateDuplicate(ReqCreateUserDto dto) {
-        if (userRepository.existsByEmail(dto.getEmail())) {
+    private void validateDuplicate(String email, String username) {
+        if (userRepository.existsByEmail(email)) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
         }
 
-        if (userRepository.existsByUsername(dto.getUsername())) {
+        if (userRepository.existsByUsername(username)) {
             throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
         }
     }
@@ -51,14 +47,14 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public ResCreateUserDto createUser(ReqCreateUserDto dto) {
-        validateDuplicate(dto);
+    public ResCreateUserDto createUser(String username, String email, String password) {
+        validateDuplicate(email, username);
 
-        String encodedPw = passwordEncoder.encode(dto.getPassword());
+        String encodedPw = passwordEncoder.encode(password);
 
         User user = User.create(
-                dto.getUsername(),
-                dto.getEmail(),
+                username,
+                email,
                 encodedPw,
                 Role.USER,
                 awsS3Properties.getDefaultProfileUrl()
@@ -72,11 +68,11 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public ResLoginDto login(ReqLoginDto dto) {
-        User user = userRepository.findByEmail(dto.getEmail())
+    public ResLoginDto login(String email, String password) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
@@ -102,31 +98,31 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public ResLoginDto updateUserInfo(Long sessionUserId, Long targetUserId, ReqUpdateUserDto dto) {
+    public ResLoginDto updateUserInfo(Long sessionUserId, Long targetUserId, String username) {
         if (!sessionUserId.equals(targetUserId)) {
             throw new CustomException(ErrorCode.PERMISSION_DENIED); // ← 권한 없음 에러 따로 만들자
         }
 
         User user = getUserWithStats(targetUserId);
-        user.updateUsername(dto.getUsername());
+        user.updateUsername(username);
 
         return ResLoginDto.fromEntity(user);
     }
 
     @Transactional
     @Override
-    public void changePassword(Long sessionUserId, Long targetUserId, ReqChangePasswordDto dto) {
+    public void changePassword(Long sessionUserId, Long targetUserId, String currentPassword, String newPassword) {
         if (!sessionUserId.equals(targetUserId)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
         User user = getUserWithStats(sessionUserId);
 
-        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
-        String encodedNewPassword = passwordEncoder.encode(dto.getNewPassword());
+        String encodedNewPassword = passwordEncoder.encode(newPassword);
         user.updatePassword(encodedNewPassword);
     }
 

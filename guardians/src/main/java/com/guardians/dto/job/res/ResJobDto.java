@@ -32,4 +32,18 @@ public class ResJobDto {
         this.salary = job.getSalary();
         this.deadline = job.getDeadline();
     }
+
+    public static ResJobDto fromEntity(Job job) {
+        return ResJobDto.builder()
+                .id(job.getId())
+                .companyName(job.getCompanyName())
+                .title(job.getTitle())
+                .description(job.getDescription())
+                .location(job.getLocation())
+                .employmentType(job.getEmploymentType())
+                .careerLevel(job.getCareerLevel())
+                .salary(job.getSalary())
+                .deadline(job.getDeadline())
+                .build();
+    }
 }

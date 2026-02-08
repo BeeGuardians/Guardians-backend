@@ -9,8 +9,6 @@ import com.guardians.domain.board.repository.CommentCountRepository;
 import com.guardians.domain.board.repository.CommentRepository;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
-import com.guardians.dto.board.req.ReqCreateBoardDto;
-import com.guardians.dto.board.req.ReqUpdateBoardDto;
 import com.guardians.dto.board.res.*;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,13 +36,13 @@ public class BoardServiceImpl implements BoardService {
 
     @Transactional
     @Override
-    public ResCreateBoardDto createBoard(Long userId, ReqCreateBoardDto dto, BoardType boardType) {
+    public ResCreateBoardDto createBoard(Long userId, String title, String content, BoardType boardType) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Board board = Board.builder()
-                .title(dto.getTitle())
-                .content(dto.getContent())
+                .title(title)
+                .content(content)
                 .boardType(boardType)
                 .user(user)
                 .createdAt(LocalDateTime.now())
@@ -54,12 +51,7 @@ public class BoardServiceImpl implements BoardService {
 
         Board saved = boardRepository.save(board);
 
-        return ResCreateBoardDto.builder()
-                .boardId(saved.getId())
-                .title(saved.getTitle())
-                .content(saved.getContent())
-                .username(user.getUsername())
-                .build();
+        return ResCreateBoardDto.fromEntity(saved);
     }
 
     @Transactional
@@ -104,23 +96,11 @@ public class BoardServiceImpl implements BoardService {
 
         board.increaseViewCount();
 
-        return ResBoardDetailDto.builder()
-                .boardId(board.getId())
-                .title(board.getTitle())
-                .content(board.getContent())
-                .username(board.getUser().getUsername())
-                .viewCount(board.getViewCount())
-                .likeCount(board.getLikeCount())
-                .createdAt(board.getCreatedAt())
-                .updatedAt(board.getUpdatedAt())
-                .userId(board.getUser().getId())
-                .boardType(board.getBoardType().name())
-                .liked(liked)
-                .build();
+        return ResBoardDetailDto.fromEntity(board, liked);
     }
     @Transactional
     @Override
-    public ResUpdateBoardDto updateBoard(Long userId, Long boardId, ReqUpdateBoardDto dto) {
+    public ResUpdateBoardDto updateBoard(Long userId, Long boardId, String title, String content) {
         Board board = boardRepository.findByIdWithUser(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
 
@@ -128,16 +108,9 @@ public class BoardServiceImpl implements BoardService {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-	board.update(dto.getTitle(), dto.getContent());
+	board.update(title, content);
 
-        return ResUpdateBoardDto.builder()
-                .boardId(board.getId())
-                .title(board.getTitle())
-                .content(board.getContent())
-                .username(board.getUser().getUsername())
-                .updatedAt(board.getUpdatedAt())
-                .boardType(board.getBoardType().name())
-                .build();
+        return ResUpdateBoardDto.fromEntity(board);
     }
 
     @Transactional
@@ -190,14 +163,7 @@ public class BoardServiceImpl implements BoardService {
         List<Board> hotBoards = boardRepository.findTop10ByHotScore();
 
         return hotBoards.stream()
-                .map(board -> ResHotBoardDto.builder()
-                        .id(board.getId())
-                        .title(board.getTitle())
-                        .boardType(board.getBoardType())
-                        .likeCount(board.getLikeCount())
-                        .viewCount(board.getViewCount())
-                        .score(board.getLikeCount() * 2 + board.getViewCount())
-                        .build())
+                .map(ResHotBoardDto::fromEntity)
                 .collect(Collectors.toList());
     }
 }

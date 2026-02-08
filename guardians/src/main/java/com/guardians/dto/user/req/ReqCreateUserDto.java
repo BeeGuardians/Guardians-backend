@@ -1,7 +1,5 @@
 package com.guardians.dto.user.req;
 
-import com.guardians.domain.user.entity.Role;
-import com.guardians.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -37,10 +35,5 @@ public class ReqCreateUserDto {
         this.username = username;
         this.email = email;
         this.password = password;
-    }
-
-    // Service에서 바로 entity 생성 가능
-    public User toEntity(String encodedPassword, String defaultProfileImageUrl) {
-        return User.create(username, email, encodedPassword, Role.USER, defaultProfileImageUrl);
     }
 }

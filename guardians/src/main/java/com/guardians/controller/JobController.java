@@ -38,7 +38,7 @@ public class JobController {
             HttpSession session
     ) {
         checkAdminWithDb(session);
-        jobService.createJob(dto);
+        jobService.createJob(dto.getCompanyName(), dto.getTitle(), dto.getDescription(), dto.getLocation(), dto.getEmploymentType(), dto.getCareerLevel(), dto.getSalary(), dto.getDeadline(), dto.getSourceUrl());
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 채용공고 등록 완료", null));
     }
 
@@ -51,7 +51,7 @@ public class JobController {
             HttpSession session
     ) {
         checkAdminWithDb(session);
-        jobService.updateJob(jobId, dto);
+        jobService.updateJob(jobId, dto.getTitle(), dto.getDescription(), dto.getSalary(), dto.getDeadline(), dto.getIsActive());
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 채용공고 수정 완료", null));
     }
 

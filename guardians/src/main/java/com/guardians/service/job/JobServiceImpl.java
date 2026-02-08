@@ -2,8 +2,6 @@ package com.guardians.service.job;
 
 import com.guardians.domain.job.entity.Job;
 import com.guardians.domain.job.repository.JobRepository;
-import com.guardians.dto.job.req.ReqCreateJobDto;
-import com.guardians.dto.job.req.ReqUpdateJobDto;
 import com.guardians.dto.job.res.ResJobDto;
 import com.guardians.dto.job.res.ResJobListDto;
 import com.guardians.exception.CustomException;
@@ -26,17 +24,17 @@ public class JobServiceImpl implements JobService {
 
     @Override
     @Transactional
-    public void createJob(ReqCreateJobDto dto) {
+    public void createJob(String companyName, String title, String description, String location, String employmentType, String careerLevel, String salary, LocalDate deadline, String sourceUrl) {
         Job job = Job.builder()
-                .companyName(dto.getCompanyName())
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .location(dto.getLocation())
-                .employmentType(dto.getEmploymentType())
-                .careerLevel(dto.getCareerLevel())
-                .salary(dto.getSalary())
-                .deadline(dto.getDeadline())
-                .sourceUrl(dto.getSourceUrl())
+                .companyName(companyName)
+                .title(title)
+                .description(description)
+                .location(location)
+                .employmentType(employmentType)
+                .careerLevel(careerLevel)
+                .salary(salary)
+                .deadline(deadline)
+                .sourceUrl(sourceUrl)
                 .isActive(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -50,7 +48,7 @@ public class JobServiceImpl implements JobService {
     public ResJobDto getJobDetail(Long jobId) {
         Job job = jobRepository.findByIdAndIsActiveTrue(jobId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_NOT_FOUND));
-        return new ResJobDto(job);
+        return ResJobDto.fromEntity(job);
     }
 
     @Override
@@ -58,26 +56,17 @@ public class JobServiceImpl implements JobService {
     public List<ResJobListDto> getJobList() {
         return jobRepository.findByIsActiveTrueAndDeadlineAfter(LocalDate.now())
                 .stream()
-                .map(job -> ResJobListDto.builder()
-                        .jobId(job.getId())
-                        .title(job.getTitle())
-                        .companyName(job.getCompanyName())
-                        .location(job.getLocation())
-                        .employmentType(job.getEmploymentType())
-                        .careerLevel(job.getCareerLevel())
-                        .deadline(job.getDeadline())
-                        .sourceUrl(job.getSourceUrl())
-                        .build())
+                .map(ResJobListDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public void updateJob(Long jobId, ReqUpdateJobDto dto) {
+    public void updateJob(Long jobId, String title, String description, String salary, LocalDate deadline, Boolean isActive) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_NOT_FOUND));
 
-        job.update(dto.getTitle(), dto.getDescription(), dto.getSalary(), dto.getDeadline(), dto.getIsActive());
+        job.update(title, description, salary, deadline, isActive);
     }
 
     @Override

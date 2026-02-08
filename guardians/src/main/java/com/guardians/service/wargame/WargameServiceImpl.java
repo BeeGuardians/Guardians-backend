@@ -6,9 +6,6 @@ import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.domain.user.repository.UserStatsRepository;
 import com.guardians.domain.wargame.entity.*;
 import com.guardians.domain.wargame.repository.*;
-import com.guardians.dto.wargame.req.ReqCreateReviewDto;
-import com.guardians.dto.wargame.req.ReqCreateWargameDto;
-import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
 import com.guardians.dto.wargame.res.*;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
@@ -44,7 +41,7 @@ public class WargameServiceImpl implements WargameService {
 
     @Transactional
     @Override
-    public ResWargameListDto createWargame(ReqCreateWargameDto dto, Long adminId) {
+    public ResWargameListDto createWargame(String title, String description, Difficulty difficulty, int score, Long categoryId, String dockerImageUrl, String fileUrl, String flag, Long adminId) {
         // 관리자 유저 유효성 확인
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -53,16 +50,16 @@ public class WargameServiceImpl implements WargameService {
             throw new CustomException(ErrorCode.PERMISSION_DENIED);
         }
 
-        Category category = categoryRepository.findById(dto.getCategoryId())
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_VALID_ARGUMENT));
 
         Wargame wargame = Wargame.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .difficulty(dto.getDifficulty())
-                .score(dto.getScore())
-                .dockerImageUrl(dto.getDockerImageUrl())
-                .fileUrl(dto.getFileUrl())
+                .title(title)
+                .description(description)
+                .difficulty(difficulty)
+                .score(score)
+                .dockerImageUrl(dockerImageUrl)
+                .fileUrl(fileUrl)
                 .category(category)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -70,12 +67,12 @@ public class WargameServiceImpl implements WargameService {
 
         wargameRepository.save(wargame);
 
-        WargameFlag flag = WargameFlag.builder()
+        WargameFlag wargameFlag = WargameFlag.builder()
                 .wargame(wargame)
-                .flag(dto.getFlag())
+                .flag(flag)
                 .build();
 
-        wargameFlagRepository.save(flag);
+        wargameFlagRepository.save(wargameFlag);
 
         return ResWargameListDto.fromEntity(wargame, false, false, false);
     }
@@ -248,7 +245,7 @@ public class WargameServiceImpl implements WargameService {
 
     @Transactional
     @Override
-    public ResReviewListDto createReview(Long userId, Long wargameId, ReqCreateReviewDto request) {
+    public ResReviewListDto createReview(Long userId, Long wargameId, String content) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         Wargame wargame = wargameRepository.findById(wargameId)
@@ -257,7 +254,7 @@ public class WargameServiceImpl implements WargameService {
         Review review = Review.builder()
                 .user(user)
                 .wargame(wargame)
-                .content(request.getContent())
+                .content(content)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .likeCount(0)
@@ -268,7 +265,7 @@ public class WargameServiceImpl implements WargameService {
 
     @Transactional
     @Override
-    public ResReviewListDto updateReview(Long userId, Long reviewId, ReqUpdateReviewDto request) {
+    public ResReviewListDto updateReview(Long userId, Long reviewId, String content) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_ACCESS));
 
@@ -276,7 +273,7 @@ public class WargameServiceImpl implements WargameService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        review.updateContent(request.getContent());
+        review.updateContent(content);
 
         return ResReviewListDto.fromEntity(review);
     }

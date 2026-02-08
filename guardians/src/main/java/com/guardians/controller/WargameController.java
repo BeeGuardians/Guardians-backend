@@ -38,7 +38,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.requireAdmin(session);
-        ResWargameListDto created = wargameService.createWargame(request, userId);
+        ResWargameListDto created = wargameService.createWargame(request.getTitle(), request.getDescription(), request.getDifficulty(), request.getScore(), request.getCategoryId(), request.getDockerImageUrl(), request.getFileUrl(), request.getFlag(), userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 워게임 생성 성공", created));
     }
 
@@ -119,7 +119,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResReviewListDto result = wargameService.createReview(userId, wargameId, request);
+        ResReviewListDto result = wargameService.createReview(userId, wargameId, request.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 작성 성공", result));
     }
 
@@ -130,7 +130,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResReviewListDto result = wargameService.updateReview(userId, reviewId, request);
+        ResReviewListDto result = wargameService.updateReview(userId, reviewId, request.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 수정 성공", result));
     }
 

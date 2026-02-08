@@ -2,6 +2,7 @@
 
 package com.guardians.dto.question.res;
 
+import com.guardians.domain.board.entity.Question;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,4 +22,18 @@ public class ResQuestionListDto {
     private String profileImageUrl;
     private LocalDateTime createdAt;
     private int viewCount;
+
+    public static ResQuestionListDto fromEntity(Question question) {
+        return ResQuestionListDto.builder()
+                .id(question.getId())
+                .title(question.getTitle())
+                .content(question.getContent())
+                .username(question.getUser().getUsername())
+                .wargameId(question.getWargame().getId())
+                .wargameTitle(question.getWargame().getTitle())
+                .profileImageUrl(question.getUser().getProfileImageUrl())
+                .createdAt(question.getCreatedAt())
+                .viewCount(question.getViewCount())
+                .build();
+    }
 }

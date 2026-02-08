@@ -34,7 +34,7 @@ public class CommentController {
             @RequestBody @Valid ReqCreateCommentDto dto
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResCreateCommentDto result = commentService.createComment(userId, boardId, dto);
+        ResCreateCommentDto result = commentService.createComment(userId, boardId, dto.getContent());
 
         return ResponseEntity.ok(ResWrapper.resSuccess("댓글 작성 완료", result));
     }
@@ -59,7 +59,7 @@ public class CommentController {
             @RequestBody @Valid ReqUpdateCommentDto dto
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResUpdateCommentDto result = commentService.updateComment(userId, commentId, dto);
+        ResUpdateCommentDto result = commentService.updateComment(userId, commentId, dto.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("댓글 수정 완료", result));
 
     }

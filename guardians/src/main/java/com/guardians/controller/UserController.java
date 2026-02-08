@@ -40,7 +40,7 @@ public class UserController {
     @Operation(summary = "회원가입", description = "유저 정보를 받아 회원가입 처리")
     @PostMapping
     public ResponseEntity<ResWrapper<?>> createUser(@RequestBody @Valid ReqCreateUserDto requestDto) {
-        ResCreateUserDto createdUser = userService.createUser(requestDto);
+        ResCreateUserDto createdUser = userService.createUser(requestDto.getUsername(), requestDto.getEmail(), requestDto.getPassword());
         return ResponseEntity.ok(ResWrapper.resSuccess("회원가입 성공", createdUser));
     }
 
@@ -85,7 +85,7 @@ public class UserController {
             @RequestBody @Valid ReqLoginDto loginDto,
             HttpSession session
     ) {
-        ResLoginDto loginUser = userService.login(loginDto);
+        ResLoginDto loginUser = userService.login(loginDto.getEmail(), loginDto.getPassword());
         session.setAttribute("userId", loginUser.getId());
         session.setAttribute("role", loginUser.getRole());
 
@@ -98,7 +98,7 @@ public class UserController {
             @RequestBody @Valid ReqLoginDto loginDto,
             HttpSession session
     ) {
-        ResLoginDto loginUser = userService.login(loginDto);
+        ResLoginDto loginUser = userService.login(loginDto.getEmail(), loginDto.getPassword());
 
         if (Role.valueOf(loginUser.getRole()) != Role.ADMIN) {
             throw new CustomException(ErrorCode.PERMISSION_DENIED);
@@ -159,7 +159,7 @@ public class UserController {
     ) {
         Long sessionUserId = SessionUtil.getRequiredUserId(session);
 
-        ResLoginDto updatedUser = userService.updateUserInfo(sessionUserId, userId, updateDto);
+        ResLoginDto updatedUser = userService.updateUserInfo(sessionUserId, userId, updateDto.getUsername());
 
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 정보 수정 완료", updatedUser));
     }
@@ -204,7 +204,7 @@ public class UserController {
     ) {
         Long sessionUserId = SessionUtil.getRequiredUserId(session);
 
-        userService.changePassword(sessionUserId, userId, dto);
+        userService.changePassword(sessionUserId, userId, dto.getCurrentPassword(), dto.getNewPassword());
 
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 변경 완료", null));
     }

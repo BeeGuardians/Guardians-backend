@@ -6,8 +6,6 @@ import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.repository.UserRepository;
 import com.guardians.domain.wargame.entity.Wargame;
 import com.guardians.domain.wargame.repository.WargameRepository;
-import com.guardians.dto.question.req.ReqCreateQuestionDto;
-import com.guardians.dto.question.req.ReqUpdateQuestionDto;
 import com.guardians.dto.question.res.ResCreateQuestionDto;
 import com.guardians.dto.question.res.ResQuestionDetailDto;
 import com.guardians.dto.question.res.ResQuestionListDto;
@@ -32,16 +30,16 @@ public class QuestionServiceImpl implements QuestionService {
     private final WargameRepository wargameRepository;
 
     @Override
-    public ResCreateQuestionDto createQuestion(Long userId, ReqCreateQuestionDto dto) {
+    public ResCreateQuestionDto createQuestion(Long userId, String title, String content, Long wargameId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        Wargame wargame = wargameRepository.findById(dto.getWargameId())
+        Wargame wargame = wargameRepository.findById(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
 
         Question question = Question.builder()
-                .title(dto.getTitle())
-                .content(dto.getContent())
+                .title(title)
+                .content(content)
                 .user(user)
                 .wargame(wargame)
                 .createdAt(LocalDateTime.now())
@@ -51,10 +49,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         Question saved = questionRepository.save(question);
 
-        return ResCreateQuestionDto.builder()
-                .id(saved.getId())
-                .title(saved.getTitle())
-                .build();
+        return ResCreateQuestionDto.fromEntity(saved);
     }
 
     @Override
@@ -62,16 +57,7 @@ public class QuestionServiceImpl implements QuestionService {
         List<Question> questions = questionRepository.findAllWithUserAndWargame();
 
         return questions.stream()
-                .map(q -> ResQuestionListDto.builder()
-                        .id(q.getId())
-                        .title(q.getTitle())
-                        .content(q.getContent())
-                        .username(q.getUser().getUsername())
-                        .wargameTitle(q.getWargame().getTitle())
-                        .wargameId(q.getWargame().getId())
-                        .createdAt(q.getCreatedAt())
-                        .viewCount(q.getViewCount())
-                        .build())
+                .map(ResQuestionListDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -80,15 +66,7 @@ public class QuestionServiceImpl implements QuestionService {
         List<Question> questions = questionRepository.findAllByWargameId(wargameId);
 
         return questions.stream()
-                .map(q -> ResQuestionListDto.builder()
-                        .id(q.getId())
-                        .title(q.getTitle())
-                        .content(q.getContent())
-                        .username(q.getUser().getUsername())
-                        .profileImageUrl(q.getUser().getProfileImageUrl())
-                        .createdAt(q.getCreatedAt())
-                        .viewCount(q.getViewCount())
-                        .build())
+                .map(ResQuestionListDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -99,23 +77,11 @@ public class QuestionServiceImpl implements QuestionService {
 
         question.increaseViewCount();
 
-        return ResQuestionDetailDto.builder()
-                .id(question.getId())
-                .userId(String.valueOf(question.getUser().getId()))
-                .title(question.getTitle())
-                .content(question.getContent())
-                .username(question.getUser().getUsername())
-                .wargameId(question.getWargame().getId())
-                .wargameTitle(question.getWargame().getTitle())
-                .profileImageUrl(question.getUser().getProfileImageUrl())
-                .createdAt(question.getCreatedAt())
-                .updatedAt(question.getUpdatedAt())
-                .viewCount(question.getViewCount())
-                .build();
+        return ResQuestionDetailDto.fromEntity(question);
     }
 
     @Override
-    public ResUpdateQuestionDto updateQuestion(Long userId, Long questionId, ReqUpdateQuestionDto dto) {
+    public ResUpdateQuestionDto updateQuestion(Long userId, Long questionId, String title, String content) {
         Question question = questionRepository.findByIdWithUser(questionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
 
@@ -123,12 +89,9 @@ public class QuestionServiceImpl implements QuestionService {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        question.update(dto.getTitle(), dto.getContent());
+        question.update(title, content);
 
-        return ResUpdateQuestionDto.builder()
-                .id(question.getId())
-                .title(question.getTitle())
-                .build();
+        return ResUpdateQuestionDto.fromEntity(question);
     }
 
     @Override
