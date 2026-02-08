@@ -1,5 +1,6 @@
 package com.guardians.dto.board.res;
 
+import com.guardians.domain.board.entity.Comment;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,4 +15,14 @@ public class ResUpdateCommentDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long userId;
+
+    public static ResUpdateCommentDto fromEntity(Comment comment) {
+        return ResUpdateCommentDto.builder()
+                .commentId(comment.getId())
+                .content(comment.getContent())
+                .username(comment.getUser().getUsername())
+                .createdAt(comment.getCreatedAt())
+                .userId(comment.getUser().getId())
+                .build();
+    }
 }

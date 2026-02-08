@@ -36,7 +36,7 @@ public class QnaController {
             HttpSession session,
             @RequestBody @Valid ReqCreateQuestionDto dto) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        questionService.createQuestion(userId, dto);
+        questionService.createQuestion(userId, dto.getTitle(), dto.getContent(), dto.getWargameId());
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 등록 완료", null));
     }
 
@@ -69,7 +69,7 @@ public class QnaController {
             @PathVariable Long questionId,
             @RequestBody @Valid ReqUpdateQuestionDto dto) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        questionService.updateQuestion(userId, questionId, dto);
+        questionService.updateQuestion(userId, questionId, dto.getTitle(), dto.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 수정 완료", null));
     }
 
@@ -89,7 +89,7 @@ public class QnaController {
             HttpSession session,
             @RequestBody @Valid ReqCreateAnswerDto dto) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        answerService.createAnswer(userId, dto);
+        answerService.createAnswer(userId, dto.getQuestionId(), dto.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 등록 완료", null));
     }
 
@@ -107,7 +107,7 @@ public class QnaController {
             @PathVariable Long answerId,
             @RequestBody @Valid ReqUpdateAnswerDto dto) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        answerService.updateAnswer(userId, answerId, dto);
+        answerService.updateAnswer(userId, answerId, dto.getContent());
 
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 수정 완료", null));
     }

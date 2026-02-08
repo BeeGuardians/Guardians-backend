@@ -1,7 +1,5 @@
 package com.guardians.service.question;
 
-import com.guardians.dto.question.req.ReqCreateQuestionDto;
-import com.guardians.dto.question.req.ReqUpdateQuestionDto;
 import com.guardians.dto.question.res.ResCreateQuestionDto;
 import com.guardians.dto.question.res.ResQuestionDetailDto;
 import com.guardians.dto.question.res.ResQuestionListDto;
@@ -11,15 +9,15 @@ import java.util.List;
 
 public interface QuestionService {
 
-    ResCreateQuestionDto createQuestion(Long userId, ReqCreateQuestionDto dto);
+    ResCreateQuestionDto createQuestion(Long userId, String title, String content, Long wargameId);
 
     List<ResQuestionListDto> getQuestionList();
 
-    List<ResQuestionListDto> getQuestionsByWargame(Long wargameId); // 추가
+    List<ResQuestionListDto> getQuestionsByWargame(Long wargameId);
 
     ResQuestionDetailDto getQuestionDetail(Long questionId);
 
-    ResUpdateQuestionDto updateQuestion(Long userId, Long questionId, ReqUpdateQuestionDto dto);
+    ResUpdateQuestionDto updateQuestion(Long userId, Long questionId, String title, String content);
 
     void deleteQuestion(Long userId, Long questionId);
 

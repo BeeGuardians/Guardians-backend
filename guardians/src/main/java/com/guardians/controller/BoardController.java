@@ -46,7 +46,7 @@ public class BoardController {
         }
 
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResCreateBoardDto result = boardService.createBoard(userId, dto, boardType);
+        ResCreateBoardDto result = boardService.createBoard(userId, dto.getTitle(), dto.getContent(), boardType);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글이 성공적으로 등록되었습니다.", result));
     }
 
@@ -93,7 +93,7 @@ public class BoardController {
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
 
-        ResUpdateBoardDto result = boardService.updateBoard(userId, boardId, dto);
+        ResUpdateBoardDto result = boardService.updateBoard(userId, boardId, dto.getTitle(), dto.getContent());
 
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 수정 완료", result));
     }
