@@ -2,6 +2,7 @@ package com.guardians.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guardians.domain.job.entity.Job;
+import com.guardians.domain.user.entity.Role;
 import com.guardians.domain.user.entity.User;
 import com.guardians.dto.job.req.ReqCreateJobDto;
 import com.guardians.dto.job.req.ReqUpdateJobDto;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,7 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                         .id(1L)
                         .username("admin")
                         .email("admin@example.com")
-                        .role("ADMIN")
+                        .role(Role.ADMIN)
                         .profileImageUrl("http://example.com/profile.jpg")
                         .build()
         ));
@@ -82,7 +84,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.message").value("[관리자] 채용공고 등록 완료"));
 
-        verify(jobService).createJob(any());
+        verify(jobService).createJob(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), any(LocalDate.class), anyString());
     }
 
     @Test
@@ -105,7 +107,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.message").value("[관리자] 채용공고 수정 완료"));
 
-        verify(jobService).updateJob(eq(1L), any());
+        verify(jobService).updateJob(eq(1L), anyString(), anyString(), anyString(), any(LocalDate.class), any(Boolean.class));
     }
 
     @Test

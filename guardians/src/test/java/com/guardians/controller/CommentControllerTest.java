@@ -8,7 +8,6 @@ import com.guardians.dto.board.res.ResCommentListDto;
 import com.guardians.service.board.CommentService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -24,7 +23,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -67,9 +65,7 @@ class CommentControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        ArgumentCaptor<ReqCreateCommentDto> dtoCaptor = ArgumentCaptor.forClass(ReqCreateCommentDto.class);
-        verify(commentService).createComment(eq(userId), eq(boardId), dtoCaptor.capture());
-        assertEquals(request.getContent(), dtoCaptor.getValue().getContent());
+        verify(commentService).createComment(eq(userId), eq(boardId), eq("테스트 댓글 내용"));
     }
 
     @Test
@@ -123,9 +119,7 @@ class CommentControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        ArgumentCaptor<ReqUpdateCommentDto> dtoCaptor = ArgumentCaptor.forClass(ReqUpdateCommentDto.class);
-        verify(commentService).updateComment(eq(userId), eq(commentId), dtoCaptor.capture());
-        assertEquals(request.getContent(), dtoCaptor.getValue().getContent());
+        verify(commentService).updateComment(eq(userId), eq(commentId), eq("수정된 댓글 내용"));
     }
 
     @Test
