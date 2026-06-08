@@ -6,7 +6,7 @@ import com.guardians.dto.board.res.ResCommentListDto;
 import com.guardians.dto.board.res.ResCreateCommentDto;
 import com.guardians.dto.board.res.ResUpdateCommentDto;
 import com.guardians.dto.common.ResWrapper;
-import com.guardians.service.board.CommentService;
+import com.guardians.application.board.BoardFacade;
 import com.guardians.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,7 +24,7 @@ import java.util.List;
 @Tag(name = "Comment API", description = "댓글 API")
 public class CommentController {
 
-    private final CommentService commentService;
+    private final BoardFacade boardFacade;
 
     @Operation(summary = "댓글 작성", description = "게시글에 댓글을 작성합니다.")
     @PostMapping
@@ -34,7 +34,7 @@ public class CommentController {
             @RequestBody @Valid ReqCreateCommentDto dto
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResCreateCommentDto result = commentService.createComment(userId, boardId, dto.getContent());
+        ResCreateCommentDto result = boardFacade.createComment(userId, boardId, dto.getContent());
 
         return ResponseEntity.ok(ResWrapper.resSuccess("댓글 작성 완료", result));
     }
@@ -45,7 +45,7 @@ public class CommentController {
             @PathVariable Long boardId
     ) {
 
-        List<ResCommentListDto> result = commentService.getCommentsByBoard(boardId);
+        List<ResCommentListDto> result = boardFacade.getCommentsByBoard(boardId);
         return ResponseEntity.ok(ResWrapper.resSuccess("댓글 조회 성공", result));
     }
 
@@ -59,7 +59,7 @@ public class CommentController {
             @RequestBody @Valid ReqUpdateCommentDto dto
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResUpdateCommentDto result = commentService.updateComment(userId, commentId, dto.getContent());
+        ResUpdateCommentDto result = boardFacade.updateComment(userId, commentId, dto.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("댓글 수정 완료", result));
 
     }
@@ -73,7 +73,7 @@ public class CommentController {
             @PathVariable Long commentId
     ){
         Long userId = SessionUtil.getRequiredUserId(session);
-        commentService.deleteComment(userId,commentId);
+        boardFacade.deleteComment(userId,commentId);
         return ResponseEntity.ok(ResWrapper.resSuccess("댓글 삭제 완료", null));
     }
 

@@ -5,7 +5,7 @@ import com.guardians.dto.board.req.ReqCreateBoardDto;
 import com.guardians.dto.board.req.ReqUpdateBoardDto;
 import com.guardians.dto.board.res.*;
 import com.guardians.dto.common.ResWrapper;
-import com.guardians.service.board.BoardService;
+import com.guardians.application.board.BoardFacade;
 import com.guardians.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Tag(name = "Board API", description = "자유게시판 관련 API")
 public class BoardController {
 
-    private final BoardService boardService;
+    private final BoardFacade boardFacade;
 
     // 게시글 작성
     @Operation(summary = "게시글 작성", description = "세션의 userId와 작성 데이터를 이용하여 게시글을 등록합니다.")
@@ -46,7 +46,7 @@ public class BoardController {
         }
 
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResCreateBoardDto result = boardService.createBoard(userId, dto.getTitle(), dto.getContent(), boardType);
+        ResCreateBoardDto result = boardFacade.createBoard(userId, dto.getTitle(), dto.getContent(), boardType);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글이 성공적으로 등록되었습니다.", result));
     }
 
@@ -62,14 +62,14 @@ public class BoardController {
                     ResWrapper.resError("검색어는 2자 이상 입력해주세요.")
             );
         }
-        List<ResBoardListDto> result = boardService.getBoardList(boardType, keyword);
+        List<ResBoardListDto> result = boardFacade.getBoardList(boardType, keyword);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 목록 조회 성공", result));
     }
 
     @Operation(summary = "핫 게시글 조회", description = "좋아요 수와 조회수를 기반으로 상위 10개의 핫 게시글을 조회합니다.")
     @GetMapping("/hot")
     public ResponseEntity<ResWrapper<?>> getHotBoards() {
-        List<ResHotBoardDto> result = boardService.getHotBoards();
+        List<ResHotBoardDto> result = boardFacade.getHotBoards();
         return ResponseEntity.ok(ResWrapper.resSuccess("핫 게시글 조회 성공", result));
     }
 
@@ -79,7 +79,7 @@ public class BoardController {
     public ResponseEntity<ResWrapper<?>> getBoardDetail(@PathVariable Long boardId, HttpSession session) {
         Long userId = SessionUtil.getRequiredUserId(session);
 
-        ResBoardDetailDto result = boardService.getBoardDetail(boardId, userId);
+        ResBoardDetailDto result = boardFacade.getBoardDetail(boardId, userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 상세 조회 성공", result));
     }
     
@@ -93,7 +93,7 @@ public class BoardController {
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
 
-        ResUpdateBoardDto result = boardService.updateBoard(userId, boardId, dto.getTitle(), dto.getContent());
+        ResUpdateBoardDto result = boardFacade.updateBoard(userId, boardId, dto.getTitle(), dto.getContent());
 
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 수정 완료", result));
     }
@@ -105,7 +105,7 @@ public class BoardController {
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
 
-        boardService.deleteBoard(userId, boardId);
+        boardFacade.deleteBoard(userId, boardId);
 
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 삭제 완료", null));
     }
@@ -117,7 +117,7 @@ public class BoardController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        boolean liked = boardService.toggleLike(userId, boardId);
+        boolean liked = boardFacade.toggleLike(userId, boardId);
         return ResponseEntity.ok(ResWrapper.resSuccess("게시글 좋아요 토글 완료",
                 Map.of("liked", liked)
         ));

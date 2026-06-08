@@ -1,0 +1,20 @@
+package com.guardians.infrastructure.persistence.wargame;
+
+import com.guardians.domain.user.entity.User;
+import com.guardians.domain.wargame.entity.BookmarkId;
+import com.guardians.domain.wargame.entity.Wargame;
+import com.guardians.domain.wargame.entity.WargameLike;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.Optional;
+import java.util.Set;
+
+interface JpaWargameLikeRepository extends JpaRepository<WargameLike, BookmarkId> {
+    Optional<WargameLike> findByUserAndWargame(User user, Wargame wargame);
+    boolean existsByUserIdAndWargameId(Long userId, Long wargameId);
+
+    @Query("SELECT wl.wargame.id FROM WargameLike wl WHERE wl.user.id = :userId")
+    Set<Long> findWargameIdsByUserId(@Param("userId") Long userId);
+}
