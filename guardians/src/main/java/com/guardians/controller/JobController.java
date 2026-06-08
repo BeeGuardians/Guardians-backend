@@ -1,7 +1,8 @@
 package com.guardians.controller;
 
+import com.guardians.application.job.JobFacade;
 import com.guardians.domain.user.entity.User;
-import com.guardians.domain.user.repository.UserRepository;
+import com.guardians.domain.user.port.UserPort;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.job.req.ReqCreateJobDto;
 import com.guardians.dto.job.req.ReqUpdateJobDto;
@@ -9,7 +10,6 @@ import com.guardians.dto.job.res.ResJobDto;
 import com.guardians.dto.job.res.ResJobListDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
-import com.guardians.service.job.JobService;
 import com.guardians.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,8 +27,8 @@ import java.util.List;
 @Tag(name = "Job API", description = "채용정보 관련 API")
 public class JobController {
 
-    private final JobService jobService;
-    private final UserRepository userRepository;
+    private final JobFacade jobFacade;
+    private final UserPort userPort;
 
     // 채용공고 등록
     @Operation(summary = "채용공고 등록", description = "관리자만 채용공고를 등록할 수 있습니다.")
@@ -38,7 +38,7 @@ public class JobController {
             HttpSession session
     ) {
         checkAdminWithDb(session);
-        jobService.createJob(dto.getCompanyName(), dto.getTitle(), dto.getDescription(), dto.getLocation(), dto.getEmploymentType(), dto.getCareerLevel(), dto.getSalary(), dto.getDeadline(), dto.getSourceUrl());
+        jobFacade.createJob(dto.getCompanyName(), dto.getTitle(), dto.getDescription(), dto.getLocation(), dto.getEmploymentType(), dto.getCareerLevel(), dto.getSalary(), dto.getDeadline(), dto.getSourceUrl());
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 채용공고 등록 완료", null));
     }
 
@@ -51,7 +51,7 @@ public class JobController {
             HttpSession session
     ) {
         checkAdminWithDb(session);
-        jobService.updateJob(jobId, dto.getTitle(), dto.getDescription(), dto.getSalary(), dto.getDeadline(), dto.getIsActive());
+        jobFacade.updateJob(jobId, dto.getTitle(), dto.getDescription(), dto.getSalary(), dto.getDeadline(), dto.getIsActive());
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 채용공고 수정 완료", null));
     }
 
@@ -63,7 +63,7 @@ public class JobController {
             HttpSession session
     ) {
         checkAdminWithDb(session);
-        jobService.deleteJob(jobId);
+        jobFacade.deleteJob(jobId);
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 채용공고 삭제 완료", null));
     }
 
@@ -71,7 +71,7 @@ public class JobController {
     @Operation(summary = "채용공고 목록 조회", description = "모든 공개 채용공고를 최신순으로 조회합니다.")
     @GetMapping
     public ResponseEntity<ResWrapper<?>> getJobList() {
-        List<ResJobListDto> result = jobService.getJobList();
+        List<ResJobListDto> result = jobFacade.getJobList();
         return ResponseEntity.ok(ResWrapper.resList("채용공고 목록 조회 성공", result, result.size()));
     }
 
@@ -79,7 +79,7 @@ public class JobController {
     @Operation(summary = "채용공고 상세 조회", description = "특정 채용공고의 상세 정보를 조회합니다.")
     @GetMapping("/{jobId}")
     public ResponseEntity<ResWrapper<?>> getJobDetail(@PathVariable Long jobId) {
-        ResJobDto result = jobService.getJobDetail(jobId);
+        ResJobDto result = jobFacade.getJobDetail(jobId);
         return ResponseEntity.ok(ResWrapper.resSuccess("채용공고 상세 조회 성공", result));
     }
 
@@ -90,7 +90,7 @@ public class JobController {
     private void checkAdminWithDb(HttpSession session) {
         Long userId = SessionUtil.getRequiredUserId(session);
 
-        User user = userRepository.findById(userId)
+        User user = userPort.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (!user.isAdmin()) {

@@ -1,14 +1,13 @@
 package com.guardians.controller;
 
+import com.guardians.application.wargame.WargameFacade;
+import com.guardians.domain.wargame.port.KubernetesPodPort;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.wargame.req.ReqCreateReviewDto;
 import com.guardians.dto.wargame.req.ReqCreateWargameDto;
 import com.guardians.dto.wargame.req.ReqSubmitFlagDto;
 import com.guardians.dto.wargame.req.ReqUpdateReviewDto;
 import com.guardians.dto.wargame.res.*;
-import com.guardians.service.wargame.KubernetesKaliPodServiceImpl;
-import com.guardians.service.wargame.KubernetesPodService;
-import com.guardians.service.wargame.WargameService;
 import com.guardians.util.SessionUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -28,9 +27,8 @@ import java.util.Optional;
 @RequestMapping("/api/wargames")
 public class WargameController {
 
-    private final WargameService wargameService;
-    private final KubernetesPodService kubernetesPodService;
-    private final KubernetesKaliPodServiceImpl kubernetesKaliPodService;
+    private final WargameFacade wargameFacade;
+    private final KubernetesPodPort kubernetesPodPort;
 
     @PostMapping("/admin")
     public ResponseEntity<ResWrapper<?>> createWargame(
@@ -38,7 +36,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.requireAdmin(session);
-        ResWargameListDto created = wargameService.createWargame(request.getTitle(), request.getDescription(), request.getDifficulty(), request.getScore(), request.getCategoryId(), request.getDockerImageUrl(), request.getFileUrl(), request.getFlag(), userId);
+        ResWargameListDto created = wargameFacade.createWargame(request.getTitle(), request.getDescription(), request.getDifficulty(), request.getScore(), request.getCategoryId(), request.getDockerImageUrl(), request.getFileUrl(), request.getFlag(), userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 워게임 생성 성공", created));
     }
 
@@ -48,7 +46,7 @@ public class WargameController {
             HttpSession session
     ) {
         SessionUtil.requireAdmin(session);
-        wargameService.deleteWargame(wargameId);
+        wargameFacade.deleteWargame(wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 삭제 완료", null));
     }
 
@@ -58,7 +56,7 @@ public class WargameController {
         HttpSession session = request.getSession(false);
         Long userId = SessionUtil.getUserIdOrNull(session);
 
-        List<ResWargameListDto> result = wargameService.getWargameList(userId);
+        List<ResWargameListDto> result = wargameFacade.getWargameList(userId);
         return ResponseEntity.ok(ResWrapper.resList("워게임 목록 조회 성공", result, result.size()));
     }
 
@@ -68,7 +66,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getUserIdOrNull(session);
-        ResWargameListDto result = wargameService.getWargameById(userId, wargameId);
+        ResWargameListDto result = wargameFacade.getWargameById(userId, wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 상세 조회 성공", result));
     }
 
@@ -80,7 +78,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResSubmitFlagDto result = wargameService.submitFlag(userId, wargameId, request.getFlag());
+        ResSubmitFlagDto result = wargameFacade.submitFlag(userId, wargameId, request.getFlag());
         return ResponseEntity.ok(ResWrapper.resSuccess("채점 완료", result));
     }
 
@@ -90,7 +88,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        boolean bookmarked = wargameService.toggleBookmark(userId, wargameId);
+        boolean bookmarked = wargameFacade.toggleBookmark(userId, wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("북마크 토글 완료", Map.of("bookmarked", bookmarked)));
     }
 
@@ -100,7 +98,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        boolean liked = wargameService.toggleLike(userId, wargameId);
+        boolean liked = wargameFacade.toggleLike(userId, wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("좋아요 토글 완료", Map.of("liked", liked)));
     }
 
@@ -108,7 +106,7 @@ public class WargameController {
     public ResponseEntity<ResWrapper<?>> getWargameReviews(
             @PathVariable Long wargameId
     ) {
-        List<ResReviewListDto> reviews = wargameService.getWargameReviews(wargameId);
+        List<ResReviewListDto> reviews = wargameFacade.getWargameReviews(wargameId);
         return ResponseEntity.ok(ResWrapper.resList("워게임 리뷰 조회 성공", reviews, reviews.size()));
     }
 
@@ -119,7 +117,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResReviewListDto result = wargameService.createReview(userId, wargameId, request.getContent());
+        ResReviewListDto result = wargameFacade.createReview(userId, wargameId, request.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 작성 성공", result));
     }
 
@@ -130,7 +128,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResReviewListDto result = wargameService.updateReview(userId, reviewId, request.getContent());
+        ResReviewListDto result = wargameFacade.updateReview(userId, reviewId, request.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 수정 성공", result));
     }
 
@@ -140,7 +138,7 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        wargameService.deleteReview(userId, reviewId);
+        wargameFacade.deleteReview(userId, reviewId);
         return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 삭제 성공", null));
     }
 
@@ -155,7 +153,7 @@ public class WargameController {
         String podName = "wargame-" + userId + "-" + wargameId;
         String namespace = "ns-wargame";
 
-        kubernetesPodService.createWargamePod(podName, wargameId, userId, namespace);
+        kubernetesPodPort.createWargamePod(podName, wargameId, userId, namespace);
 
         String url = String.format("https://%d-%d.wargames.bee-guardians.com", wargameId, userId);
 
@@ -177,16 +175,15 @@ public class WargameController {
         String podName = "wargame-" + userId + "-" + wargameId;
         String namespace = "ns-wargame";
 
-        boolean deleted = kubernetesPodService.deleteWargamePod(podName, namespace);
+        boolean deleted = kubernetesPodPort.deleteWargamePod(podName, namespace);
         if (deleted) {
             return ResponseEntity.ok(
                     ResWrapper.resSuccess("워게임 인스턴스 종료됨", Map.of(
                             "podName", podName,
-                            "url", kubernetesPodService.generateIngressUrl(podName)
+                            "url", kubernetesPodPort.generateIngressUrl(podName)
                     ))
             );
-        }
-        else {
+        } else {
             return ResponseEntity.ok(
                     ResWrapper.resSuccess("종료할 워게임 인스턴스를 찾을 수 없음", Map.of(
                             "podName", podName
@@ -205,7 +202,7 @@ public class WargameController {
         String podName = "wargame-" + userId + "-" + wargameId;
         String namespace = "ns-wargame";
 
-        PodStatusDto podStatus = kubernetesPodService.getPodStatus(podName, namespace);
+        PodStatusDto podStatus = kubernetesPodPort.getPodStatus(podName, namespace);
 
         Map<String, Object> result = new HashMap<>();
         result.put("status", podStatus.getStatus());
@@ -216,7 +213,7 @@ public class WargameController {
 
     @GetMapping("/hot")
     public ResponseEntity<ResWrapper<?>> getHotWargames() {
-        List<ResHotWargameDto> hotWargames = wargameService.getHotWargames();
+        List<ResHotWargameDto> hotWargames = wargameFacade.getHotWargames();
         return ResponseEntity.ok(
                 ResWrapper.resList("지금 핫한 워게임 TOP 10", hotWargames, hotWargames.size())
         );
@@ -224,7 +221,7 @@ public class WargameController {
 
     @GetMapping("/{wargameId}/active-users/list")
     public ResponseEntity<ResWrapper<?>> getActiveUserList(@PathVariable Long wargameId) {
-        List<ResUserStatusDto> users = wargameService.getActiveUsersByWargame(wargameId);
+        List<ResUserStatusDto> users = wargameFacade.getActiveUsersByWargame(wargameId);
         return ResponseEntity.ok(ResWrapper.resList("현재 워게임 풀고 있는 유저 목록", users, users.size()));
     }
 
@@ -233,7 +230,7 @@ public class WargameController {
         Long userId = SessionUtil.getRequiredUserId(session);
 
         String namespace = "ns-wargame";
-        kubernetesKaliPodService.createKaliPod(userId, namespace);
+        kubernetesPodPort.createKaliPod(userId, namespace);
 
         String url = String.format("https://kali-%d.wargames.bee-guardians.com", userId);
         return ResponseEntity.ok(
@@ -248,7 +245,7 @@ public class WargameController {
         Long userId = SessionUtil.getRequiredUserId(session);
 
         String namespace = "ns-wargame";
-        boolean deleted = kubernetesKaliPodService.deleteKaliPod(userId, namespace);
+        boolean deleted = kubernetesPodPort.deleteKaliPod(userId, namespace);
         return ResponseEntity.ok(
                 ResWrapper.resSuccess(deleted ? "Kali 인스턴스 종료됨" : "Kali 인스턴스 삭제 실패", null)
         );
@@ -259,7 +256,7 @@ public class WargameController {
         Long userId = SessionUtil.getRequiredUserId(session);
 
         String namespace = "ns-wargame";
-        PodStatusDto status = kubernetesKaliPodService.getKaliPodStatus(userId, namespace);
+        PodStatusDto status = kubernetesPodPort.getKaliPodStatus(userId, namespace);
         return ResponseEntity.ok(
                 ResWrapper.resSuccess("Kali 상태 조회 성공", Map.of(
                         "status", Optional.ofNullable(status.getStatus()).orElse("UNKNOWN"),
@@ -275,7 +272,7 @@ public class WargameController {
     ) {
         SessionUtil.requireAdmin(session);
 
-        String flag = wargameService.getWargameFlag(wargameId);
+        String flag = wargameFacade.getWargameFlag(wargameId);
 
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 플래그 조회 성공", Map.of("flag", flag)));
     }

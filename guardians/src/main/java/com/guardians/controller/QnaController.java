@@ -1,7 +1,6 @@
 package com.guardians.controller;
 
-import com.guardians.domain.wargame.entity.Wargame;
-import com.guardians.domain.wargame.repository.WargameRepository;
+import com.guardians.application.board.QnaFacade;
 import com.guardians.dto.answer.req.ReqCreateAnswerDto;
 import com.guardians.dto.answer.req.ReqUpdateAnswerDto;
 import com.guardians.dto.answer.res.ResAnswerListDto;
@@ -10,8 +9,6 @@ import com.guardians.dto.question.req.ReqCreateQuestionDto;
 import com.guardians.dto.question.req.ReqUpdateQuestionDto;
 import com.guardians.dto.question.res.ResQuestionDetailDto;
 import com.guardians.dto.question.res.ResQuestionListDto;
-import com.guardians.service.answer.AnswerService;
-import com.guardians.service.question.QuestionService;
 import com.guardians.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -26,9 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QnaController {
 
-    private final QuestionService questionService;
-    private final AnswerService answerService;
-    private final WargameRepository wargameRepository;
+    private final QnaFacade qnaFacade;
 
     // 질문 작성
     @PostMapping("/questions")
@@ -36,29 +31,28 @@ public class QnaController {
             HttpSession session,
             @RequestBody @Valid ReqCreateQuestionDto dto) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        questionService.createQuestion(userId, dto.getTitle(), dto.getContent(), dto.getWargameId());
+        qnaFacade.createQuestion(userId, dto.getTitle(), dto.getContent(), dto.getWargameId());
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 등록 완료", null));
     }
 
     // 모든 질문 목록 조회
     @GetMapping("/questions")
     public ResponseEntity<ResWrapper<?>> getAllQuestions() {
-        List<ResQuestionListDto> response = questionService.getQuestionList();
+        List<ResQuestionListDto> response = qnaFacade.getQuestionList();
         return ResponseEntity.ok(ResWrapper.resSuccess("전체 질문 목록 조회 성공", response));
     }
 
     // 특정 워게임 질문 목록 조회
     @GetMapping("/wargames/{wargameId}/questions")
     public ResponseEntity<ResWrapper<?>> getQuestionsByWargame(@PathVariable Long wargameId) {
-        List<ResQuestionListDto> response = questionService.getQuestionsByWargame(wargameId);
+        List<ResQuestionListDto> response = qnaFacade.getQuestionsByWargame(wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 질문 목록 조회 성공", response));
     }
-
 
     // 질문 단건 상세 조회
     @GetMapping("/questions/{questionId}")
     public ResponseEntity<ResWrapper<?>> getQuestionDetail(@PathVariable Long questionId) {
-        ResQuestionDetailDto response = questionService.getQuestionDetail(questionId);
+        ResQuestionDetailDto response = qnaFacade.getQuestionDetail(questionId);
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 상세 조회 성공", response));
     }
 
@@ -69,7 +63,7 @@ public class QnaController {
             @PathVariable Long questionId,
             @RequestBody @Valid ReqUpdateQuestionDto dto) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        questionService.updateQuestion(userId, questionId, dto.getTitle(), dto.getContent());
+        qnaFacade.updateQuestion(userId, questionId, dto.getTitle(), dto.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 수정 완료", null));
     }
 
@@ -79,7 +73,7 @@ public class QnaController {
             HttpSession session,
             @PathVariable Long questionId) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        questionService.deleteQuestion(userId, questionId);
+        qnaFacade.deleteQuestion(userId, questionId);
         return ResponseEntity.ok(ResWrapper.resSuccess("질문 삭제 완료", null));
     }
 
@@ -89,14 +83,14 @@ public class QnaController {
             HttpSession session,
             @RequestBody @Valid ReqCreateAnswerDto dto) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        answerService.createAnswer(userId, dto.getQuestionId(), dto.getContent());
+        qnaFacade.createAnswer(userId, dto.getQuestionId(), dto.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 등록 완료", null));
     }
 
     // 답변 목록 조회 (특정 질문 기준)
     @GetMapping("/answers/{questionId}")
     public ResponseEntity<ResWrapper<?>> getAnswerListByQuestion(@PathVariable Long questionId) {
-        List<ResAnswerListDto> response = answerService.getAnswerListByQuestion(questionId);
+        List<ResAnswerListDto> response = qnaFacade.getAnswerListByQuestion(questionId);
         return ResponseEntity.ok(ResWrapper.resList("답변 목록 조회 성공", response, response.size()));
     }
 
@@ -107,8 +101,7 @@ public class QnaController {
             @PathVariable Long answerId,
             @RequestBody @Valid ReqUpdateAnswerDto dto) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        answerService.updateAnswer(userId, answerId, dto.getContent());
-
+        qnaFacade.updateAnswer(userId, answerId, dto.getContent());
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 수정 완료", null));
     }
 
@@ -118,16 +111,14 @@ public class QnaController {
             HttpSession session,
             @PathVariable Long answerId) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        answerService.deleteAnswer(userId, answerId);
+        qnaFacade.deleteAnswer(userId, answerId);
         return ResponseEntity.ok(ResWrapper.resSuccess("답변 삭제 완료", null));
     }
 
     // 워게임 목록 조회
     @GetMapping("/wargames")
     public ResponseEntity<ResWrapper<?>> getWargameTitles() {
-        List<String> titles = wargameRepository.findAll().stream()
-                .map(Wargame::getTitle)
-                .toList();
+        List<String> titles = qnaFacade.getWargameTitles();
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 목록 조회 성공", titles));
     }
 }

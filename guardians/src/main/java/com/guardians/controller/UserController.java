@@ -7,9 +7,9 @@ import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
+import com.guardians.application.user.UserFacade;
 import com.guardians.service.auth.EmailVerificationService;
-import com.guardians.service.s3.S3Service;
-import com.guardians.service.user.UserService;
+import com.guardians.infrastructure.s3.S3Service;
 import com.guardians.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,7 +32,7 @@ import java.util.List;
 @Tag(name = "User API", description = "회원가입 및 로그인 관련 API")
 public class UserController {
 
-    private final UserService userService;
+    private final UserFacade userFacade;
     private final EmailVerificationService emailVerificationService;
     private final S3Service s3Service;
 
@@ -40,7 +40,7 @@ public class UserController {
     @Operation(summary = "회원가입", description = "유저 정보를 받아 회원가입 처리")
     @PostMapping
     public ResponseEntity<ResWrapper<?>> createUser(@RequestBody @Valid ReqCreateUserDto requestDto) {
-        ResCreateUserDto createdUser = userService.createUser(requestDto.getUsername(), requestDto.getEmail(), requestDto.getPassword());
+        ResCreateUserDto createdUser = userFacade.createUser(requestDto.getUsername(), requestDto.getEmail(), requestDto.getPassword());
         return ResponseEntity.ok(ResWrapper.resSuccess("회원가입 성공", createdUser));
     }
 
@@ -56,7 +56,7 @@ public class UserController {
     @Operation(summary = "이메일 중복 확인", description = "이미 가입된 이메일인지 확인")
     @GetMapping("/check-email")
     public ResponseEntity<ResWrapper<?>> checkEmailExists(@RequestParam("email") String email) {
-        boolean exists = userService.isEmailExists(email);
+        boolean exists = userFacade.isEmailExists(email);
         return ResponseEntity.ok(ResWrapper.resSuccess("이메일 존재 여부", exists));
     }
 
@@ -85,7 +85,7 @@ public class UserController {
             @RequestBody @Valid ReqLoginDto loginDto,
             HttpSession session
     ) {
-        ResLoginDto loginUser = userService.login(loginDto.getEmail(), loginDto.getPassword());
+        ResLoginDto loginUser = userFacade.login(loginDto.getEmail(), loginDto.getPassword());
         session.setAttribute("userId", loginUser.getId());
         session.setAttribute("role", loginUser.getRole());
 
@@ -98,7 +98,7 @@ public class UserController {
             @RequestBody @Valid ReqLoginDto loginDto,
             HttpSession session
     ) {
-        ResLoginDto loginUser = userService.login(loginDto.getEmail(), loginDto.getPassword());
+        ResLoginDto loginUser = userFacade.login(loginDto.getEmail(), loginDto.getPassword());
 
         if (Role.valueOf(loginUser.getRole()) != Role.ADMIN) {
             throw new CustomException(ErrorCode.PERMISSION_DENIED);
@@ -120,7 +120,7 @@ public class UserController {
         SessionUtil.requireAdmin(session);
 
         Role role = Role.valueOf(request.getRole());
-        userService.updateUserRole(userId, role);
+        userFacade.updateUserRole(userId, role);
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 권한 변경 완료", null));
     }
 
@@ -130,7 +130,7 @@ public class UserController {
     public ResponseEntity<ResWrapper<?>> getAllUsers(HttpSession session) {
         SessionUtil.requireAdmin(session);
 
-        List<ResLoginDto> users = userService.getAllUsers();
+        List<ResLoginDto> users = userFacade.getAllUsers();
         return ResponseEntity.ok(ResWrapper.resList("[관리자] 전체 유저 목록 반환", users, users.size()));
     }
 
@@ -159,7 +159,7 @@ public class UserController {
     ) {
         Long sessionUserId = SessionUtil.getRequiredUserId(session);
 
-        ResLoginDto updatedUser = userService.updateUserInfo(sessionUserId, userId, updateDto.getUsername());
+        ResLoginDto updatedUser = userFacade.updateUserInfo(sessionUserId, userId, updateDto.getUsername());
 
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 정보 수정 완료", updatedUser));
     }
@@ -175,7 +175,7 @@ public class UserController {
         SessionUtil.requireSameUser(session, userId);
 
         String imageUrl = s3Service.uploadProfileImage(file);
-        userService.updateProfileImageUrl(userId, imageUrl);
+        userFacade.updateProfileImageUrl(userId, imageUrl);
 
         return ResponseEntity.ok(ResWrapper.resSuccess("프로필 이미지 업로드 성공", imageUrl));
     }
@@ -190,7 +190,7 @@ public class UserController {
         SessionUtil.requireSameUser(session, userId);
 
         String defaultUrl = s3Service.getDefaultProfileUrl();
-        userService.updateProfileImageUrl(userId, defaultUrl);
+        userFacade.updateProfileImageUrl(userId, defaultUrl);
 
         return ResponseEntity.ok(ResWrapper.resSuccess("프로필 이미지 기본으로 변경 완료", defaultUrl));
     }
@@ -204,7 +204,7 @@ public class UserController {
     ) {
         Long sessionUserId = SessionUtil.getRequiredUserId(session);
 
-        userService.changePassword(sessionUserId, userId, dto.getCurrentPassword(), dto.getNewPassword());
+        userFacade.changePassword(sessionUserId, userId, dto.getCurrentPassword(), dto.getNewPassword());
 
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 변경 완료", null));
     }
@@ -213,7 +213,7 @@ public class UserController {
     @Operation(summary = "비밀번호 찾기 - 이메일 인증 코드 전송", description = "비밀번호 재설정을 위한 이메일 인증 코드 발송")
     @GetMapping("/{userId}/reset-password/send-code")
     public ResponseEntity<ResWrapper<?>> sendResetPasswordCode(@PathVariable Long userId) {
-        String email = userService.getEmailByUserId(userId);
+        String email = userFacade.getEmailByUserId(userId);
         emailVerificationService.sendVerificationCode(email, "mail/password-reset.html");
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 재설정 코드 발송 완료", null));
     }
@@ -226,7 +226,7 @@ public class UserController {
             @RequestParam String code,
             @RequestParam String newPassword
     ) {
-        userService.verifyResetPassword(userId, code, newPassword);
+        userFacade.verifyResetPassword(userId, code, newPassword);
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 재설정 완료", null));
     }
 
@@ -234,7 +234,7 @@ public class UserController {
     @Operation(summary = "이메일로 유저 ID 조회", description = "입력된 이메일로 등록된 유저 ID를 반환")
     @GetMapping("/find-id")
     public ResponseEntity<ResWrapper<?>> findUserIdByEmail(@RequestParam String email) {
-        Long userId = userService.findUserIdByEmail(email);
+        Long userId = userFacade.findUserIdByEmail(email);
         return ResponseEntity.ok(ResWrapper.resSuccess("유저 ID 반환", userId));
     }
 
@@ -248,7 +248,7 @@ public class UserController {
     ) {
         Long sessionUserId = SessionUtil.getRequiredUserId(session);
 
-        userService.deleteUser(sessionUserId, userId);
+        userFacade.deleteUser(sessionUserId, userId);
         session.invalidate();
 
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 탈퇴 완료", null));
@@ -263,7 +263,7 @@ public class UserController {
     ) {
         SessionUtil.requireAdmin(session);
 
-        userService.adminDeleteUser(userId);
+        userFacade.adminDeleteUser(userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 회원 삭제 완료", null));
     }
 
@@ -272,7 +272,7 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<ResWrapper<?>> getCurrentUser(HttpSession session) {
         Long userId = SessionUtil.getRequiredUserId(session);
-        ResLoginDto user = userService.getUserInfo(userId);
+        ResLoginDto user = userFacade.getUserInfo(userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("유저 정보 조회 성공", user));
     }
 

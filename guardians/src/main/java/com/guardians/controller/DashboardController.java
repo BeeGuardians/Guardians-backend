@@ -3,7 +3,7 @@ package com.guardians.controller;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.dashboard.ResRadarChartDto;
 import com.guardians.dto.dashboard.ResSolvedTimelineDto;
-import com.guardians.service.dashboard.DashboardService;
+import com.guardians.application.ranking.RankingFacade;
 import com.guardians.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +23,7 @@ import java.util.List;
 @Tag(name = "Dashboard API", description = "사용자별 대시보드 통계 API")
 public class DashboardController {
 
-    private final DashboardService dashboardService;
+    private final RankingFacade rankingFacade;
 
     @Operation(summary = "카테고리별 정규화 점수 조회", description = "레이더 차트용 실력 점수를 조회합니다.")
     @GetMapping("/radar")
@@ -33,7 +33,7 @@ public class DashboardController {
     ) {
         SessionUtil.requireSameUser(session, userId);
 
-        List<ResRadarChartDto.CategoryScore> result = dashboardService.calculateRadarChart(userId);
+        List<ResRadarChartDto.CategoryScore> result = rankingFacade.calculateRadarChart(userId);
         return ResponseEntity.ok(ResWrapper.resList("카테고리별 실력 점수 조회 성공", result, result.size()));
     }
 
@@ -45,7 +45,7 @@ public class DashboardController {
     ) {
         SessionUtil.requireSameUser(session, userId);
 
-        List<ResSolvedTimelineDto> result = dashboardService.getSolvedTimeline(userId);
+        List<ResSolvedTimelineDto> result = rankingFacade.getSolvedTimeline(userId);
         return ResponseEntity.ok(ResWrapper.resList("풀이 타임라인 조회 성공", result, result.size()));
     }
 
@@ -57,7 +57,7 @@ public class DashboardController {
     ) {
         SessionUtil.requireSameUser(session, userId);
 
-        var result = dashboardService.getScoreTrend(userId);
+        var result = rankingFacade.getScoreTrend(userId);
         return ResponseEntity.ok(ResWrapper.resList("점수 추이 조회 성공", result, result.size()));
     }
 }
