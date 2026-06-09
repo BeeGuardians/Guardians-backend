@@ -182,7 +182,19 @@ public class WargameFacade {
         Wargame wargame = wargamePort.findById(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
 
-        return wargameDomainService.toggleBookmark(user, wargame);
+        return bookmarkPort.findByUserAndWargame(user, wargame)
+                .map(existing -> {
+                    bookmarkPort.delete(existing);
+                    return false;
+                })
+                .orElseGet(() -> {
+                    bookmarkPort.save(Bookmark.builder()
+                            .user(user)
+                            .wargame(wargame)
+                            .createdAt(LocalDateTime.now())
+                            .build());
+                    return true;
+                });
     }
 
     @Transactional
@@ -194,7 +206,21 @@ public class WargameFacade {
         Wargame wargame = wargamePort.findById(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.WARGAME_NOT_FOUND));
 
-        return wargameDomainService.toggleLike(user, wargame);
+        return wargameLikePort.findByUserAndWargame(user, wargame)
+                .map(existing -> {
+                    wargameLikePort.delete(existing);
+                    wargame.decreaseLikeCount();
+                    return false;
+                })
+                .orElseGet(() -> {
+                    wargameLikePort.save(WargameLike.builder()
+                            .user(user)
+                            .wargame(wargame)
+                            .createdAt(LocalDateTime.now())
+                            .build());
+                    wargame.increaseLikeCount();
+                    return true;
+                });
     }
 
     public List<ResReviewListDto> getWargameReviews(Long wargameId) {
