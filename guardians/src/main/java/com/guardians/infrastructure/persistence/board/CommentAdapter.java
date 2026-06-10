@@ -2,7 +2,7 @@ package com.guardians.infrastructure.persistence.board;
 
 import com.guardians.domain.board.entity.Comment;
 import com.guardians.domain.board.port.CommentPort;
-import com.guardians.domain.board.port.CommentCountRepository;
+import com.guardians.domain.board.port.CommentCountProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -26,7 +26,7 @@ public class CommentAdapter implements CommentPort {
     }
 
     @Override
-    public List<CommentCountRepository> countCommentsByBoard() {
+    public List<CommentCountProjection> countCommentsByBoard() {
         return jpa.countCommentsByBoard();
     }
 

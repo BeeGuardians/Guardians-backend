@@ -1,7 +1,7 @@
 package com.guardians.infrastructure.persistence.board;
 
 import com.guardians.domain.board.entity.Comment;
-import com.guardians.domain.board.port.CommentCountRepository;
+import com.guardians.domain.board.port.CommentCountProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,5 +19,5 @@ interface JpaCommentRepository extends JpaRepository<Comment, Long> {
     Optional<Comment> findByIdWithUser(@Param("commentId") Long commentId);
 
     @Query("SELECT c.board.id AS boardId, COUNT(c.id) AS commentCount FROM Comment c GROUP BY c.board.id")
-    List<CommentCountRepository> countCommentsByBoard();
+    List<CommentCountProjection> countCommentsByBoard();
 }
