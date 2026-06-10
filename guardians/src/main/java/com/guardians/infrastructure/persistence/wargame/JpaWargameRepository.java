@@ -1,7 +1,7 @@
 package com.guardians.infrastructure.persistence.wargame;
 
 import com.guardians.domain.wargame.entity.Wargame;
-import com.guardians.dto.wargame.res.ResHotWargameDto;
+import com.guardians.domain.wargame.port.HotWargameResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +14,7 @@ import java.util.Optional;
 interface JpaWargameRepository extends JpaRepository<Wargame, Long> {
 
     @Query("""
-        SELECT new com.guardians.dto.wargame.res.ResHotWargameDto(
+        SELECT new com.guardians.domain.wargame.port.HotWargameResult(
             w.id,
             w.title,
             COUNT(sw)
@@ -24,7 +24,7 @@ interface JpaWargameRepository extends JpaRepository<Wargame, Long> {
         GROUP BY w.id, w.title
         ORDER BY COUNT(sw) DESC
     """)
-    Page<ResHotWargameDto> findHotWargames(Pageable pageable);
+    Page<HotWargameResult> findHotWargames(Pageable pageable);
 
     @Query("SELECT w FROM Wargame w JOIN FETCH w.category")
     List<Wargame> findAllWithCategory();

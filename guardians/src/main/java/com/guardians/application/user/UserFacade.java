@@ -1,21 +1,23 @@
 package com.guardians.application.user;
 
-import com.guardians.config.AwsS3Properties;
 import com.guardians.domain.user.entity.Role;
 import com.guardians.domain.user.entity.User;
+import com.guardians.domain.user.port.EmailVerificationPort;
 import com.guardians.domain.user.port.UserPort;
 import com.guardians.domain.user.service.UserDomainService;
 import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
-import com.guardians.service.auth.EmailVerificationService;
+import com.guardians.infrastructure.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -26,8 +28,8 @@ public class UserFacade {
 
     private final UserPort userPort;
     private final PasswordEncoder passwordEncoder;
-    private final EmailVerificationService emailVerificationService;
-    private final AwsS3Properties awsS3Properties;
+    private final EmailVerificationPort emailVerificationPort;
+    private final S3Service s3Service;
     private final UserDomainService userDomainService;
 
     private User getUserWithStats(Long userId) {
@@ -46,7 +48,7 @@ public class UserFacade {
                 email,
                 encodedPw,
                 Role.USER,
-                awsS3Properties.getDefaultProfileUrl()
+                s3Service.getDefaultProfileUrl()
         );
 
         User saved = userPort.save(user);
@@ -107,7 +109,7 @@ public class UserFacade {
     public void verifyResetPassword(Long userId, String code, String newPassword) {
         User user = getUserWithStats(userId);
 
-        boolean verified = emailVerificationService.verifyCode(user.getEmail(), code);
+        boolean verified = emailVerificationPort.verifyCode(user.getEmail(), code);
         if (!verified) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
@@ -165,5 +167,19 @@ public class UserFacade {
     @Transactional
     public void updateProfileImageUrl(Long userId, String imageUrl) {
         getUserWithStats(userId).updateProfileImageUrl(imageUrl);
+    }
+
+    @Transactional
+    public String uploadProfileImage(Long userId, MultipartFile file) throws IOException {
+        String imageUrl = s3Service.uploadProfileImage(file);
+        getUserWithStats(userId).updateProfileImageUrl(imageUrl);
+        return imageUrl;
+    }
+
+    @Transactional
+    public String resetProfileImage(Long userId) {
+        String defaultUrl = s3Service.getDefaultProfileUrl();
+        getUserWithStats(userId).updateProfileImageUrl(defaultUrl);
+        return defaultUrl;
     }
 }

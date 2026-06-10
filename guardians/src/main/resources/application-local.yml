@@ -1,0 +1,44 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ctfdb
+    username: ctf
+    password: ctf
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""
+
+  session:
+    cookie:
+      secure: false
+
+  mail:
+    host: localhost
+    port: 1025
+    username: local
+    password: local
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+cloud:
+  aws:
+    s3:
+      bucket: local-bucket
+    credentials:
+      access-key: dummy
+      secret-key: dummy
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+aws:
+  s3:
+    access-key: dummy
+    secret-key: dummy
+    region: ap-northeast-2
+    bucket: local-bucket
+    default-profile-url: https://via.placeholder.com/150

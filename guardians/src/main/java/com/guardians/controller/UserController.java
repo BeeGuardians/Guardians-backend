@@ -1,5 +1,7 @@
 package com.guardians.controller;
 
+import com.guardians.application.auth.AuthFacade;
+import com.guardians.application.user.UserFacade;
 import com.guardians.domain.user.entity.Role;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.user.req.*;
@@ -7,9 +9,6 @@ import com.guardians.dto.user.res.ResCreateUserDto;
 import com.guardians.dto.user.res.ResLoginDto;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
-import com.guardians.application.user.UserFacade;
-import com.guardians.service.auth.EmailVerificationService;
-import com.guardians.infrastructure.s3.S3Service;
 import com.guardians.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,10 +32,8 @@ import java.util.List;
 public class UserController {
 
     private final UserFacade userFacade;
-    private final EmailVerificationService emailVerificationService;
-    private final S3Service s3Service;
+    private final AuthFacade authFacade;
 
-    // 회원가입
     @Operation(summary = "회원가입", description = "유저 정보를 받아 회원가입 처리")
     @PostMapping
     public ResponseEntity<ResWrapper<?>> createUser(@RequestBody @Valid ReqCreateUserDto requestDto) {
@@ -44,15 +41,13 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("회원가입 성공", createdUser));
     }
 
-    // 이메일 인증 코드 전송
     @Operation(summary = "이메일 인증코드 전송", description = "입력한 이메일로 인증코드 발송")
     @GetMapping("/send-code")
     public ResponseEntity<ResWrapper<?>> sendSignupCode(@RequestParam("email") String email) {
-        emailVerificationService.sendVerificationCode(email, "mail/signup-verification.html");
+        authFacade.sendVerificationCode(email, "mail/signup-verification.html");
         return ResponseEntity.ok(ResWrapper.resSuccess("회원가입 인증 메일 전송 완료", null));
     }
 
-    // 이메일 중복 체크
     @Operation(summary = "이메일 중복 확인", description = "이미 가입된 이메일인지 확인")
     @GetMapping("/check-email")
     public ResponseEntity<ResWrapper<?>> checkEmailExists(@RequestParam("email") String email) {
@@ -60,18 +55,16 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("이메일 존재 여부", exists));
     }
 
-    // 이메일 인증 코드 확인
     @Operation(summary = "이메일 인증코드 검증", description = "입력한 코드가 유효한지 확인")
     @PostMapping("/verify-code")
     public ResponseEntity<ResWrapper<?>> verifyCode(
             @RequestParam("email") String email,
             @RequestParam("code") String code
     ) {
-        boolean isValid = emailVerificationService.verifyCode(email, code);
+        boolean isValid = authFacade.verifyCode(email, code);
         return ResponseEntity.ok(ResWrapper.resSuccess("인증 결과", isValid));
     }
 
-    // 로그인 여부 확인
     @Operation(summary = "로그인 여부 확인", description = "현재 세션에 유저 정보가 존재하는지 확인합니다.")
     @GetMapping("/check")
     public ResponseEntity<?> checkLogin(HttpServletRequest request) {
@@ -92,7 +85,6 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("로그인 성공", loginUser));
     }
 
-    // ADMIN login
     @PostMapping("/admin/login")
     public ResponseEntity<ResWrapper<?>> adminLogin(
             @RequestBody @Valid ReqLoginDto loginDto,
@@ -110,7 +102,6 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 로그인 성공", loginUser));
     }
 
-
     @PutMapping("/admin/update-role/{userId}")
     public ResponseEntity<ResWrapper<?>> updateUserRole(
             @PathVariable Long userId,
@@ -124,7 +115,6 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 권한 변경 완료", null));
     }
 
-    // 모든 유저 조회
     @Operation(summary = "전체 유저 목록 조회", description = "관리자만 전체 유저 목록을 확인할 수 있습니다.")
     @GetMapping("/admin/list")
     public ResponseEntity<ResWrapper<?>> getAllUsers(HttpSession session) {
@@ -150,7 +140,6 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("로그아웃 완료 (세션 + 쿠키 삭제)", null));
     }
 
-    // 유저정보 - 닉네임 수정
     @PatchMapping("/{userId}/update")
     public ResponseEntity<ResWrapper<?>> updateUserInfo(
             @PathVariable("userId") Long userId,
@@ -164,7 +153,6 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 정보 수정 완료", updatedUser));
     }
 
-    // 프로필 이미지 업로드
     @Operation(summary = "프로필 이미지 업로드", description = "S3에 프로필 이미지를 업로드하고 URL을 저장")
     @PostMapping("/{userId}/profile-image")
     public ResponseEntity<ResWrapper<?>> uploadProfileImage(
@@ -173,14 +161,10 @@ public class UserController {
             HttpSession session
     ) throws IOException {
         SessionUtil.requireSameUser(session, userId);
-
-        String imageUrl = s3Service.uploadProfileImage(file);
-        userFacade.updateProfileImageUrl(userId, imageUrl);
-
+        String imageUrl = userFacade.uploadProfileImage(userId, file);
         return ResponseEntity.ok(ResWrapper.resSuccess("프로필 이미지 업로드 성공", imageUrl));
     }
 
-    // 프로필 이미지 삭제 → 기본 이미지로 복구
     @Operation(summary = "프로필 이미지 삭제", description = "프로필 이미지를 기본 이미지로 롤백")
     @DeleteMapping("/{userId}/profile-image")
     public ResponseEntity<ResWrapper<?>> deleteProfileImage(
@@ -188,14 +172,10 @@ public class UserController {
             HttpSession session
     ) {
         SessionUtil.requireSameUser(session, userId);
-
-        String defaultUrl = s3Service.getDefaultProfileUrl();
-        userFacade.updateProfileImageUrl(userId, defaultUrl);
-
+        String defaultUrl = userFacade.resetProfileImage(userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("프로필 이미지 기본으로 변경 완료", defaultUrl));
     }
 
-    // 비밀번호 변경
     @PatchMapping("/{userId}/reset-password")
     public ResponseEntity<ResWrapper<?>> changePassword(
             @PathVariable("userId") Long userId,
@@ -209,16 +189,14 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 변경 완료", null));
     }
 
-    // 비밀번호 찾기 - 이메일 인증 코드 전송
     @Operation(summary = "비밀번호 찾기 - 이메일 인증 코드 전송", description = "비밀번호 재설정을 위한 이메일 인증 코드 발송")
     @GetMapping("/{userId}/reset-password/send-code")
     public ResponseEntity<ResWrapper<?>> sendResetPasswordCode(@PathVariable Long userId) {
         String email = userFacade.getEmailByUserId(userId);
-        emailVerificationService.sendVerificationCode(email, "mail/password-reset.html");
+        authFacade.sendVerificationCode(email, "mail/password-reset.html");
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 재설정 코드 발송 완료", null));
     }
 
-    // 비밀번호 찾기 - 이메일 검증 / 재설정
     @Operation(summary = "비밀번호 찾기 - 비밀번호 재설정", description = "인증 코드 검증 후 새로운 비밀번호 설정")
     @PostMapping("/{userId}/reset-password/verify-code")
     public ResponseEntity<ResWrapper<?>> verifyResetPassword(
@@ -230,7 +208,6 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("비밀번호 재설정 완료", null));
     }
 
-    // 비밀번호 찾기 - 유저ID 가져오기
     @Operation(summary = "이메일로 유저 ID 조회", description = "입력된 이메일로 등록된 유저 ID를 반환")
     @GetMapping("/find-id")
     public ResponseEntity<ResWrapper<?>> findUserIdByEmail(@RequestParam String email) {
@@ -238,8 +215,6 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("유저 ID 반환", userId));
     }
 
-
-    // 회원 탈퇴
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 처리")
     @DeleteMapping("/{userId}")
     public ResponseEntity<ResWrapper<?>> deleteUser(
@@ -254,7 +229,6 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("회원 탈퇴 완료", null));
     }
 
-    // 관리자 회원 삭제
     @Operation(summary = "관리자 전용 회원 삭제", description = "관리자가 특정 회원을 강제 탈퇴시킵니다.")
     @DeleteMapping("/admin/delete/{userId}")
     public ResponseEntity<ResWrapper<?>> adminDeleteUser(
@@ -267,13 +241,10 @@ public class UserController {
         return ResponseEntity.ok(ResWrapper.resSuccess("[관리자] 회원 삭제 완료", null));
     }
 
-
-    // UserId 정보 반환
     @GetMapping("/me")
     public ResponseEntity<ResWrapper<?>> getCurrentUser(HttpSession session) {
         Long userId = SessionUtil.getRequiredUserId(session);
         ResLoginDto user = userFacade.getUserInfo(userId);
         return ResponseEntity.ok(ResWrapper.resSuccess("유저 정보 조회 성공", user));
     }
-
 }

@@ -1,7 +1,7 @@
 package com.guardians.controller;
 
 import com.guardians.application.wargame.WargameFacade;
-import com.guardians.domain.wargame.port.KubernetesPodPort;
+import com.guardians.domain.wargame.port.PodStatus;
 import com.guardians.dto.common.ResWrapper;
 import com.guardians.dto.wargame.req.ReqCreateReviewDto;
 import com.guardians.dto.wargame.req.ReqCreateWargameDto;
@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,7 +27,6 @@ import java.util.Optional;
 public class WargameController {
 
     private final WargameFacade wargameFacade;
-    private final KubernetesPodPort kubernetesPodPort;
 
     @PostMapping("/admin")
     public ResponseEntity<ResWrapper<?>> createWargame(
@@ -50,7 +48,6 @@ public class WargameController {
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 삭제 완료", null));
     }
 
-
     @GetMapping
     public ResponseEntity<ResWrapper<?>> getWargameList(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
@@ -69,7 +66,6 @@ public class WargameController {
         ResWargameListDto result = wargameFacade.getWargameById(userId, wargameId);
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 상세 조회 성공", result));
     }
-
 
     @PostMapping("/{wargameId}/submit")
     public ResponseEntity<ResWrapper<?>> submitFlag(
@@ -142,27 +138,14 @@ public class WargameController {
         return ResponseEntity.ok(ResWrapper.resSuccess("리뷰 삭제 성공", null));
     }
 
-
     @PostMapping("/{wargameId}/start")
     public ResponseEntity<ResWrapper<?>> startWargamePod(
             @PathVariable Long wargameId,
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-
-        String podName = "wargame-" + userId + "-" + wargameId;
-        String namespace = "ns-wargame";
-
-        kubernetesPodPort.createWargamePod(podName, wargameId, userId, namespace);
-
-        String url = String.format("https://%d-%d.wargames.bee-guardians.com", wargameId, userId);
-
-        return ResponseEntity.ok(
-                ResWrapper.resSuccess("워게임 인스턴스 시작됨", Map.of(
-                        "podName", podName,
-                        "url", url
-                ))
-        );
+        Map<String, String> result = wargameFacade.startWargamePod(userId, wargameId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("워게임 인스턴스 시작됨", result));
     }
 
     @DeleteMapping("/{wargameId}/stop")
@@ -171,25 +154,10 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-
-        String podName = "wargame-" + userId + "-" + wargameId;
-        String namespace = "ns-wargame";
-
-        boolean deleted = kubernetesPodPort.deleteWargamePod(podName, namespace);
-        if (deleted) {
-            return ResponseEntity.ok(
-                    ResWrapper.resSuccess("워게임 인스턴스 종료됨", Map.of(
-                            "podName", podName,
-                            "url", kubernetesPodPort.generateIngressUrl(podName)
-                    ))
-            );
-        } else {
-            return ResponseEntity.ok(
-                    ResWrapper.resSuccess("종료할 워게임 인스턴스를 찾을 수 없음", Map.of(
-                            "podName", podName
-                    ))
-            );
-        }
+        Map<String, Object> result = wargameFacade.stopWargamePod(userId, wargameId);
+        boolean deleted = result.containsKey("url");
+        String message = deleted ? "워게임 인스턴스 종료됨" : "종료할 워게임 인스턴스를 찾을 수 없음";
+        return ResponseEntity.ok(ResWrapper.resSuccess(message, result));
     }
 
     @GetMapping("/{wargameId}/status")
@@ -198,17 +166,9 @@ public class WargameController {
             HttpSession session
     ) {
         Long userId = SessionUtil.getRequiredUserId(session);
-
-        String podName = "wargame-" + userId + "-" + wargameId;
-        String namespace = "ns-wargame";
-
-        PodStatusDto podStatus = kubernetesPodPort.getPodStatus(podName, namespace);
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("status", podStatus.getStatus());
-        result.put("url", podStatus.getUrl());
-
-        return ResponseEntity.ok(ResWrapper.resSuccess("Pod 상태 조회 성공", result));
+        PodStatus podStatus = wargameFacade.getWargamePodStatus(userId, wargameId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("Pod 상태 조회 성공",
+                Map.of("status", podStatus.status(), "url", Optional.ofNullable(podStatus.url()).orElse(""))));
     }
 
     @GetMapping("/hot")
@@ -228,41 +188,25 @@ public class WargameController {
     @PostMapping("/kali/start")
     public ResponseEntity<ResWrapper<?>> startKaliPod(HttpSession session) {
         Long userId = SessionUtil.getRequiredUserId(session);
-
-        String namespace = "ns-wargame";
-        kubernetesPodPort.createKaliPod(userId, namespace);
-
-        String url = String.format("https://kali-%d.wargames.bee-guardians.com", userId);
-        return ResponseEntity.ok(
-                ResWrapper.resSuccess("Kali 인스턴스 시작됨", Map.of(
-                        "url", url
-                ))
-        );
+        String url = wargameFacade.startKaliPod(userId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("Kali 인스턴스 시작됨", Map.of("url", url)));
     }
 
     @DeleteMapping("/kali/stop")
     public ResponseEntity<ResWrapper<?>> stopKaliPod(HttpSession session) {
         Long userId = SessionUtil.getRequiredUserId(session);
-
-        String namespace = "ns-wargame";
-        boolean deleted = kubernetesPodPort.deleteKaliPod(userId, namespace);
-        return ResponseEntity.ok(
-                ResWrapper.resSuccess(deleted ? "Kali 인스턴스 종료됨" : "Kali 인스턴스 삭제 실패", null)
-        );
+        boolean deleted = wargameFacade.stopKaliPod(userId);
+        return ResponseEntity.ok(ResWrapper.resSuccess(deleted ? "Kali 인스턴스 종료됨" : "Kali 인스턴스 삭제 실패", null));
     }
 
     @GetMapping("/kali/status")
     public ResponseEntity<ResWrapper<?>> getKaliPodStatus(HttpSession session) {
         Long userId = SessionUtil.getRequiredUserId(session);
-
-        String namespace = "ns-wargame";
-        PodStatusDto status = kubernetesPodPort.getKaliPodStatus(userId, namespace);
-        return ResponseEntity.ok(
-                ResWrapper.resSuccess("Kali 상태 조회 성공", Map.of(
-                        "status", Optional.ofNullable(status.getStatus()).orElse("UNKNOWN"),
-                        "url", Optional.ofNullable(status.getUrl()).orElse("")
-                ))
-        );
+        PodStatus status = wargameFacade.getKaliPodStatus(userId);
+        return ResponseEntity.ok(ResWrapper.resSuccess("Kali 상태 조회 성공", Map.of(
+                "status", Optional.ofNullable(status.status()).orElse("UNKNOWN"),
+                "url", Optional.ofNullable(status.url()).orElse("")
+        )));
     }
 
     @GetMapping("/admin/{wargameId}/flag")
@@ -271,10 +215,7 @@ public class WargameController {
             HttpSession session
     ) {
         SessionUtil.requireAdmin(session);
-
         String flag = wargameFacade.getWargameFlag(wargameId);
-
         return ResponseEntity.ok(ResWrapper.resSuccess("워게임 플래그 조회 성공", Map.of("flag", flag)));
     }
-
 }

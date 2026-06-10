@@ -1,6 +1,6 @@
 package com.guardians.domain.board.port;
 
-public interface CommentCountRepository {
+public interface CommentCountProjection {
     Long getBoardId();
     Long getCommentCount();
 }
