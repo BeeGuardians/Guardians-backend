@@ -2,8 +2,9 @@ package com.guardians.infrastructure.kubernetes;
 
 import com.guardians.domain.wargame.entity.Wargame;
 import com.guardians.domain.wargame.port.KubernetesPodPort;
+import com.guardians.domain.wargame.port.PodStatus;
+import com.guardians.domain.wargame.port.RunningPodInfo;
 import com.guardians.domain.wargame.port.WargamePort;
-import com.guardians.dto.wargame.res.PodStatusDto;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.networking.v1.*;
 import io.fabric8.kubernetes.client.Config;
@@ -145,29 +146,29 @@ public class KubernetesPodAdapter implements KubernetesPodPort {
     }
 
     @Override
-    public PodStatusDto getPodStatus(String podName, String namespace) {
+    public PodStatus getPodStatus(String podName, String namespace) {
         try (KubernetesClient client = getK8sClient()) {
             Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
 
             if (pod == null) {
-                return new PodStatusDto("Not Found", null);
+                return new PodStatus("Not Found", null);
             }
 
             if (pod.getMetadata().getDeletionTimestamp() != null) {
-                return new PodStatusDto("Terminating", generateIngressUrl(podName));
+                return new PodStatus("Terminating", generateIngressUrl(podName));
             }
 
             String phase = pod.getStatus().getPhase();
             if ("Succeeded".equals(phase) || "Failed".equals(phase)) {
-                return new PodStatusDto("Not Found", null);
+                return new PodStatus("Not Found", null);
             }
 
-            return new PodStatusDto(phase, generateIngressUrl(podName));
+            return new PodStatus(phase, generateIngressUrl(podName));
         }
     }
 
     @Override
-    public List<Pod> getRunningPodsByWargameId(Long wargameId, String namespace) {
+    public List<RunningPodInfo> getRunningPodsByWargameId(Long wargameId, String namespace) {
         try (KubernetesClient client = getK8sClient()) {
             return client.pods()
                     .inNamespace(namespace)
@@ -179,6 +180,10 @@ public class KubernetesPodAdapter implements KubernetesPodPort {
                         String phase = pod.getStatus().getPhase();
                         return name.contains("-" + wargameId) && "Running".equals(phase);
                     })
+                    .map(pod -> new RunningPodInfo(
+                            pod.getMetadata().getName(),
+                            pod.getMetadata().getCreationTimestamp()
+                    ))
                     .collect(Collectors.toList());
         }
     }
@@ -296,25 +301,25 @@ public class KubernetesPodAdapter implements KubernetesPodPort {
     }
 
     @Override
-    public PodStatusDto getKaliPodStatus(Long userId, String namespace) {
+    public PodStatus getKaliPodStatus(Long userId, String namespace) {
         try (KubernetesClient client = getK8sClient()) {
             String podName = "kali-" + userId;
             Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
 
             if (pod == null) {
-                return new PodStatusDto("Not Found", null);
+                return new PodStatus("Not Found", null);
             }
 
             if (pod.getMetadata().getDeletionTimestamp() != null) {
-                return new PodStatusDto("Terminating", getKaliIngressUrl(userId));
+                return new PodStatus("Terminating", getKaliIngressUrl(userId));
             }
 
             String phase = pod.getStatus().getPhase();
             if ("Succeeded".equals(phase) || "Failed".equals(phase)) {
-                return new PodStatusDto("Not Found", null);
+                return new PodStatus("Not Found", null);
             }
 
-            return new PodStatusDto(phase, getKaliIngressUrl(userId));
+            return new PodStatus(phase, getKaliIngressUrl(userId));
         }
     }
 

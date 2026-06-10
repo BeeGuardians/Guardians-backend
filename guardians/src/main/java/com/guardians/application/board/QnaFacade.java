@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class QnaFacade {
 
     private final QuestionPort questionPort;
@@ -35,6 +35,7 @@ public class QnaFacade {
     private final UserPort userPort;
     private final WargamePort wargamePort;
 
+    @Transactional
     public ResCreateQuestionDto createQuestion(Long userId, String title, String content, Long wargameId) {
         User user = userPort.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -74,6 +75,7 @@ public class QnaFacade {
         return ResQuestionDetailDto.fromEntity(question);
     }
 
+    @Transactional
     public ResUpdateQuestionDto updateQuestion(Long userId, Long questionId, String title, String content) {
         Question question = questionPort.findByIdWithUser(questionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
@@ -86,6 +88,7 @@ public class QnaFacade {
         return ResUpdateQuestionDto.fromEntity(question);
     }
 
+    @Transactional
     public void deleteQuestion(Long userId, Long questionId) {
         Question question = questionPort.findByIdWithUser(questionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
@@ -97,12 +100,14 @@ public class QnaFacade {
         questionPort.delete(question);
     }
 
+    @Transactional
     public void increaseViewCount(Long questionId) {
         Question question = questionPort.findById(questionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
         question.increaseViewCount();
     }
 
+    @Transactional
     public ResCreateAnswerDto createAnswer(Long userId, Long questionId, String content) {
         User user = userPort.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -127,6 +132,7 @@ public class QnaFacade {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public ResUpdateAnswerDto updateAnswer(Long userId, Long answerId, String content) {
         Answer answer = answerPort.findByIdWithUser(answerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ANSWER_NOT_FOUND));
@@ -139,6 +145,7 @@ public class QnaFacade {
         return ResUpdateAnswerDto.fromEntity(answer);
     }
 
+    @Transactional
     public void deleteAnswer(Long userId, Long answerId) {
         Answer answer = answerPort.findByIdWithUser(answerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ANSWER_NOT_FOUND));
