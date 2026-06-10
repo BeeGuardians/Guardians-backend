@@ -1,5 +1,6 @@
 package com.guardians.application.wargame;
 
+import com.guardians.application.badge.BadgeFacade;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.entity.UserStats;
 import com.guardians.domain.user.port.UserPort;
@@ -10,7 +11,6 @@ import com.guardians.domain.wargame.service.WargameDomainService;
 import com.guardians.dto.wargame.res.*;
 import com.guardians.exception.CustomException;
 import com.guardians.exception.ErrorCode;
-import io.fabric8.kubernetes.api.model.Pod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class WargameFacade {
 
+    private static final String WARGAME_NAMESPACE = "ns-wargame";
+
     private final WargamePort wargamePort;
     private final WargameFlagPort wargameFlagPort;
     private final SolvedWargamePort solvedWargamePort;
@@ -37,7 +39,9 @@ public class WargameFacade {
     private final UserPort userPort;
     private final UserStatsPort userStatsPort;
     private final WargameDomainService wargameDomainService;
-    private final com.guardians.application.badge.BadgeFacade badgeFacade;
+    // 타협: 배지 로직을 WargameFacade에 중복하는 것보다 BadgeFacade 의존이 낫다.
+    // 개선 방향: 도메인 이벤트(FlagSubmittedEvent) 도입 시 제거 가능
+    private final BadgeFacade badgeFacade;
 
     @Transactional
     public ResWargameListDto createWargame(String title, String description, Difficulty difficulty, int score,
@@ -102,7 +106,6 @@ public class WargameFacade {
             likedIds = new HashSet<>();
         }
 
-        // flag N+1 방지
         List<WargameFlag> flags = wargameFlagPort.findAllByWargameIdIn(wargameIds);
         Map<Long, String> flagMap = flags.stream()
                 .collect(Collectors.toMap(f -> f.getWargame().getId(), WargameFlag::getFlag));
@@ -278,16 +281,16 @@ public class WargameFacade {
 
     public List<ResHotWargameDto> getHotWargames() {
         Pageable top10 = PageRequest.of(0, 10);
-        return wargamePort.findHotWargames(top10).getContent();
+        return wargamePort.findHotWargames(top10).getContent().stream()
+                .map(r -> new ResHotWargameDto(r.getWargameId(), r.getTitle(), r.getSolveCount()))
+                .collect(Collectors.toList());
     }
 
     public List<ResUserStatusDto> getActiveUsersByWargame(Long wargameId) {
-        String namespace = "ns-wargame";
-        List<Pod> pods = kubernetesPodPort.getRunningPodsByWargameId(wargameId, namespace);
+        List<RunningPodInfo> pods = kubernetesPodPort.getRunningPodsByWargameId(wargameId, WARGAME_NAMESPACE);
 
         return pods.stream().map(pod -> {
-            String podName = pod.getMetadata().getName();
-            String[] parts = podName.split("-");
+            String[] parts = pod.podName().split("-");
 
             Long podUserId;
             try {
@@ -299,11 +302,7 @@ public class WargameFacade {
             User user = userPort.findById(podUserId).orElse(null);
             if (user == null) return null;
 
-            return new ResUserStatusDto(
-                    user.getUsername(),
-                    pod.getMetadata().getCreationTimestamp(),
-                    false
-            );
+            return new ResUserStatusDto(user.getUsername(), pod.creationTimestamp(), false);
         }).filter(Objects::nonNull).toList();
     }
 
@@ -311,5 +310,44 @@ public class WargameFacade {
         WargameFlag wargameFlag = wargameFlagPort.findByWargameId(wargameId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVALID_PASSWORD));
         return wargameFlag.getFlag();
+    }
+
+    @Transactional
+    public Map<String, String> startWargamePod(Long userId, Long wargameId) {
+        String podName = "wargame-" + userId + "-" + wargameId;
+        kubernetesPodPort.createWargamePod(podName, wargameId, userId, WARGAME_NAMESPACE);
+        String url = String.format("https://%d-%d.wargames.bee-guardians.com", wargameId, userId);
+        return Map.of("podName", podName, "url", url);
+    }
+
+    @Transactional
+    public Map<String, Object> stopWargamePod(Long userId, Long wargameId) {
+        String podName = "wargame-" + userId + "-" + wargameId;
+        boolean deleted = kubernetesPodPort.deleteWargamePod(podName, WARGAME_NAMESPACE);
+        if (deleted) {
+            return Map.of("podName", podName, "url", kubernetesPodPort.generateIngressUrl(podName));
+        } else {
+            return Map.of("podName", podName);
+        }
+    }
+
+    public PodStatus getWargamePodStatus(Long userId, Long wargameId) {
+        String podName = "wargame-" + userId + "-" + wargameId;
+        return kubernetesPodPort.getPodStatus(podName, WARGAME_NAMESPACE);
+    }
+
+    @Transactional
+    public String startKaliPod(Long userId) {
+        kubernetesPodPort.createKaliPod(userId, WARGAME_NAMESPACE);
+        return String.format("https://kali-%d.wargames.bee-guardians.com", userId);
+    }
+
+    @Transactional
+    public boolean stopKaliPod(Long userId) {
+        return kubernetesPodPort.deleteKaliPod(userId, WARGAME_NAMESPACE);
+    }
+
+    public PodStatus getKaliPodStatus(Long userId) {
+        return kubernetesPodPort.getKaliPodStatus(userId, WARGAME_NAMESPACE);
     }
 }

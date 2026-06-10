@@ -2,6 +2,8 @@ package com.guardians.application.job;
 
 import com.guardians.domain.job.entity.Job;
 import com.guardians.domain.job.port.JobPort;
+import com.guardians.domain.user.entity.User;
+import com.guardians.domain.user.port.UserPort;
 import com.guardians.dto.job.res.ResJobDto;
 import com.guardians.dto.job.res.ResJobListDto;
 import com.guardians.exception.CustomException;
@@ -21,6 +23,15 @@ import java.util.stream.Collectors;
 public class JobFacade {
 
     private final JobPort jobPort;
+    private final UserPort userPort;
+
+    public void verifyAdmin(Long userId) {
+        User user = userPort.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        if (!user.isAdmin()) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+    }
 
     @Transactional
     public void createJob(String companyName, String title, String description, String location,

@@ -1,8 +1,8 @@
 package com.guardians.infrastructure.persistence.wargame;
 
 import com.guardians.domain.wargame.entity.Wargame;
+import com.guardians.domain.wargame.port.HotWargameResult;
 import com.guardians.domain.wargame.port.WargamePort;
-import com.guardians.dto.wargame.res.ResHotWargameDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +38,7 @@ public class WargameAdapter implements WargamePort {
     }
 
     @Override
-    public Page<ResHotWargameDto> findHotWargames(Pageable pageable) {
+    public Page<HotWargameResult> findHotWargames(Pageable pageable) {
         return jpa.findHotWargames(pageable);
     }
 

@@ -1,7 +1,6 @@
 package com.guardians.domain.wargame.port;
 
 import com.guardians.domain.wargame.entity.Wargame;
-import com.guardians.dto.wargame.res.ResHotWargameDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -13,7 +12,7 @@ public interface WargamePort {
     Optional<Wargame> findById(Long id);
     Optional<Wargame> findByIdWithCategory(Long id);
     List<Wargame> findByCategoryName(String categoryName);
-    Page<ResHotWargameDto> findHotWargames(Pageable pageable);
+    Page<HotWargameResult> findHotWargames(Pageable pageable);
     Wargame save(Wargame wargame);
     void delete(Wargame wargame);
 }
