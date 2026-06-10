@@ -7,7 +7,7 @@ import com.guardians.domain.board.entity.Comment;
 import com.guardians.domain.board.port.BoardLikePort;
 import com.guardians.domain.board.port.BoardPort;
 import com.guardians.domain.board.port.CommentPort;
-import com.guardians.domain.board.port.CommentCountRepository;
+import com.guardians.domain.board.port.CommentCountProjection;
 import com.guardians.domain.user.entity.User;
 import com.guardians.domain.user.port.UserPort;
 import com.guardians.dto.board.res.*;
@@ -70,8 +70,8 @@ public class BoardFacade {
     private List<ResBoardListDto> toBoardListDtos(List<Board> boards) {
         Map<Long, Long> commentCountMap = commentPort.countCommentsByBoard().stream()
                 .collect(Collectors.toMap(
-                        CommentCountRepository::getBoardId,
-                        CommentCountRepository::getCommentCount
+                        CommentCountProjection::getBoardId,
+                        CommentCountProjection::getCommentCount
                 ));
 
         return boards.stream()
